@@ -51,8 +51,11 @@ public class UserController {
 
         if(user.getName() == null) {
             user.setName(user.getLogin());
+            log.info("Поле name не задано. Установлено значение {} из поля login", user.getLogin());
         } else if (user.getName().isEmpty() || user.getName().isBlank()) {
             user.setName(user.getLogin());
+            log.info("Поле name не содержит буквенных символов. " +
+                    "Установлено значение {} из поля login", user.getLogin());
         }
         users.put(user.getId(), user);
         log.info("Обновлен объект {} с идентификатором {}", User.class.getSimpleName(), user.getId());

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.validation.ReleaseDateValidation;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
@@ -17,6 +18,7 @@ public class Film {
     @Size(max = 200, message = "Описание фильма не должно превышать 200 символов")
     private String description;
     @PastOrPresent(message = "Дата релиза не может быть в будущем")
+    @ReleaseDateValidation
     private LocalDate releaseDate;
     @Positive(message = "Продолжительность фильма не может быть отрицательной")
     private long duration;
