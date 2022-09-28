@@ -32,12 +32,12 @@ class UserControllerTest {
     }
 
     @Test
-    void create() throws Exception {
+    void shouldReturn200whenPostCorrectUserData() throws Exception {
         User user = User.builder()
-                .login("Test")
-                .name("name")
-                .email("mail@mail.ru")
-                .birthday(LocalDate.of(2022, 1, 1))
+                .login("correctlogin")
+                .name("Correct Name")
+                .email("correct.email@mail.ru")
+                .birthday(LocalDate.of(2002, 1, 1))
                 .build();
         Mockito.when(userController.create(Mockito.any())).thenReturn(user);
         mockMvc.perform(post("/users")
