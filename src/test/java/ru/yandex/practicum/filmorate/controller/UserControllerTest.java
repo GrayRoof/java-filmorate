@@ -29,12 +29,11 @@ class UserControllerTest {
 
     @Test
     void shouldReturn200whenGetUsers() throws Exception {
-        User user = User.builder()
-                .login("correctlogin")
-                .name("Correct Name")
-                .email("correct.email@mail.ru")
-                .birthday(LocalDate.of(2002, 1, 1))
-                .build();
+        User user = new User();
+        user.setLogin("correctlogin");
+        user.setName("Correct Name");
+        user.setEmail("correct.email@mail.ru");
+        user.setBirthday(LocalDate.of(2002, 1, 1));
         Mockito.when(userController.findAll()).thenReturn(Collections.singletonList(user));
         mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())
@@ -43,12 +42,11 @@ class UserControllerTest {
 
     @Test
     void shouldReturn200whenPostCorrectUserData() throws Exception {
-        User user = User.builder()
-                .login("correctlogin")
-                .name("Correct Name")
-                .email("correct.email@mail.ru")
-                .birthday(LocalDate.of(2002, 1, 1))
-                .build();
+        User user = new User();
+        user.setLogin("correctlogin");
+        user.setName("Correct Name");
+        user.setEmail("correct.email@mail.ru");
+        user.setBirthday(LocalDate.of(2002, 1, 1));
         Mockito.when(userController.create(Mockito.any())).thenReturn(user);
         mockMvc.perform(post("/users")
                         .content(objectMapper.writeValueAsString(user))
@@ -59,12 +57,11 @@ class UserControllerTest {
 
     @Test
     void shouldReturn400whenPostFailedUserLogin() throws Exception {
-        User user = User.builder()
-                .login("incorrect login")
-                .name("Correct Name")
-                .email("correct.email@mail.ru")
-                .birthday(LocalDate.of(2002, 1, 1))
-                .build();
+        User user = new User();
+        user.setLogin("incorrect login");
+        user.setName("Correct Name");
+        user.setEmail("correct.email@mail.ru");
+        user.setBirthday(LocalDate.of(2002, 1, 1));
         Mockito.when(userController.create(Mockito.any())).thenReturn(user);
         mockMvc.perform(post("/users")
                         .content(objectMapper.writeValueAsString(user))
@@ -74,12 +71,11 @@ class UserControllerTest {
 
     @Test
     void shouldReturn400whenPostFailedUserEmail() throws Exception {
-        User user = User.builder()
-                .login("correctlogin")
-                .name("Correct Name")
-                .email("incorrect.email@")
-                .birthday(LocalDate.of(2002, 1, 1))
-                .build();
+        User user = new User();
+        user.setLogin("correctlogin");
+        user.setName("Correct Name");
+        user.setEmail("incorrect.email@");
+        user.setBirthday(LocalDate.of(2002, 1, 1));
         Mockito.when(userController.create(Mockito.any())).thenReturn(user);
         mockMvc.perform(post("/users")
                         .content(objectMapper.writeValueAsString(user))
@@ -89,12 +85,11 @@ class UserControllerTest {
 
     @Test
     void shouldReturn400whenPostFailedUserBirthDate() throws Exception {
-        User user = User.builder()
-                .login("correctlogin")
-                .name("Correct Name")
-                .email("correct.email@mail.ru")
-                .birthday(LocalDate.now().plusDays(1))
-                .build();
+        User user = new User();
+        user.setLogin("correctlogin");
+        user.setName("Correct Name");
+        user.setEmail("correct.email@mail.ru");
+        user.setBirthday(LocalDate.now().plusDays(1));
         Mockito.when(userController.create(Mockito.any())).thenReturn(user);
         mockMvc.perform(post("/users")
                         .content(objectMapper.writeValueAsString(user))
