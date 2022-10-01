@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.UserDao;
@@ -12,6 +13,7 @@ import javax.validation.Validator;
 import java.util.Collection;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class UserService {
     private int increment = 0;
@@ -21,9 +23,17 @@ public class UserService {
     @Autowired
     private UserDao userDao;
 
-    public void validate(User user) {
+    private void validate(User user) {
         if (user.getId() == 0) {
             user.setId(++increment);
+        }
+        if(user.getName() == null) {
+            user.setName(user.getLogin());
+            log.info("UserService: Поле name не задано. Установлено значение {} из поля login", user.getLogin());
+        }else if (user.getName().isEmpty() || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+            log.info("UserService: Поле name не содержит буквенных символов. " +
+                    "Установлено значение {} из поля login", user.getLogin());
         }
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         if (!violations.isEmpty()) {
@@ -31,21 +41,23 @@ public class UserService {
             for (ConstraintViolation<User> userConstraintViolation : violations) {
                 messageBuilder.append(userConstraintViolation.getMessage());
             }
-            throw new UserValidationException("Ошибка валидации Фильма: " + messageBuilder, violations);
+            throw new UserValidationException("Ошибка валидации Пользователя: " + messageBuilder, violations);
         }
     }
 
-    public Collection<User> getUsers() {
+    public Collection<User> getAllUsers() {
         return userDao.getAllUsers();
     }
 
     public User add(User user) {
+        validate(user);
         return userDao.addUser(user);
     }
 
     public User update(User user) {
+        validate(user);
         if(!userDao.getAllUsers().contains(user)) {
-            throw new NotFoundException("Фильм с идентификатором " +
+            throw new NotFoundException("Пользователь с идентификатором " +
                     user.getId() + " не зарегистрирован!");
         }
         return userDao.addUser(user);

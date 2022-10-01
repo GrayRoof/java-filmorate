@@ -23,7 +23,7 @@ public class FilmService {
     @Autowired
     private FilmDao filmDao;
 
-    public void validate(Film film) {
+    private void validate(Film film) {
         if (film.getId() == 0) {
             film.setId(++increment);
         }
@@ -42,10 +42,12 @@ public class FilmService {
     }
 
     public Film add(Film film) {
+        validate(film);
        return filmDao.addFilm(film);
     }
 
     public Film update(Film film) {
+        validate(film);
         if(!filmDao.getAllFilms().contains(film)) {
             throw new NotFoundException("Фильм с идентификатором " +
                     film.getId() + " не зарегистрирован!");

@@ -25,7 +25,6 @@ public class FilmController {
     @PostMapping
     public Film create(@RequestBody Film film) {
         log.info("Получен запрос POST. Данные тела запроса: {}", film);
-        service.validate(film);
         Film validFilm = service.add(film);
         log.info("Создан объект {} с идентификатором {}", Film.class.getSimpleName(), validFilm.getId());
         return validFilm;
@@ -34,7 +33,6 @@ public class FilmController {
     @PutMapping
     public Film put(@RequestBody Film film) {
         log.info("Получен запрос PUT. Данные тела запроса: {}", film);
-        service.validate(film);
         Film validFilm = service.update(film);
         log.info("Обновлен объект {} с идентификатором {}", Film.class.getSimpleName(), validFilm.getId());
         return validFilm;
