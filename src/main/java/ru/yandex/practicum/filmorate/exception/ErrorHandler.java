@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import ru.yandex.practicum.filmorate.model.ErrorMessage;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,8 +19,8 @@ import java.util.Map;
 @Slf4j
 public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(value = {FilmValidationException.class})
-    public ErrorMessage handleException(FilmValidationException exception, WebRequest request) {
+    @ExceptionHandler(value = {FilmValidationException.class, UserValidationException.class})
+    public ErrorMessage handleException(ConstraintViolationException exception, WebRequest request) {
         Map<String, String> errors = new HashMap<>();
         exception.getConstraintViolations().forEach((error) -> {
             String fieldName = error.getPropertyPath().toString();
