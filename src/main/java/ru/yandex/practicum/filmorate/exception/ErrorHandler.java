@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import ru.yandex.practicum.filmorate.model.ErrorMessage;
 
+import javax.validation.ValidationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;

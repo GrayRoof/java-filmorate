@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.ValidationService;
 
 
 import javax.validation.Valid;
@@ -14,8 +16,10 @@ import java.util.*;
 @RequestMapping("/films")
 public class FilmController {
 
+    @Autowired
+    private ValidationService service;
+
     private final Map<Integer, Film> films = new HashMap<>();
-    private int increment = 0;
     @GetMapping
     public Collection<Film> findAll() {
         log.info("Получен запрос GET к эндпоинту: /films");
@@ -23,12 +27,12 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
+    public Film create(@RequestBody Film film) {
         log.info("Получен запрос POST. Данные тела запроса: {}", film);
-        film.setId(++increment);
-        films.put(film.getId(), film);
-        log.info("Создан объект {} с идентификатором {}", Film.class.getSimpleName(), film.getId());
-        return film;
+        Film validFilm = service.validate(film);
+        films.put(validFilm.getId(), validFilm);
+        log.info("Создан объект {} с идентификатором {}", Film.class.getSimpleName(), validFilm.getId());
+        return validFilm;
     }
 
     @PutMapping

@@ -1,13 +1,17 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.validation.ReleaseDateValidation;
+import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.annotation.ReleaseDateValidation;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.Objects;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Film {
     private int id;
     @NotBlank(message = "Имя не может быть пустым")

@@ -63,7 +63,7 @@ class FilmControllerTest {
         film.setDescription("Correct description");
         film.setReleaseDate(LocalDate.of(1895,12,28));
         film.setDuration(100L);
-        Mockito.when(filmController.create(Mockito.any())).thenReturn(film);
+        //Mockito.when(filmController.create(Mockito.any())).thenReturn(film);
         mockMvc.perform(post("/films")
                         .content(objectMapper.writeValueAsString(film))
                         .contentType(MediaType.APPLICATION_JSON))
