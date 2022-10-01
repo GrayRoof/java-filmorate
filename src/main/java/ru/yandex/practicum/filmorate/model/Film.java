@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validation.ReleaseDateValidation;
 
@@ -9,7 +8,6 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @Data
-@Builder
 public class Film {
     private int id;
     @NotBlank(message = "Имя не может быть пустым")

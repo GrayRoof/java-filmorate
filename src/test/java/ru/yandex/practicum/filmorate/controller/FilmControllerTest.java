@@ -29,12 +29,12 @@ class FilmControllerTest {
 
     @Test
     void shouldReturn200whenGetFilms() throws Exception {
-        Film film = Film.builder()
-                .name("Correct Name")
-                .description("Correct description")
-                .releaseDate(LocalDate.of(1995,5,26))
-                .duration(100L)
-                .build();
+        Film film = new Film();
+        film.setName("Correct Name");
+        film.setDescription("Correct description");
+        film.setReleaseDate(LocalDate.of(1995,5,26));
+        film.setDuration(100L);
+
         Mockito.when(filmController.findAll()).thenReturn(Collections.singletonList(film));
         mockMvc.perform(get("/films"))
                 .andExpect(status().isOk())
@@ -43,12 +43,11 @@ class FilmControllerTest {
 
     @Test
     void shouldReturn200whenPostCorrectFilmData() throws Exception {
-        Film film = Film.builder()
-                .name("Correct Name")
-                .description("Correct description")
-                .releaseDate(LocalDate.of(1995,5,26))
-                .duration(100L)
-                .build();
+        Film film = new Film();
+        film.setName("Correct Name");
+        film.setDescription("Correct description");
+        film.setReleaseDate(LocalDate.of(1995,5,26));
+        film.setDuration(100L);
         Mockito.when(filmController.create(Mockito.any())).thenReturn(film);
         mockMvc.perform(post("/films")
                         .content(objectMapper.writeValueAsString(film))
@@ -59,13 +58,12 @@ class FilmControllerTest {
 
     @Test
     void shouldReturn400whenPostFailedFilmNameEmpty() throws Exception {
-        Film film = Film.builder()
-                .name("")
-                .description("Correct description")
-                .releaseDate(LocalDate.of(1895,12,28))
-                .duration(100L)
-                .build();
-       // Mockito.when(filmController.create(Mockito.any())).thenReturn(film);
+        Film film = new Film();
+        film.setName("");
+        film.setDescription("Correct description");
+        film.setReleaseDate(LocalDate.of(1895,12,28));
+        film.setDuration(100L);
+        Mockito.when(filmController.create(Mockito.any())).thenReturn(film);
         mockMvc.perform(post("/films")
                         .content(objectMapper.writeValueAsString(film))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -74,13 +72,12 @@ class FilmControllerTest {
 
     @Test
     void shouldReturn400whenPostFailedFilmNameBlank() throws Exception {
-        Film film = Film.builder()
-                .name("  ")
-                .description("Correct description")
-                .releaseDate(LocalDate.of(1895,12,28))
-                .duration(100L)
-                .build();
-        // Mockito.when(filmController.create(Mockito.any())).thenReturn(film);
+        Film film = new Film();
+        film.setName("  ");
+        film.setDescription("Correct description");
+        film.setReleaseDate(LocalDate.of(1895,12,28));
+        film.setDuration(100L);
+        Mockito.when(filmController.create(Mockito.any())).thenReturn(film);
         mockMvc.perform(post("/films")
                         .content(objectMapper.writeValueAsString(film))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -89,12 +86,11 @@ class FilmControllerTest {
 
     @Test
     void shouldReturn400whenPostFailedFilmDuration() throws Exception {
-        Film film = Film.builder()
-                .name("Correct Name")
-                .description("Correct description")
-                .releaseDate(LocalDate.of(1995,5,26))
-                .duration(-100L)
-                .build();
+        Film film = new Film();
+        film.setName("Correct Name");
+        film.setDescription("Correct description");
+        film.setReleaseDate(LocalDate.of(1995,5,26));
+        film.setDuration(-100L);
         Mockito.when(filmController.create(Mockito.any())).thenReturn(film);
         mockMvc.perform(post("/films")
                         .content(objectMapper.writeValueAsString(film))
@@ -104,12 +100,11 @@ class FilmControllerTest {
 
     @Test
     void shouldReturn400whenPostFailedFilmReleaseDate() throws Exception {
-        Film film = Film.builder()
-                .name("Correct Name")
-                .description("Correct description")
-                .releaseDate(LocalDate.of(1895,12,27))
-                .duration(100L)
-                .build();
+        Film film = new Film();
+        film.setName("Correct Name");
+        film.setDescription("Correct description");
+        film.setReleaseDate(LocalDate.of(1895,12,27));
+        film.setDuration(100L);
         Mockito.when(filmController.create(Mockito.any())).thenReturn(film);
         mockMvc.perform(post("/films")
                         .content(objectMapper.writeValueAsString(film))
@@ -119,14 +114,13 @@ class FilmControllerTest {
 
     @Test
     void shouldReturn400whenPostFailedFilmDescription() throws Exception {
-        Film film = Film.builder()
-                .name("Correct Name")
-                .description("Failed description. Failed description. Failed description. Failed description. " +
+        Film film = new Film();
+        film.setName("Correct Name");
+        film.setDescription("Failed description. Failed description. Failed description. Failed description. " +
                         "Failed description. Failed description. Failed description. Failed description. " +
-                        "Failed description. Failed description. F")
-                .releaseDate(LocalDate.of(1995,5,26))
-                .duration(100L)
-                .build();
+                        "Failed description. Failed description. F");
+        film.setReleaseDate(LocalDate.of(1995,5,26));
+        film.setDuration(100L);
         Mockito.when(filmController.create(Mockito.any())).thenReturn(film);
         mockMvc.perform(post("/films")
                         .content(objectMapper.writeValueAsString(film))
@@ -136,14 +130,13 @@ class FilmControllerTest {
 
     @Test
     void shouldReturn200whenPostFilmDescription200() throws Exception {
-        Film film = Film.builder()
-                .name("Correct Name")
-                .description("Failed description. Failed description. Failed description. Failed description. " +
+        Film film = new Film();
+        film.setName("Correct Name");
+        film.setDescription("Failed description. Failed description. Failed description. Failed description. " +
                         "Failed description. Failed description. Failed description. Failed description. " +
-                        "Failed description. Failed description. ")
-                .releaseDate(LocalDate.of(1995,5,26))
-                .duration(100L)
-                .build();
+                        "Failed description. Failed description. ");
+        film.setReleaseDate(LocalDate.of(1995,5,26));
+        film.setDuration(100L);
         Mockito.when(filmController.create(Mockito.any())).thenReturn(film);
         mockMvc.perform(post("/films")
                         .content(objectMapper.writeValueAsString(film))
