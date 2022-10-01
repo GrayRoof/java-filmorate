@@ -14,15 +14,15 @@ import java.util.Objects;
 @NoArgsConstructor
 public class Film {
     private int id;
-    @NotBlank(message = "Имя не может быть пустым")
-    @NotEmpty(message = "Имя не может быть пустым")
+    @NotBlank(message = "Имя должно содержать буквенные символы. ")
+    @NotEmpty(message = "Имя не может быть пустым. ")
     private String name;
-    @Size(max = 200, message = "Описание фильма не должно превышать 200 символов")
+    @Size(max = 200, message = "Описание фильма не должно превышать 200 символов. ")
     private String description;
-    @PastOrPresent(message = "Дата релиза не может быть в будущем")
+    @PastOrPresent(message = "Дата релиза не может быть в будущем. ")
     @ReleaseDateValidation
     private LocalDate releaseDate;
-    @Positive(message = "Продолжительность фильма не может быть отрицательной")
+    @Positive(message = "Продолжительность фильма не может быть отрицательной. ")
     private long duration;
 
     @Override

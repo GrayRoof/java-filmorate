@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import ru.yandex.practicum.filmorate.model.ErrorMessage;
 
-import javax.validation.ValidationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,14 +19,20 @@ import java.util.Map;
 public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = {FilmValidationException.class})
-    public ErrorMessage handleException(Exception exception, WebRequest request) {
+    public ErrorMessage handleException(FilmValidationException exception, WebRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        exception.getConstraintViolations().forEach((error) -> {
+            String fieldName = error.getPropertyPath().toString();
+            String errorMessage = error.getMessage() + " Значение: " + error.getInvalidValue().toString();
+            errors.put(fieldName, errorMessage);
+        });
         ErrorMessage error = new ErrorMessage(
                 new Date(),
                 HttpStatus.BAD_REQUEST.value(),
-                exception.getMessage(),
+                String.valueOf(errors),
                 request.getDescription(false)
         );
-        log.warn("Ошибка запроса: {} {}", exception.getMessage(), request.getDescription(false));
+        log.warn("Ошибка запроса: {}", errors);
         return error;
     }
 
