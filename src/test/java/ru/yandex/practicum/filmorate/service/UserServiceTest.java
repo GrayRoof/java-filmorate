@@ -29,12 +29,25 @@ class UserServiceTest {
         user.setEmail("correct.email@mail.ru");
         user.setBirthday(LocalDate.of(2002, 1, 1));
         User addedUser = service.add(user);
-        assertEquals(1, addedUser.getId());
+        assertNotEquals(0, addedUser.getId());
         assertTrue(service.getAllUsers().contains(addedUser));
     }
 
     @Test
-    void shouldThrowExceptionWhenFailedUserLogin() throws Exception {
+    void shouldSetUserNameWhenEmptyUserName() {
+        User user = new User();
+        user.setLogin("correctlogin");
+        user.setName("");
+        user.setEmail("correct.email@mail.ru");
+        user.setBirthday(LocalDate.of(2002, 1, 1));
+        User addedUser = service.add(user);
+        assertNotEquals(0, addedUser.getId());
+        assertEquals(addedUser.getLogin(), addedUser.getName());
+        assertTrue(service.getAllUsers().contains(addedUser));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenFailedUserLogin() {
         User user = new User();
         user.setLogin("incorrect login");
         user.setName("Correct Name");
@@ -46,7 +59,7 @@ class UserServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenFailedUserEmail() throws Exception {
+    void shouldThrowExceptionWhenFailedUserEmail() {
         User user = new User();
         user.setLogin("correctlogin");
         user.setName("Correct Name");
@@ -58,7 +71,7 @@ class UserServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenFailedUserBirthDate() throws Exception {
+    void shouldThrowExceptionWhenFailedUserBirthDate() {
         User user = new User();
         user.setLogin("correctlogin");
         user.setName("Correct Name");
@@ -70,7 +83,7 @@ class UserServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenUpdateFailedUserId() throws Exception {
+    void shouldThrowExceptionWhenUpdateFailedUserId() {
         User user = new User();
         user.setId(99);
         user.setLogin("correctlogin");
