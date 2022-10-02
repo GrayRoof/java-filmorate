@@ -16,7 +16,6 @@ public class Film {
 
     private int id;
     @NotBlank(message = "Имя должно содержать буквенные символы. ")
-    @NotEmpty(message = "Имя не может быть пустым. ")
     private String name;
     @Size(max = 200, message = "Описание фильма не должно превышать 200 символов. ")
     private String description;
