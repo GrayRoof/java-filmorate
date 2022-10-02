@@ -9,6 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -18,7 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest
+@WebMvcTest(value = UserController.class)
 class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -26,6 +27,10 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
     @MockBean
     private UserController userController;
+
+    @MockBean
+    private UserService service;
+
 
     @Test
     void shouldReturn200whenGetUsers() throws Exception {
@@ -53,47 +58,5 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(user)));
-    }
-
-    @Test
-    void shouldReturn400whenPostFailedUserLogin() throws Exception {
-        User user = new User();
-        user.setLogin("incorrect login");
-        user.setName("Correct Name");
-        user.setEmail("correct.email@mail.ru");
-        user.setBirthday(LocalDate.of(2002, 1, 1));
-        Mockito.when(userController.create(Mockito.any())).thenReturn(user);
-        mockMvc.perform(post("/users")
-                        .content(objectMapper.writeValueAsString(user))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    void shouldReturn400whenPostFailedUserEmail() throws Exception {
-        User user = new User();
-        user.setLogin("correctlogin");
-        user.setName("Correct Name");
-        user.setEmail("incorrect.email@");
-        user.setBirthday(LocalDate.of(2002, 1, 1));
-        Mockito.when(userController.create(Mockito.any())).thenReturn(user);
-        mockMvc.perform(post("/users")
-                        .content(objectMapper.writeValueAsString(user))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    void shouldReturn400whenPostFailedUserBirthDate() throws Exception {
-        User user = new User();
-        user.setLogin("correctlogin");
-        user.setName("Correct Name");
-        user.setEmail("correct.email@mail.ru");
-        user.setBirthday(LocalDate.now().plusDays(1));
-        Mockito.when(userController.create(Mockito.any())).thenReturn(user);
-        mockMvc.perform(post("/users")
-                        .content(objectMapper.writeValueAsString(user))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError());
     }
 }
