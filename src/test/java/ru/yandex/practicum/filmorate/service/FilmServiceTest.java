@@ -20,7 +20,7 @@ class FilmServiceTest {
     FilmService service;
 
     @Test
-    void shouldAddWhenAddValidFilmData() throws Exception {
+    void shouldAddWhenAddValidFilmData() {
         Film film = new Film();
         film.setName("Correct Name");
         film.setDescription("Correct description.");
@@ -31,7 +31,7 @@ class FilmServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenAddFailedFilmNameEmpty() throws Exception {
+    void shouldThrowExceptionWhenAddFailedFilmNameEmpty() {
         Film film = new Film();
         film.setName("");
         film.setDescription("Correct description");
@@ -43,7 +43,7 @@ class FilmServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenAddFailedFilmNameBlank() throws Exception {
+    void shouldThrowExceptionWhenAddFailedFilmNameBlank() {
         Film film = new Film();
         film.setName("  ");
         film.setDescription("Correct description");
@@ -55,7 +55,7 @@ class FilmServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenAddFailedFilmDuration() throws Exception {
+    void shouldThrowExceptionWhenAddFailedFilmDuration() {
         Film film = new Film();
         film.setName("Correct Name");
         film.setDescription("Correct description");
@@ -67,7 +67,7 @@ class FilmServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenAddFailedFilmReleaseDate() throws Exception {
+    void shouldThrowExceptionWhenAddFailedFilmReleaseDate() {
         Film film = new Film();
         film.setName("Correct Name");
         film.setDescription("Correct description");
@@ -79,7 +79,7 @@ class FilmServiceTest {
     }
 
     @Test
-    void shouldAddWhenAddValidFilmReleaseDateBoundary() throws Exception {
+    void shouldAddWhenAddValidFilmReleaseDateBoundary() {
         Film film = new Film();
         film.setName("Correct Name");
         film.setDescription("Correct description.");
@@ -90,7 +90,7 @@ class FilmServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenAddFailedFilmDescription() throws Exception {
+    void shouldThrowExceptionWhenAddFailedFilmDescription() {
         Film film = new Film();
         film.setName("Correct Name");
         film.setDescription("Failed description. Failed description. Failed description. Failed description. " +
@@ -104,7 +104,7 @@ class FilmServiceTest {
     }
 
     @Test
-    void shouldAddWhenAddFilmDescriptionBoundary() throws Exception {
+    void shouldAddWhenAddFilmDescriptionBoundary() {
         Film film = new Film();
         film.setName("Correct Name");
         film.setDescription("Correct description. Correct description. Correct description. Correct description. " +
@@ -117,7 +117,7 @@ class FilmServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenUpdateFailedFilmId() throws Exception {
+    void shouldThrowExceptionWhenUpdateFailedFilmId() {
         Film film = new Film();
         film.setId(999);
         film.setName("Correct Name");
