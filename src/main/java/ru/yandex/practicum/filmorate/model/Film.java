@@ -13,6 +13,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Film {
+
     private int id;
     @NotBlank(message = "Имя должно содержать буквенные символы. ")
     @NotEmpty(message = "Имя не может быть пустым. ")
