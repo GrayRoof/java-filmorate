@@ -4,10 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -19,11 +19,15 @@ import java.util.Set;
 @Qualifier("users")
 public class UserService {
     private int increment = 0;
-    @Autowired
-    private Validator validator;
+    private final Validator validator;
+
+    private final UserStorage userStorage;
 
     @Autowired
-    private InMemoryUserStorage userStorage;
+    public UserService(Validator validator, UserStorage userStorage) {
+        this.validator = validator;
+        this.userStorage = userStorage;
+    }
 
     private void validate(User user) {
         if (user.getId() == 0) {
