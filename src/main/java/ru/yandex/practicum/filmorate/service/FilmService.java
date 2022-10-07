@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import ru.yandex.practicum.filmorate.storage.FilmDao;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -21,7 +21,7 @@ public class FilmService {
     private Validator validator;
 
     @Autowired
-    private FilmDao filmDao;
+    private InMemoryFilmStorage filmDao;
 
     private void validate(Film film) {
         if (film.getId() == 0) {

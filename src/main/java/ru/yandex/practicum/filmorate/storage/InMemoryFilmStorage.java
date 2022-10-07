@@ -8,14 +8,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class FilmDao {
+public class InMemoryFilmStorage implements FilmStorage{
     private final Map<Integer, Film> films = new HashMap<>();
 
-    public Film addFilm(Film film) {
-        films.put(film.getId(), film);
-        return film;
-    }
-
+    @Override
     public Collection<Film> getAllFilms() {
         Collection<Film> allFilms = films.values();
         if (allFilms.isEmpty()) {
@@ -23,4 +19,21 @@ public class FilmDao {
         }
         return allFilms;
     }
+
+    @Override
+    public Film addFilm(Film film) {
+        films.put(film.getId(), film);
+        return film;
+    }
+
+    @Override
+    public Film updateFilm(Film film) {
+        return null;
+    }
+
+    @Override
+    public boolean deleteFilm(Film film) {
+        return false;
+    }
+
 }
