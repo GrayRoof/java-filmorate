@@ -23,7 +23,7 @@ public class UserService {
     private Validator validator;
 
     @Autowired
-    private InMemoryUserStorage userDao;
+    private InMemoryUserStorage userStorage;
 
     private void validate(User user) {
         if (user.getId() == 0) {
@@ -48,20 +48,20 @@ public class UserService {
     }
 
     public Collection<User> getAllUsers() {
-        return userDao.getAllUsers();
+        return userStorage.getAllUsers();
     }
 
     public User add(User user) {
         validate(user);
-        return userDao.addUser(user);
+        return userStorage.addUser(user);
     }
 
     public User update(User user) {
         validate(user);
-        if(!userDao.getAllUsers().contains(user)) {
+        if(!userStorage.getAllUsers().contains(user)) {
             throw new NotFoundException("Пользователь с идентификатором " +
                     user.getId() + " не зарегистрирован!");
         }
-        return userDao.addUser(user);
+        return userStorage.addUser(user);
     }
 }
