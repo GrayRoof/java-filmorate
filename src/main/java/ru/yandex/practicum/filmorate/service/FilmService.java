@@ -21,7 +21,7 @@ public class FilmService {
     private Validator validator;
 
     @Autowired
-    private InMemoryFilmStorage filmDao;
+    private InMemoryFilmStorage filmStorage;
 
     private void validate(Film film) {
         if (film.getId() == 0) {
@@ -38,20 +38,20 @@ public class FilmService {
     }
 
     public Collection<Film> getFilms() {
-        return filmDao.getAllFilms();
+        return filmStorage.getAllFilms();
     }
 
     public Film add(Film film) {
         validate(film);
-       return filmDao.addFilm(film);
+       return filmStorage.addFilm(film);
     }
 
     public Film update(Film film) {
         validate(film);
-        if(!filmDao.getAllFilms().contains(film)) {
+        if(!filmStorage.getAllFilms().contains(film)) {
             throw new NotFoundException("Фильм с идентификатором " +
                     film.getId() + " не зарегистрирован!");
         }
-        return filmDao.addFilm(film);
+        return filmStorage.addFilm(film);
     }
 }
