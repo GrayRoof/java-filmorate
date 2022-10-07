@@ -8,19 +8,31 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class UserDao {
+public class InMemoryUserStorage implements UserStorage{
     private final Map<Integer, User> users = new HashMap<>();
 
-    public User addUser(User user) {
-        users.put(user.getId(), user);
-        return user;
-    }
-
+    @Override
     public Collection<User> getAllUsers() {
         Collection<User> allUsers = users.values();
         if (allUsers.isEmpty()) {
             allUsers.addAll(users.values());
         }
         return allUsers;
+    }
+
+    @Override
+    public User addUser(User user) {
+        users.put(user.getId(), user);
+        return user;
+    }
+
+    @Override
+    public User updateUser(User user) {
+        return null;
+    }
+
+    @Override
+    public boolean deleteUser(User user) {
+        return false;
     }
 }
