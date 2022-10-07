@@ -7,7 +7,9 @@ import ru.yandex.practicum.filmorate.annotation.ReleaseDateValidation;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -24,6 +26,8 @@ public class Film {
     private LocalDate releaseDate;
     @Positive(message = "Продолжительность фильма не может быть отрицательной. ")
     private long duration;
+
+    private Set<Integer> likes = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {
