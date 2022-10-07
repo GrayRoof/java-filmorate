@@ -29,7 +29,7 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    private void validate(User user) {
+    private void validate(final User user) {
         if (user.getId() == 0) {
             user.setId(++increment);
         }
@@ -55,12 +55,12 @@ public class UserService {
         return userStorage.getAllUsers();
     }
 
-    public User add(User user) {
+    public User add(final User user) {
         validate(user);
         return userStorage.addUser(user);
     }
 
-    public User update(User user) {
+    public User update(final User user) {
         validate(user);
         if(!userStorage.getAllUsers().contains(user)) {
             throw new NotFoundException("Пользователь с идентификатором " +
@@ -68,4 +68,21 @@ public class UserService {
         }
         return userStorage.addUser(user);
     }
+
+    public void addFriend(final Integer userId, final Integer friendId) {
+
+    }
+
+    public void deleteFriend(final Integer userId, final  Integer friendId) {
+
+    }
+
+    public Collection<User> getFriends(final Integer userId) {
+        return null;
+    }
+
+    public Collection<User> getCommonFriends(final Integer userId, final Integer otherId) {
+        return null;
+    }
+
 }

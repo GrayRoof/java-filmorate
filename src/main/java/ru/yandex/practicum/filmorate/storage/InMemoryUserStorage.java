@@ -28,11 +28,13 @@ public class InMemoryUserStorage implements UserStorage{
 
     @Override
     public User updateUser(User user) {
-        return null;
+        users.put(user.getId(), user);
+        return user;
     }
 
     @Override
     public boolean deleteUser(User user) {
-        return false;
+        users.remove(user.getId());
+        return true;
     }
 }
