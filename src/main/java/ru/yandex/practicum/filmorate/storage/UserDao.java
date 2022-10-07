@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.dao;
+package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
