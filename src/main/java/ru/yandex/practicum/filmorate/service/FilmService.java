@@ -45,32 +45,54 @@ public class FilmService {
         }
     }
 
+    /**
+     * Возвращает коллекцию фильмов
+     * */
     public Collection<Film> getFilms() {
         return filmStorage.getAllFilms();
     }
 
+    /**
+     * Добавляет фильм в коллекцию
+     * Возвращает добавленный фильм
+     * */
     public Film add(Film film) {
         validate(film);
         return filmStorage.addFilm(film);
     }
 
+    /**
+     * Обновляет фильм в коллекции
+     * Возвращает обновленный фильм
+     * */
     public Film update(Film film) {
         validate(film);
         return filmStorage.updateFilm(film);
     }
 
+    /**
+     * Добавляет лайк пользователя к фильму в коллекции
+     * */
     public void addLike(final String id, final String userId) {
         Film film = getStoredFilm(id);
         User user = userService.getUser(userId);
         film.addLike(user.getId());
     }
 
+    /**
+     * Удаляет лайк пользователя к фильму в коллекции
+     * */
     public void deleteLike(final String id, final String userId) {
         Film film = getStoredFilm(id);
         User user = userService.getUser(userId);
         film.deleteLike(user.getId());
     }
 
+    /**
+     * Возвращает коллекцию фильмов с наибольшим количеством лайков.
+     * @param count задает ограничение количества фильмов,
+     * если параметр не задан, будут возвращены первые 10 фильмов
+     * */
     public Collection<Film> getMostPopularFilms(final String count) {
         Integer size = intFromString(count);
         if (size == Integer.MIN_VALUE) {
@@ -83,6 +105,12 @@ public class FilmService {
         return films;
     }
 
+    /**
+     * Возврашает фильм из коллекции по идентификатору
+     * @param id - идентификатор фильма
+     * @exception WrongIdException в случае, если программе не удастся распознать идентификатор
+     * @exception NotFoundException в случае, если фильм по идентификатору отсутствует
+     * */
     public Film getFilm(String id) {
         return getStoredFilm(id);
     }
