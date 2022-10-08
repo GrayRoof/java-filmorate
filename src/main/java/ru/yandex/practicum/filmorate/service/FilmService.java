@@ -41,6 +41,7 @@ public class FilmService {
     /**
      * Добавляет фильм в коллекцию
      * Возвращает добавленный фильм
+     * @exception FilmValidationException в случае, если фильм содержит недопустимое содержание полей
      * */
     public Film add(Film film) {
         validate(film);
@@ -50,6 +51,7 @@ public class FilmService {
     /**
      * Обновляет фильм в коллекции
      * Возвращает обновленный фильм
+     * @exception FilmValidationException в случае, если фильм содержит недопустимое содержание полей
      * */
     public Film update(Film film) {
         validate(film);
