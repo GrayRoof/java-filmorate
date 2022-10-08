@@ -31,20 +31,6 @@ public class FilmService {
         this.userService = userService;
     }
 
-    private void validate(Film film) {
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        if (!violations.isEmpty()) {
-            StringBuilder messageBuilder = new StringBuilder();
-            for (ConstraintViolation<Film> filmConstraintViolation : violations) {
-                messageBuilder.append(filmConstraintViolation.getMessage());
-            }
-            throw new FilmValidationException("Ошибка валидации Фильма: " + messageBuilder, violations);
-        }
-        if (film.getId() == 0) {
-            film.setId(++increment);
-        }
-    }
-
     /**
      * Возвращает коллекцию фильмов
      * */
@@ -113,6 +99,20 @@ public class FilmService {
      * */
     public Film getFilm(String id) {
         return getStoredFilm(id);
+    }
+
+    private void validate(Film film) {
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        if (!violations.isEmpty()) {
+            StringBuilder messageBuilder = new StringBuilder();
+            for (ConstraintViolation<Film> filmConstraintViolation : violations) {
+                messageBuilder.append(filmConstraintViolation.getMessage());
+            }
+            throw new FilmValidationException("Ошибка валидации Фильма: " + messageBuilder, violations);
+        }
+        if (film.getId() == 0) {
+            film.setId(++increment);
+        }
     }
 
     private Integer intFromString(final String supposedInt) {
