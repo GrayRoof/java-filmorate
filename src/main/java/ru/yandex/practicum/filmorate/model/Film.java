@@ -29,6 +29,14 @@ public class Film {
 
     private Set<Integer> likes = new HashSet<>();
 
+    public boolean addLike(Integer userId) {
+        return likes.add(userId);
+    }
+
+    public boolean deleteLike(Integer userId) {
+        return likes.remove(userId);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -12,6 +12,11 @@ public class InMemoryFilmStorage implements FilmStorage{
     private final Map<Integer, Film> films = new HashMap<>();
 
     @Override
+    public Film getFilm(int filmId) {
+        return films.get(filmId);
+    }
+
+    @Override
     public Collection<Film> getAllFilms() {
         Collection<Film> allFilms = films.values();
         if (allFilms.isEmpty()) {

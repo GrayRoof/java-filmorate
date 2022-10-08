@@ -27,15 +27,16 @@ public class FilmController {
         return filmService.getFilms();
     }
 
-    //GET /films/popular?count={count}
-    @GetMapping("/popular?count={count}")
-    public Collection<Film> findMostPopular(@PathVariable Optional<String> count) {
-        log.info("Получен запрос GET к эндпоинту: /films/popular?count={count}");
-        if(count.isPresent()) {
-            return filmService.getMostPopularFilms(count.get());
-        } else {
-           return filmService.getMostPopularFilms("10");
-        }
+    @GetMapping("/{id}")
+    public Film findFilm(@PathVariable String id) {
+        log.info("Получен запрос GET к эндпоинту: /films/{}", id);
+        return filmService.getFilm(id);
+    }
+
+    @GetMapping({"/popular?count={count}", "/popular"})
+    public Collection<Film> findMostPopular(@RequestParam(defaultValue = "10") String count) {
+        log.info("Получен запрос GET к эндпоинту: /films/popular?count={}", count);
+        return filmService.getMostPopularFilms(count);
     }
 
     @PostMapping
