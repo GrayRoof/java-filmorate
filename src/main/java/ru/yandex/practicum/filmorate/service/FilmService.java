@@ -25,7 +25,8 @@ public class FilmService {
     private final UserService userService;
 
     @Autowired
-    public FilmService(Validator validator, FilmStorage filmStorage, UserService userService) {
+    public FilmService(Validator validator, FilmStorage filmStorage,
+                       @Autowired(required = false) UserService userService) {
         this.validator = validator;
         this.filmStorage = filmStorage;
         this.userService = userService;

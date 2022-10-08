@@ -15,8 +15,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @Autowired(required = false)
-    public UserController(UserService userService) {
+    public UserController(@Autowired(required = false) UserService userService) {
         this.userService = userService;
     }
 
