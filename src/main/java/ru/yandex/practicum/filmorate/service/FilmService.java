@@ -65,15 +65,15 @@ public class FilmService {
     * Пусть пока каждый пользователь может поставить лайк фильму только один раз
     * */
 
-    public void addLike(final Integer userId) {
+    public void addLike(final String id, final String userId) {
 
     }
 
-    public void deleteLike(final Integer userId) {
+    public void deleteLike(final String id, final String userId) {
 
     }
 
-    public Collection<Film> getMostPopular(final Integer count) {
+    public Collection<Film> getMostPopularFilms(final String count) {
         return null;
     }
 }

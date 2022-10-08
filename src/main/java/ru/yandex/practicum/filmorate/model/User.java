@@ -26,6 +26,14 @@ public class User {
 
     private Set<Integer> friends = new HashSet<>();
 
+    public boolean addFriend(final Integer id) {
+       return friends.add(id);
+    }
+
+    public boolean deleteFriend(final Integer id) {
+        return friends.remove(id);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -6,12 +6,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
+import ru.yandex.practicum.filmorate.exception.WrongIdException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 @Slf4j
@@ -30,9 +32,6 @@ public class UserService {
     }
 
     private void validate(final User user) {
-        if (user.getId() == 0) {
-            user.setId(++increment);
-        }
         if(user.getName() == null) {
             user.setName(user.getLogin());
             log.info("UserService: Поле name не задано. Установлено значение {} из поля login", user.getLogin());
@@ -48,6 +47,9 @@ public class UserService {
                 messageBuilder.append(userConstraintViolation.getMessage());
             }
             throw new UserValidationException("Ошибка валидации Пользователя: " + messageBuilder, violations);
+        }
+        if (user.getId() == 0) {
+            user.setId(++increment);
         }
     }
 
@@ -69,20 +71,67 @@ public class UserService {
         return userStorage.addUser(user);
     }
 
-    public void addFriend(final Integer userId, final Integer friendId) {
-
+    public void addFriend(final String supposedUserId, final String supposedFriendId) {
+        User user = getStoredUser(supposedUserId);
+        User friend = getStoredUser(supposedFriendId);
+        user.addFriend(friend.getId());
+        friend.addFriend(user.getId());
     }
 
-    public void deleteFriend(final Integer userId, final  Integer friendId) {
-
+    public void deleteFriend(final String supposedUserId, final  String supposedFriendId) {
+        User user = getStoredUser(supposedUserId);
+        User friend = getStoredUser(supposedFriendId);
+        user.deleteFriend(friend.getId());
+        friend.deleteFriend(user.getId());
     }
 
-    public Collection<User> getFriends(final Integer userId) {
-        return null;
+    public Collection<User> getFriends(final String supposedUserId) {
+        User user = getStoredUser(supposedUserId);
+        Collection<User> friends = new HashSet<>();
+        for (Integer id : user.getFriends()) {
+            friends.add(userStorage.getUser(id));
+        }
+        return friends;
     }
 
-    public Collection<User> getCommonFriends(final Integer userId, final Integer otherId) {
-        return null;
+    public Collection<User> getCommonFriends(final String supposedUserId, final String supposedOtherId) {
+        User user = getStoredUser(supposedUserId);
+        User otherUser = getStoredUser(supposedOtherId);
+        Collection<User> commonFriends = new HashSet<>();
+        for (Integer id : user.getFriends()) {
+            if (otherUser.getFriends().contains(id)) {
+                commonFriends.add(userStorage.getUser(id));
+            }
+        }
+        return commonFriends;
     }
+
+    public User getUser(final String supposedId) {
+        return getStoredUser(supposedId);
+    }
+
+    private Integer idFromString(final String supposedId) {
+        try {
+            return Integer.valueOf(supposedId);
+        } catch (NumberFormatException exception) {
+            return Integer.MIN_VALUE;
+        }
+    }
+
+    private User getStoredUser(final String supposedId) {
+        final int userId = idFromString(supposedId);
+        if (userId == Integer.MIN_VALUE) {
+            throw new WrongIdException("Не удалось распознать идентификатор пользователя: " +
+                    "значение " + supposedId);
+        }
+        User user = userStorage.getUser(userId);
+        if (user == null) {
+            throw new NotFoundException("Пользователь с идентификатором " +
+                    userId + " не зарегистрирован!");
+        }
+        return user;
+    }
+
+
 
 }
