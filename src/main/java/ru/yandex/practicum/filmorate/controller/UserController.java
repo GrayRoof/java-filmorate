@@ -63,16 +63,18 @@ public class UserController {
 
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable String id, @PathVariable String friendId) {
-        log.info("Получен запрос PUT. Данные тела запроса: {}", id);
+        log.info("Получен запрос PUT к эндпоинту: /users/{}/friends/{}", id, friendId);
         //final User validUser = userService.update(user);
         userService.addFriend(id, friendId);
-        log.info("Обновлен объект {} с идентификатором {}", id, friendId);
+        log.info("Обновлен объект {} с идентификатором {}. Добавлен друг {}",
+                User.class.getSimpleName(), id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable String id, @PathVariable String friendId) {
-        log.info("Получен запрос DELETE. Данные тела запроса: {}", id);
+        log.info("Получен запрос DELETE к эндпоинту: /users/{}/friends/{}", id, friendId);
         userService.deleteFriend(id, friendId);
-        log.info("Обновлен объект {} с идентификатором {}", id, friendId);
+        log.info("Обновлен объект {} с идентификатором {}. Удален друг {}",
+                User.class.getSimpleName(), id, friendId);
     }
 }
