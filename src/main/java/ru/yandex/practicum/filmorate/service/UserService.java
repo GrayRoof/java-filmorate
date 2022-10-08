@@ -62,11 +62,7 @@ public class UserService {
 
     public User update(final User user) {
         validate(user);
-        if(!userStorage.getAllUsers().contains(user)) {
-            throw new NotFoundException("Пользователь с идентификатором " +
-                    user.getId() + " не зарегистрирован!");
-        }
-        return userStorage.addUser(user);
+        return userStorage.updateUser(user);
     }
 
     public void addFriend(final String supposedUserId, final String supposedFriendId) {

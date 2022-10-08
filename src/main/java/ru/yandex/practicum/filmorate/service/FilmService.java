@@ -56,11 +56,7 @@ public class FilmService {
 
     public Film update(Film film) {
         validate(film);
-        if(!filmStorage.getAllFilms().contains(film)) {
-            throw new NotFoundException("Фильм с идентификатором " +
-                    film.getId() + " не зарегистрирован!");
-        }
-        return filmStorage.addFilm(film);
+        return filmStorage.updateFilm(film);
     }
 
     public void addLike(final String id, final String userId) {
