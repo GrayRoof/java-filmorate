@@ -37,6 +37,18 @@ public class ErrorHandler {
         return error;
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(value = {WrongIdException.class})
+    public ErrorMessage handleWrongIdException(Exception exception, WebRequest request) {
+        ErrorMessage error = new ErrorMessage(
+                new Date(),
+                HttpStatus.BAD_REQUEST.value(),
+                exception.getMessage(),
+                request.getDescription(false));
+        log.warn("Ошибка запроса: {} {}", exception.getMessage(), request.getDescription(false));
+        return error;
+    }
+
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(value = {NotFoundException.class})
