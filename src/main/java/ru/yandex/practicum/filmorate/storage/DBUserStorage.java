@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 
-@Component
+@Component("DBUserStorage")
 public class DBUserStorage implements UserStorage{
     private final JdbcTemplate jdbcTemplate;
 

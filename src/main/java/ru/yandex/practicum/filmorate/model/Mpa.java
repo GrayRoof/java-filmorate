@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Mpa {
     private int id;
-    private String mpa;
+    private String name;
+    private String description;
 }

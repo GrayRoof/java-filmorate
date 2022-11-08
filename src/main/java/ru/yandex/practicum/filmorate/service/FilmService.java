@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
@@ -25,7 +26,7 @@ public class FilmService {
     private final UserService userService;
 
     @Autowired
-    public FilmService(Validator validator, FilmStorage filmStorage,
+    public FilmService(Validator validator, @Qualifier("DBFilmStorage") FilmStorage filmStorage,
                        @Autowired(required = false) UserService userService) {
         this.validator = validator;
         this.filmStorage = filmStorage;
