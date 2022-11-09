@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +10,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.GenreService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -19,13 +21,15 @@ import java.sql.Statement;
 import java.util.*;
 
 @Component("DBFilmStorage")
-public class DBFilmStorage implements FilmStorage{
+public class DBFilmStorage implements FilmStorage {
 
     private final Logger log = LoggerFactory.getLogger(DBFilmStorage.class);
     private final JdbcTemplate jdbcTemplate;
+    private final GenreService genreService;
 
-    public DBFilmStorage(JdbcTemplate jdbcTemplate) {
+    public DBFilmStorage(JdbcTemplate jdbcTemplate, GenreService genreService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.genreService = genreService;
     }
 
     @Override
@@ -72,14 +76,8 @@ public class DBFilmStorage implements FilmStorage{
 
         int id = Objects.requireNonNull(keyHolder.getKey()).intValue();
 
-        if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                String sql = "insert into GENRELINE (FILMID, GENREID) values (?, ?)";
-                jdbcTemplate.update(sql,
-                        id,
-                        genre.getId());
-                log.info("Жанры фильма с id = {} обновлены.", film.getId());
-            }
+        if (!film.getGenres().isEmpty()) {
+            genreService.addFilmGenres(film.getId(), film.getGenres());
         }
         return getFilm(id);
     }
@@ -97,12 +95,9 @@ public class DBFilmStorage implements FilmStorage{
                 film.getRate(),
                 film.getMpa().getId(),
                 film.getId());
-
-        String deleteOldGenres = "delete from GENRELINE where FILMID = ?";
-        jdbcTemplate.update(deleteOldGenres, film.getId());
-        for (Genre genre : film.getGenres()) {
-            String setNewGenres = "insert into GENRELINE (FILMID, GENREID) values (?, ?)";
-            jdbcTemplate.update(setNewGenres, film.getId(), genre.getId());
+        genreService.deleteFilmGenres(film.getId());
+        if (!film.getGenres().isEmpty()) {
+            genreService.addFilmGenres(film.getId(), film.getGenres());
         }
 
         return getFilm(film.getId());
