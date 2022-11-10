@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -38,16 +39,16 @@ public class DBFilmStorage implements FilmStorage {
         String sqlFilm = "select * from FILM " +
                 "INNER JOIN RATINGMPA R on FILM.RATINGID = R.RATINGID " +
                 "where FILMID = ?";
-        Film film = jdbcTemplate.query(sqlFilm, (rs, rowNum) -> makeFilm(rs), filmId).get(0);
-
-        if(film == null) {
+        Film film;
+        try {
+            film = jdbcTemplate.queryForObject(sqlFilm, (rs, rowNum) -> makeFilm(rs), filmId);
+        }
+        catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Фильм с идентификатором " +
                     filmId + " не зарегистрирован!");
-        } else {
-            log.info("Найден фильм: {} {}", film.getId(), film.getName());
-            return film;
-
         }
+        log.info("Найден фильм: {} {}", film.getId(), film.getName());
+        return film;
     }
 
     @Override
@@ -79,6 +80,8 @@ public class DBFilmStorage implements FilmStorage {
         if (!film.getGenres().isEmpty()) {
             genreService.addFilmGenres(film.getId(), film.getGenres());
         }
+
+
         return getFilm(id);
     }
 
@@ -95,6 +98,7 @@ public class DBFilmStorage implements FilmStorage {
                 film.getRate(),
                 film.getMpa().getId(),
                 film.getId());
+
         genreService.deleteFilmGenres(film.getId());
         if (!film.getGenres().isEmpty()) {
             genreService.addFilmGenres(film.getId(), film.getGenres());
@@ -110,13 +114,6 @@ public class DBFilmStorage implements FilmStorage {
         return true;
     }
 
-    public Collection<Genre> getGenresByFilmId(int filmId) {
-        String sqlGenre = "select GENRE.GENREID, NAME from GENRE " +
-                "INNER JOIN GENRELINE GL on GENRE.GENREID = GL.GENREID " +
-                "where FILMID = ?";
-        return jdbcTemplate.query(sqlGenre, (rs, rowNum) -> makeGenre(rs), filmId);
-    }
-
     private Film makeFilm(ResultSet rs) throws SQLException {
         Film film = new Film(
                 rs.getInt("FilmID"),
@@ -128,13 +125,9 @@ public class DBFilmStorage implements FilmStorage {
                 new Mpa(rs.getInt("RatingMPA.RatingID"),
                         rs.getString("RatingMPA.Name"),
                         rs.getString("RatingMPA.Description")),
-                (List<Genre>) getGenresByFilmId(rs.getInt("FilmID")),
+                (List<Genre>) genreService.getFilmGenres(rs.getInt("FilmID")),
                 new ArrayList<>());
         return film;
     }
 
-    private Genre makeGenre(ResultSet rs) throws SQLException {
-        Genre genre = new Genre(rs.getInt("GenreID"), rs.getString("Name"));
-        return genre;
-    }
 }

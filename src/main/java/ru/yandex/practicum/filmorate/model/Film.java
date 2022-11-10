@@ -7,10 +7,7 @@ import ru.yandex.practicum.filmorate.annotation.ReleaseDateValidation;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @AllArgsConstructor
@@ -30,8 +27,8 @@ public class Film {
     private int rate;
     @NotNull
     private Mpa mpa;
-    private List<Genre> genres;
-    private List<Integer> likes;
+    private List<Genre> genres = new ArrayList<>();
+    private List<Integer> likes = new ArrayList<>();
 
 
 

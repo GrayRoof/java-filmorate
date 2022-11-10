@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
@@ -23,7 +25,15 @@ public class DBMpaStorage {
 
     public Mpa getMpaById(int mpaId) {
         String sqlMpa = "select * from RATINGMPA where RATINGID = ?";
-        return jdbcTemplate.queryForObject(sqlMpa, this::makeMpa, mpaId);
+        Mpa mpa;
+        try {
+            mpa = jdbcTemplate.queryForObject(sqlMpa, this::makeMpa, mpaId);
+        }
+        catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Возрастной рейтинг с идентификатором " +
+                    mpaId + " не зарегистрирован!");
+        }
+        return mpa;
     }
 
     private Mpa makeMpa(ResultSet rs, int rowNum) throws SQLException {

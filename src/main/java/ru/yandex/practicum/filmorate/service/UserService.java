@@ -65,8 +65,7 @@ public class UserService {
     public void addFriend(final String supposedUserId, final String supposedFriendId) {
         User user = getStoredUser(supposedUserId);
         User friend = getStoredUser(supposedFriendId);
-        user.addFriend(friend.getId());
-        friend.addFriend(user.getId());
+        userStorage.addFriend(user.getId(), friend.getId());
     }
 
     /**
@@ -77,8 +76,7 @@ public class UserService {
     public void deleteFriend(final String supposedUserId, final  String supposedFriendId) {
         User user = getStoredUser(supposedUserId);
         User friend = getStoredUser(supposedFriendId);
-        user.deleteFriend(friend.getId());
-        friend.deleteFriend(user.getId());
+        userStorage.deleteFriend(user.getId(), friend.getId());
     }
 
     /**

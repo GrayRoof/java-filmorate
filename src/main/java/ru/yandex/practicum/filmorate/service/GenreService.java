@@ -45,5 +45,4 @@ public class GenreService {
             return Integer.MIN_VALUE;
         }
     }
-
 }
