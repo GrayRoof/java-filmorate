@@ -8,6 +8,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 
@@ -21,11 +22,14 @@ class FilmServiceTest {
 
     @Test
     void shouldAddWhenAddValidFilmData() {
+
         Film film = new Film();
         film.setName("Correct Name");
         film.setDescription("Correct description.");
         film.setReleaseDate(LocalDate.of(1995,5,26));
         film.setDuration(100L);
+        film.setRate(0);
+        film.setMpa(new Mpa(1, "mpa", "description"));
         Film addedFilm = service.add(film);
         assertNotEquals(0, addedFilm.getId());
     }
@@ -37,6 +41,7 @@ class FilmServiceTest {
         film.setDescription("Correct description");
         film.setReleaseDate(LocalDate.of(1895,12,28));
         film.setDuration(100L);
+        film.setMpa(new Mpa(1, "mpa", "description"));
         FilmValidationException ex = assertThrows(FilmValidationException.class, () -> service.add(film));
         assertEquals("Ошибка валидации Фильма: " +
                 "Имя должно содержать буквенные символы. ", ex.getMessage());
@@ -49,6 +54,7 @@ class FilmServiceTest {
         film.setDescription("Correct description");
         film.setReleaseDate(LocalDate.of(1895,12,28));
         film.setDuration(100L);
+        film.setMpa(new Mpa(1, "mpa", "description"));
         FilmValidationException ex = assertThrows(FilmValidationException.class, () -> service.add(film));
         assertEquals("Ошибка валидации Фильма: " +
                 "Имя должно содержать буквенные символы. ", ex.getMessage());
@@ -61,6 +67,7 @@ class FilmServiceTest {
         film.setDescription("Correct description");
         film.setReleaseDate(LocalDate.of(1995,5,26));
         film.setDuration(-100L);
+        film.setMpa(new Mpa(1, "mpa", "description"));
         FilmValidationException ex = assertThrows(FilmValidationException.class, () -> service.add(film));
         assertEquals("Ошибка валидации Фильма: " +
                 "Продолжительность фильма не может быть отрицательной. ", ex.getMessage());
@@ -73,6 +80,7 @@ class FilmServiceTest {
         film.setDescription("Correct description");
         film.setReleaseDate(LocalDate.of(1895,12,27));
         film.setDuration(100L);
+        film.setMpa(new Mpa(1, "mpa", "description"));
         FilmValidationException ex = assertThrows(FilmValidationException.class, () -> service.add(film));
         assertEquals("Ошибка валидации Фильма: " +
                 "Дата релиза не может быть раньше 28 Декабря 1895г.", ex.getMessage());
@@ -85,6 +93,7 @@ class FilmServiceTest {
         film.setDescription("Correct description.");
         film.setReleaseDate(LocalDate.of(1895,12,28));
         film.setDuration(100L);
+        film.setMpa(new Mpa(1, "mpa", "description"));
         Film addedFilm = service.add(film);
         assertNotEquals(0, addedFilm.getId());
     }
@@ -98,6 +107,7 @@ class FilmServiceTest {
                 "Failed description. Failed description. F");
         film.setReleaseDate(LocalDate.of(1995,5,26));
         film.setDuration(100L);
+        film.setMpa(new Mpa(1, "mpa", "description"));
         FilmValidationException ex = assertThrows(FilmValidationException.class, () -> service.add(film));
         assertEquals("Ошибка валидации Фильма: " +
                 "Описание фильма не должно превышать 200 символов. ", ex.getMessage());
@@ -112,6 +122,7 @@ class FilmServiceTest {
                 "Correct description. Correct des");
         film.setReleaseDate(LocalDate.of(1995,5,26));
         film.setDuration(100L);
+        film.setMpa(new Mpa(1, "mpa", "description"));
         Film addedFilm = service.add(film);
         assertNotEquals(0, addedFilm.getId());
     }
@@ -124,6 +135,7 @@ class FilmServiceTest {
         film.setDescription("Correct description.");
         film.setReleaseDate(LocalDate.of(1995,5,26));
         film.setDuration(100L);
+        film.setMpa(new Mpa(1, "mpa", "description"));
         NotFoundException ex = assertThrows(NotFoundException.class, () -> service.update(film));
         assertEquals("Фильм с идентификатором 999 не зарегистрирован!", ex.getMessage());
     }

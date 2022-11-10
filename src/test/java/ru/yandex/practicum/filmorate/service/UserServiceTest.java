@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,11 +24,12 @@ class UserServiceTest {
 
     @Test
     void shouldAddUserWhenValidUserData() {
-        User user = new User();
-        user.setLogin("correctlogin");
-        user.setName("Correct Name");
-        user.setEmail("correct.email@mail.ru");
-        user.setBirthday(LocalDate.of(2002, 1, 1));
+        User user = new User(0,
+                "correct.email@mail.ru",
+                "correctlogin",
+                "Correct Name",
+                LocalDate.of(2002, 1, 1),
+                new ArrayList<>());
         User addedUser = service.add(user);
         assertNotEquals(0, addedUser.getId());
         assertTrue(service.getAllUsers().contains(addedUser));
@@ -35,11 +37,12 @@ class UserServiceTest {
 
     @Test
     void shouldSetUserNameWhenEmptyUserName() {
-        User user = new User();
-        user.setLogin("correctlogin");
-        user.setName("");
-        user.setEmail("correct.email@mail.ru");
-        user.setBirthday(LocalDate.of(2002, 1, 1));
+        User user = new User(0,
+                "new_correct.email@mail.ru",
+                "correctlogin",
+                "",
+                LocalDate.of(2002, 1, 1),
+                new ArrayList<>());
         User addedUser = service.add(user);
         assertNotEquals(0, addedUser.getId());
         assertEquals(addedUser.getLogin(), addedUser.getName());
@@ -48,11 +51,12 @@ class UserServiceTest {
 
     @Test
     void shouldThrowExceptionWhenFailedUserLogin() {
-        User user = new User();
-        user.setLogin("incorrect login");
-        user.setName("Correct Name");
-        user.setEmail("correct.email@mail.ru");
-        user.setBirthday(LocalDate.of(2002, 1, 1));
+        User user = new User(0,
+                "correct.email@mail.ru",
+                "incorrect login",
+                "Correct Name",
+                LocalDate.of(2002, 1, 1),
+                new ArrayList<>());
         UserValidationException ex = assertThrows(UserValidationException.class, () -> service.add(user));
         assertEquals("Ошибка валидации Пользователя: " +
                 "Логин не может содержать пробелы.", ex.getMessage());
@@ -60,11 +64,12 @@ class UserServiceTest {
 
     @Test
     void shouldThrowExceptionWhenFailedUserEmail() {
-        User user = new User();
-        user.setLogin("correctlogin");
-        user.setName("Correct Name");
-        user.setEmail("incorrect.email@");
-        user.setBirthday(LocalDate.of(2002, 1, 1));
+        User user = new User(0,
+                "incorrect.email@",
+                "correctlogin",
+                "Name",
+                LocalDate.of(2002, 1, 1),
+                new ArrayList<>());
         UserValidationException ex = assertThrows(UserValidationException.class, () -> service.add(user));
         assertEquals("Ошибка валидации Пользователя: " +
                 "Введенное значение не является адресом электронной почты.", ex.getMessage());
@@ -72,11 +77,12 @@ class UserServiceTest {
 
     @Test
     void shouldThrowExceptionWhenFailedUserBirthDate() {
-        User user = new User();
-        user.setLogin("correctlogin");
-        user.setName("Correct Name");
-        user.setEmail("correct.email@mail.ru");
-        user.setBirthday(LocalDate.now().plusDays(1));
+        User user = new User(0,
+                "correct.email@mail.ru",
+                "correctlogin",
+                "Correct Name",
+                LocalDate.now().plusDays(1),
+                new ArrayList<>());
         UserValidationException ex = assertThrows(UserValidationException.class, () -> service.add(user));
         assertEquals("Ошибка валидации Пользователя: " +
                 "Дата рождения не может быть в будущем.", ex.getMessage());
@@ -84,12 +90,13 @@ class UserServiceTest {
 
     @Test
     void shouldThrowExceptionWhenUpdateFailedUserId() {
-        User user = new User();
-        user.setId(99);
-        user.setLogin("correctlogin");
-        user.setName("Correct Name");
-        user.setEmail("correct.email@mail.ru");
-        user.setBirthday(LocalDate.now().plusYears(-33));
+        User user = new User(99,
+                "correct.email@mail.ru",
+                "correctlogin",
+                "Correct Name",
+                LocalDate.now().plusYears(-33),
+                new ArrayList<>());
+
         NotFoundException ex = assertThrows(NotFoundException.class, () -> service.update(user));
         assertEquals("Пользователь с идентификатором 99 не зарегистрирован!", ex.getMessage());
     }

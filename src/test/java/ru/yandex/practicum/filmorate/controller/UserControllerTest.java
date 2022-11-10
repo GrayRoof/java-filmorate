@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -12,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -20,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(value = UserController.class)
+@AutoConfigureMockMvc
 class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -34,11 +37,13 @@ class UserControllerTest {
 
     @Test
     void shouldReturn200whenGetUsers() throws Exception {
-        User user = new User();
-        user.setLogin("correctlogin");
-        user.setName("Correct Name");
-        user.setEmail("correct.email@mail.ru");
-        user.setBirthday(LocalDate.of(2002, 1, 1));
+        User user = new User(0,
+                "correct.email@mail.ru",
+                "correctlogin",
+                "Correct Name",
+                LocalDate.of(2002, 1, 1),
+                new ArrayList<>());
+
         Mockito.when(userController.findAll()).thenReturn(Collections.singletonList(user));
         mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())
@@ -47,11 +52,12 @@ class UserControllerTest {
 
     @Test
     void shouldReturn200whenPostCorrectUserData() throws Exception {
-        User user = new User();
-        user.setLogin("correctlogin");
-        user.setName("Correct Name");
-        user.setEmail("correct.email@mail.ru");
-        user.setBirthday(LocalDate.of(2002, 1, 1));
+        User user = new User(0,
+                "correct.email@mail.ru",
+                "correctlogin",
+                "Correct Name",
+                LocalDate.of(2002, 1, 1),
+                new ArrayList<>());
         Mockito.when(userController.create(Mockito.any())).thenReturn(user);
         mockMvc.perform(post("/users")
                         .content(objectMapper.writeValueAsString(user))
