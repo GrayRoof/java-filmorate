@@ -66,7 +66,7 @@ public class FilmService {
     public void addLike(final String id, final String userId) {
         Film film = getStoredFilm(id);
         User user = userService.getUser(userId);
-        film.addLike(user.getId());
+        filmStorage.addLike(film.getId(), user.getId());
     }
 
     /**
@@ -75,7 +75,7 @@ public class FilmService {
     public void deleteLike(final String id, final String userId) {
         Film film = getStoredFilm(id);
         User user = userService.getUser(userId);
-        film.deleteLike(user.getId());
+        filmStorage.deleteLike(film.getId(), user.getId());
     }
 
     /**
@@ -88,10 +88,7 @@ public class FilmService {
         if (size == Integer.MIN_VALUE) {
             size = 10;
         }
-        Collection<Film> films = filmStorage.getAllFilms().stream()
-                .sorted((f1, f2) -> f2.getLikes().size() - f1.getLikes().size())
-                .limit(size)
-                .collect(Collectors.toCollection(HashSet::new));
+        Collection<Film> films = filmStorage.getMostPopularFilms(size);
         return films;
     }
 
