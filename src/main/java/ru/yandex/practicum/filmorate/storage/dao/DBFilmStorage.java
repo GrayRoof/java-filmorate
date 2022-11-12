@@ -108,7 +108,6 @@ public class DBFilmStorage implements FilmStorage {
             genreService.addFilmGenres(film.getId(), film.getGenres());
         }
 
-        //deleteFilmLikes(film.getId());
         if(film.getLikes() != null) {
             for (Integer userId : film.getLikes()) {
                 addLike(film.getId(), userId);
@@ -179,12 +178,6 @@ public class DBFilmStorage implements FilmStorage {
         String sqlGetLikes = "select USERID from LIKES where FILMID = ?";
         List<Integer> likes = jdbcTemplate.queryForList(sqlGetLikes, Integer.class, filmId);
         return likes;
-    }
-
-    private boolean deleteFilmLikes(int filmId) {
-        String sqlDeleteLikes = "delete from LIKES where FILMID = ?";
-        jdbcTemplate.update(sqlDeleteLikes, filmId);
-        return true;
     }
 
 }
