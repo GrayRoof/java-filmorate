@@ -111,8 +111,10 @@ public class FilmService {
             }
             throw new FilmValidationException("Ошибка валидации Фильма: " + messageBuilder, violations);
         }
-        if (film.getId() == 0) {
-            film.setId(++increment);
+        synchronized (film) {
+            if (film.getId() == 0) {
+                film.setId(++increment);
+            }
         }
     }
 

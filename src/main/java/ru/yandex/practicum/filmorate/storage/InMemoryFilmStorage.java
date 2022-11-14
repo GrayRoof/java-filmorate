@@ -68,11 +68,11 @@ public class InMemoryFilmStorage implements FilmStorage{
 
     @Override
     public Collection<Film> getMostPopularFilms(int size) {
-        Collection<Film> films = getAllFilms().stream()
+        Collection<Film> mostPopularFilms = getAllFilms().stream()
                 .sorted((f1, f2) -> f2.getLikes().size() - f1.getLikes().size())
                 .limit(size)
                 .collect(Collectors.toCollection(HashSet::new));
-        return films;
+        return mostPopularFilms;
     }
 
 }
