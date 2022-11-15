@@ -111,11 +111,13 @@ public class FilmService {
             }
             throw new FilmValidationException("Ошибка валидации Фильма: " + messageBuilder, violations);
         }
-        synchronized (film) {
-            if (film.getId() == 0) {
-                film.setId(++increment);
-            }
+        if (film.getId() == 0) {
+            film.setId(getNextId());
         }
+    }
+
+    private static int getNextId() {
+       return ++increment;
     }
 
     private Integer intFromString(final String supposedInt) {
