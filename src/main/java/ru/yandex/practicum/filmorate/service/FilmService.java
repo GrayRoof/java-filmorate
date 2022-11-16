@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
@@ -25,7 +26,7 @@ public class FilmService {
     private final UserService userService;
 
     @Autowired
-    public FilmService(Validator validator, FilmStorage filmStorage,
+    public FilmService(Validator validator, @Qualifier("DBFilmStorage") FilmStorage filmStorage,
                        @Autowired(required = false) UserService userService) {
         this.validator = validator;
         this.filmStorage = filmStorage;
@@ -65,7 +66,7 @@ public class FilmService {
     public void addLike(final String id, final String userId) {
         Film film = getStoredFilm(id);
         User user = userService.getUser(userId);
-        film.addLike(user.getId());
+        filmStorage.addLike(film.getId(), user.getId());
     }
 
     /**
@@ -74,7 +75,7 @@ public class FilmService {
     public void deleteLike(final String id, final String userId) {
         Film film = getStoredFilm(id);
         User user = userService.getUser(userId);
-        film.deleteLike(user.getId());
+        filmStorage.deleteLike(film.getId(), user.getId());
     }
 
     /**
@@ -87,10 +88,7 @@ public class FilmService {
         if (size == Integer.MIN_VALUE) {
             size = 10;
         }
-        Collection<Film> films = filmStorage.getAllFilms().stream()
-                .sorted((f1, f2) -> f2.getLikes().size() - f1.getLikes().size())
-                .limit(size)
-                .collect(Collectors.toCollection(HashSet::new));
+        Collection<Film> films = filmStorage.getMostPopularFilms(size);
         return films;
     }
 
@@ -114,8 +112,12 @@ public class FilmService {
             throw new FilmValidationException("Ошибка валидации Фильма: " + messageBuilder, violations);
         }
         if (film.getId() == 0) {
-            film.setId(++increment);
+            film.setId(getNextId());
         }
+    }
+
+    private static int getNextId() {
+       return ++increment;
     }
 
     private Integer intFromString(final String supposedInt) {

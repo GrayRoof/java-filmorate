@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
@@ -24,7 +25,7 @@ public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(Validator validator, UserStorage userStorage) {
+    public UserService(Validator validator,@Qualifier("DBUserStorage") UserStorage userStorage) {
         this.validator = validator;
         this.userStorage = userStorage;
     }
@@ -64,8 +65,7 @@ public class UserService {
     public void addFriend(final String supposedUserId, final String supposedFriendId) {
         User user = getStoredUser(supposedUserId);
         User friend = getStoredUser(supposedFriendId);
-        user.addFriend(friend.getId());
-        friend.addFriend(user.getId());
+        userStorage.addFriend(user.getId(), friend.getId());
     }
 
     /**
@@ -76,8 +76,7 @@ public class UserService {
     public void deleteFriend(final String supposedUserId, final  String supposedFriendId) {
         User user = getStoredUser(supposedUserId);
         User friend = getStoredUser(supposedFriendId);
-        user.deleteFriend(friend.getId());
-        friend.deleteFriend(user.getId());
+        userStorage.deleteFriend(user.getId(), friend.getId());
     }
 
     /**

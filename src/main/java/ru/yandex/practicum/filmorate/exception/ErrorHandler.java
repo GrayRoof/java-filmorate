@@ -22,7 +22,7 @@ public class ErrorHandler {
     @ExceptionHandler(value = {FilmValidationException.class, UserValidationException.class})
     public ErrorMessage handleException(ConstraintViolationException exception, WebRequest request) {
         Map<String, String> errors = new HashMap<>();
-        exception.getConstraintViolations().forEach((error) -> {
+        exception.getConstraintViolations().forEach(error -> {
             String fieldName = error.getPropertyPath().toString();
             String errorMessage = error.getMessage() + " Значение: " + error.getInvalidValue().toString();
             errors.put(fieldName, errorMessage);
@@ -67,7 +67,7 @@ public class ErrorHandler {
     public ErrorMessage handleValidationExceptions(MethodArgumentNotValidException exception,
                                                           WebRequest request) {
         Map<String, String> errors = new HashMap<>();
-        exception.getBindingResult().getAllErrors().forEach((error) -> {
+        exception.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
