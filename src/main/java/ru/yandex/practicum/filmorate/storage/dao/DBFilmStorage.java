@@ -149,15 +149,14 @@ public class DBFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getMostPopularFilms(int count) {
-        String sqlMostPopular = "select count(L.USERID) as likeRate" +
-                ",FILM.FILMID" +
-                ",FILM.NAME ,FILM.DESCRIPTION ,RELEASEDATE ,DURATION ,RATE ,R.RATINGID, R.NAME, R.DESCRIPTION from FILM " +
-                "left join LIKES L on L.FILMID = FILM.FILMID " +
+        String sqlCacheMostPopular = "select FILM.FILMID" +
+                ",FILM.NAME ,FILM.DESCRIPTION ,RELEASEDATE ,DURATION ,RATE " +
+                ",R.RATINGID, R.NAME, R.DESCRIPTION from FILM " +
                 "inner join MPA R on R.RATINGID = FILM.RATINGID " +
                 "group by FILM.FILMID " +
-                "ORDER BY likeRate desc " +
+                "ORDER BY RATE desc " +
                 "limit ?";
-        Collection<Film> films = jdbcTemplate.query(sqlMostPopular, (rs, rowNum) -> makeFilm(rs), count);
+        Collection<Film> films = jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), count);
         return films;
     }
 
@@ -185,8 +184,9 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     private boolean updateLikeRating(int filmId) {
-        String sqlUpdateRate = "update FILM set RATE = ( select count(USERID) from LIKES where FILMID = ?)";
-        jdbcTemplate.update(sqlUpdateRate, filmId);
+        String sqlUpdateRate = "update FILM set RATE = ( select count(USERID) from LIKES where FILMID = ?) where FILMID = ?";
+        int response = jdbcTemplate.update(sqlUpdateRate, filmId, filmId);
+        log.info(String.valueOf(response));
         return true;
     }
 
