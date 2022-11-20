@@ -86,6 +86,7 @@ public class DBFilmStorage implements FilmStorage {
                 addLike(film.getId(), userId);
             }
         }
+        updateLikeRating(id);
         return getFilm(id);
     }
 
@@ -113,6 +114,7 @@ public class DBFilmStorage implements FilmStorage {
                 addLike(film.getId(), userId);
             }
         }
+        updateLikeRating(film.getId());
         return getFilm(film.getId());
     }
 
@@ -133,6 +135,7 @@ public class DBFilmStorage implements FilmStorage {
         }
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, userId, filmId);
         log.info(String.valueOf(rs.next()));
+        updateLikeRating(filmId);
         return rs.next();
     }
 
@@ -140,6 +143,7 @@ public class DBFilmStorage implements FilmStorage {
     public boolean deleteLike(int filmId, int userId) {
         String deleteLike = "delete from LIKES where FILMID = ? and USERID = ?";
         jdbcTemplate.update(deleteLike, filmId, userId);
+        updateLikeRating(filmId);
         return true;
     }
 
@@ -181,7 +185,8 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     private boolean updateLikeRating(int filmId) {
-
+        String sqlUpdateRate = "update FILM set RATE = ( select count(USERID) from LIKES where FILMID = ?)";
+        jdbcTemplate.update(sqlUpdateRate, filmId);
         return true;
     }
 
