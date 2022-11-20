@@ -1,4 +1,4 @@
 # java-filmorate
-Template repository for Filmorate project.
-https://github.com/GrayRoof/java-sprint11-hw
+
+![Диаграмма для Filmorate](src/main/resources/img/DBDiagram.png)
 
