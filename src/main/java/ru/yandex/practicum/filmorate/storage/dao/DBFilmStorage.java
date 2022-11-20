@@ -180,4 +180,9 @@ public class DBFilmStorage implements FilmStorage {
         return likes;
     }
 
+    private boolean updateLikeRating(int filmId) {
+
+        return true;
+    }
+
 }
