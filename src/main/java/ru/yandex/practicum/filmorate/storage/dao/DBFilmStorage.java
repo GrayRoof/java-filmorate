@@ -38,7 +38,7 @@ public class DBFilmStorage implements FilmStorage {
     public Film getFilm(int filmId) {
 
         String sqlFilm = "select * from FILM " +
-                "INNER JOIN RATINGMPA R on FILM.RATINGID = R.RATINGID " +
+                "INNER JOIN MPA R on FILM.RATINGID = R.RATINGID " +
                 "where FILMID = ?";
         Film film;
         try {
@@ -55,7 +55,7 @@ public class DBFilmStorage implements FilmStorage {
     @Override
     public Collection<Film> getAllFilms() {
         String sql = "select * from FILM " +
-                "INNER JOIN RATINGMPA R on FILM.RATINGID = R.RATINGID ";
+                "INNER JOIN MPA R on FILM.RATINGID = R.RATINGID ";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
 
@@ -145,11 +145,11 @@ public class DBFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getMostPopularFilms(int count) {
-        String sqlMostPopular = "select count(L.LIKEID) as likeRate" +
+        String sqlMostPopular = "select count(L.USERID) as likeRate" +
                 ",FILM.FILMID" +
                 ",FILM.NAME ,FILM.DESCRIPTION ,RELEASEDATE ,DURATION ,RATE ,R.RATINGID, R.NAME, R.DESCRIPTION from FILM " +
                 "left join LIKES L on L.FILMID = FILM.FILMID " +
-                "inner join RATINGMPA R on R.RATINGID = FILM.RATINGID " +
+                "inner join MPA R on R.RATINGID = FILM.RATINGID " +
                 "group by FILM.FILMID " +
                 "ORDER BY likeRate desc " +
                 "limit ?";
@@ -166,9 +166,9 @@ public class DBFilmStorage implements FilmStorage {
                 Objects.requireNonNull(rs.getDate("ReleaseDate")).toLocalDate(),
                 rs.getLong("Duration"),
                 rs.getInt("Rate"),
-                new Mpa(rs.getInt("RatingMPA.RatingID"),
-                        rs.getString("RatingMPA.Name"),
-                        rs.getString("RatingMPA.Description")),
+                new Mpa(rs.getInt("MPA.RatingID"),
+                        rs.getString("MPA.Name"),
+                        rs.getString("MPA.Description")),
                 (List<Genre>) genreService.getFilmGenres(filmId),
                 getFilmLikes(filmId));
         return film;
