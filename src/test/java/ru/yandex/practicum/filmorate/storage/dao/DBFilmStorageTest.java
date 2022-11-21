@@ -49,7 +49,7 @@ class DBFilmStorageTest {
 
     @Test
     public void testGetFilmById() {
-        final int filmId = filmStorageTestHelper.addFilm( 1, List.of(), List.of()).getId();
+        final int filmId = filmStorageTestHelper.getNewFilmId();
 
         Film dbFilm = filmStorage.getFilm(filmId);
 
@@ -58,8 +58,8 @@ class DBFilmStorageTest {
 
     @Test
     void getAllFilms() {
-        filmStorageTestHelper.addFilm(1, List.of(), List.of());
-        filmStorageTestHelper.addFilm(1, List.of(), List.of());
+        filmStorageTestHelper.getNewFilmId();
+        filmStorageTestHelper.getNewFilmId();
 
         Collection<Film> dbFilms = filmStorage.getAllFilms();
 
@@ -79,8 +79,8 @@ class DBFilmStorageTest {
 
     @Test
     void deleteFilm() {
-        final int amelieId = filmStorageTestHelper.addFilm(1, List.of(), List.of()).getId();
-        final int batmanId = filmStorageTestHelper.addFilm(1, List.of(), List.of()).getId();
+        final int amelieId = filmStorageTestHelper.getNewFilmId();
+        final int batmanId = filmStorageTestHelper.getNewFilmId();
         assertTrue(filmStorage.containsFilm(amelieId));
         assertTrue(filmStorage.containsFilm(batmanId));
 
@@ -92,11 +92,11 @@ class DBFilmStorageTest {
 
     @Test
     void deleteFilmDeletesLikes() {
-        final int filmId = filmStorageTestHelper.addFilm(1, List.of(), List.of()).getId();
+        final int filmId = filmStorageTestHelper.getNewFilmId();
 
-        final int annId = userStorageTestHelper.addUser().getId();
-        final int bobId = userStorageTestHelper.addUser().getId();
-        final int camId = userStorageTestHelper.addUser().getId();
+        final int annId = userStorageTestHelper.getNewUserId();
+        final int bobId = userStorageTestHelper.getNewUserId();
+        final int camId = userStorageTestHelper.getNewUserId();
         filmStorage.addLike(filmId, annId);
         filmStorage.addLike(filmId, bobId);
         filmStorage.addLike(filmId, camId);

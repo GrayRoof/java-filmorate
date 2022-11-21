@@ -18,6 +18,10 @@ public class FilmStorageTestHelper {
         this.storage = storage;
     }
 
+    public int getNewFilmId() {
+        return addFilm(1, List.of(), List.of()).getId();
+    }
+
     public Film addFilm(int mpaId, Collection<Integer> genreIds, Collection<Integer> directorIds) {
         int idx = nextIdx++;
 

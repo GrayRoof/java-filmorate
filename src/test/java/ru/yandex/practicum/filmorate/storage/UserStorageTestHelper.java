@@ -13,6 +13,10 @@ public class UserStorageTestHelper {
         this.storage = storage;
     }
 
+    public int getNewUserId() {
+        return addUser().getId();
+    }
+
     public User addUser() {
         int idx = nextIdx++;
 
