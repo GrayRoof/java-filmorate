@@ -38,13 +38,13 @@ public class DBReviewStorage {
     }
 
     public Review getReview(int id) {
-        String sqlQuery = "select * from reviews where id = ?;";
+        String sqlQuery = "select * from reviews where ReviewID = ?;";
         return jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeReview(rs), id);
     }
 
     private Review makeReview(ResultSet rs) throws SQLException {
         return Review.builder()
-                .id(rs.getInt("id"))
+                .id(rs.getInt("ReviewID"))
                 .usefull(rs.getInt("useful"))
                 .content(rs.getString("content"))
                 .userId(rs.getInt("UserID"))
@@ -54,16 +54,28 @@ public class DBReviewStorage {
     }
 
     public Review editReview(Review review) {
-        String sqlQuery = "update reviews set (id, useful, content, UserID, FilmID, isPositive) " +
+        String sqlQuery = "update reviews set useful = ?, content = ?, UserID = ?, FilmID = ?, isPositive = ?) " +
                 "where id = ?;";
-        jdbcTemplate.update(sqlQuery, review.getId());
+        jdbcTemplate.update(sqlQuery, review.getUsefull(), review.getContent(), review.getUserId(),
+                review.getFilmId(), review.isPositive(), review.getId());
         return getReview(review.getId());
     }
 
     public Integer removeReview(String id) {
-        String sqlQuery = "delete from reviews where id = ?;";
+        String sqlQuery = "delete from reviews where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, id);
         return Integer.parseInt(id);
 
     }
+
+    public boolean addLike(int id) {
+        Review review = getReview(id);
+        int useful = review.getUsefull();
+        useful++;
+        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
+        jdbcTemplate.update(sqlQuery, useful, id);
+        return true;
+    }
+
+
 }

@@ -40,4 +40,9 @@ public class ReviewService {
     public Review getReview(String id) {
         return storage.getReview(Integer.parseInt(id));
     }
+
+    public boolean addLike(String id, String userId) {
+        userService.getUser(userId);
+        return storage.addLike(Integer.parseInt(id));
+    }
 }
