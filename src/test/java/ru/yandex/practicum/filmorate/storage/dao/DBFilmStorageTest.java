@@ -108,7 +108,7 @@ class DBFilmStorageTest {
         Film addedSecond = filmStorage.addFilm(second);
 
         Collection<Film> beforeDelete = filmStorage.getAllFilms();
-        filmStorage.deleteFilm(addedFirst);
+        filmStorage.deleteFilm(addedFirst.getId());
         Collection<Film> afterDelete = filmStorage.getAllFilms();
         assertEquals(beforeDelete.size() - 1, afterDelete.size());
     }
