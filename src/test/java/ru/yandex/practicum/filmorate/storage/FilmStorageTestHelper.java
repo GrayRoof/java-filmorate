@@ -5,6 +5,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,7 +18,7 @@ public class FilmStorageTestHelper {
         this.storage = storage;
     }
 
-    public Film addFilm(int mpaId, List<Integer> genreIds/*, int directorId*/) {
+    public Film addFilm(int mpaId, Collection<Integer> genreIds, Collection<Integer> directorIds) {
         int idx = nextIdx++;
 
         return storage.addFilm(
@@ -42,7 +43,7 @@ public class FilmStorageTestHelper {
         return new Genre(genreId, null);
     }
 
-    private List<Genre> createFilmGenresLight(List<Integer> genreIds) {
+    private List<Genre> createFilmGenresLight(Collection<Integer> genreIds) {
         return genreIds.stream().map(this::createFilmGenreLight).collect(Collectors.toList());
     }
 

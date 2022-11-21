@@ -49,7 +49,7 @@ class DBFilmStorageTest {
 
     @Test
     public void testGetFilmById() {
-        final int filmId = filmStorageTestHelper.addFilm( 1, List.of()).getId();
+        final int filmId = filmStorageTestHelper.addFilm( 1, List.of(), List.of()).getId();
 
         Film dbFilm = filmStorage.getFilm(filmId);
 
@@ -58,8 +58,8 @@ class DBFilmStorageTest {
 
     @Test
     void getAllFilms() {
-        filmStorageTestHelper.addFilm(1, List.of());
-        filmStorageTestHelper.addFilm(1, List.of());
+        filmStorageTestHelper.addFilm(1, List.of(), List.of());
+        filmStorageTestHelper.addFilm(1, List.of(), List.of());
 
         Collection<Film> dbFilms = filmStorage.getAllFilms();
 
@@ -68,7 +68,7 @@ class DBFilmStorageTest {
 
     @Test
     void updateFilm() {
-        Film film = filmStorageTestHelper.addFilm(1, List.of());
+        Film film = filmStorageTestHelper.addFilm(1, List.of(), List.of());
 
         film.setName("update");
         filmStorage.updateFilm(film);
@@ -79,8 +79,8 @@ class DBFilmStorageTest {
 
     @Test
     void deleteFilm() {
-        final int amelieId = filmStorageTestHelper.addFilm(1, List.of()).getId();
-        final int batmanId = filmStorageTestHelper.addFilm(1, List.of()).getId();
+        final int amelieId = filmStorageTestHelper.addFilm(1, List.of(), List.of()).getId();
+        final int batmanId = filmStorageTestHelper.addFilm(1, List.of(), List.of()).getId();
         assertTrue(filmStorage.containsFilm(amelieId));
         assertTrue(filmStorage.containsFilm(batmanId));
 
@@ -92,7 +92,7 @@ class DBFilmStorageTest {
 
     @Test
     void deleteFilmDeletesLikes() {
-        final int filmId = filmStorageTestHelper.addFilm(1, List.of()).getId();
+        final int filmId = filmStorageTestHelper.addFilm(1, List.of(), List.of()).getId();
 
         final int annId = userStorageTestHelper.addUser().getId();
         final int bobId = userStorageTestHelper.addUser().getId();
@@ -116,7 +116,7 @@ class DBFilmStorageTest {
 
     @Test
     void deleteFilmDeletesFilmGenres() {
-        final int filmId = filmStorageTestHelper.addFilm(1, List.of(1, 2, 3)).getId();
+        final int filmId = filmStorageTestHelper.addFilm(1, List.of(1, 2, 3), List.of()).getId();
 
         Supplier<Integer> filmGenresCount =
                 () -> jdbcTemplate.queryForObject(

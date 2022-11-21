@@ -101,9 +101,9 @@ class DBUserStorageTest {
 
     @Test
     void deleteUserDeletesLikes() {
-        final int amelieId = filmStorageTestHelper.addFilm(1, List.of()).getId();
-        final int batmanId = filmStorageTestHelper.addFilm(1, List.of()).getId();
-        final int carrieId = filmStorageTestHelper.addFilm(1, List.of()).getId();
+        final int amelieId = filmStorageTestHelper.addFilm(1, List.of(), List.of()).getId();
+        final int batmanId = filmStorageTestHelper.addFilm(1, List.of(), List.of()).getId();
+        final int carrieId = filmStorageTestHelper.addFilm(1, List.of(), List.of()).getId();
 
         final int userId = userStorageTestHelper.addUser().getId();
         filmStorage.addLike(amelieId, userId);
@@ -125,7 +125,7 @@ class DBUserStorageTest {
 
     @Test
     void deleteUserUpdatesFilmRate() {
-        final int filmId = filmStorageTestHelper.addFilm(1, List.of()).getId();
+        final int filmId = filmStorageTestHelper.addFilm(1, List.of(), List.of()).getId();
 
         final int annId = userStorageTestHelper.addUser().getId();
         final int bobId = userStorageTestHelper.addUser().getId();
