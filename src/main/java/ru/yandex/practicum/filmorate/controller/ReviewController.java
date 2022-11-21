@@ -39,10 +39,10 @@ public class ReviewController {
 
     @GetMapping("/{id}")
     public Review getReview(@PathVariable String id){
-        return null;
+        return service.getReview(id);
     }
 
-    @GetMapping("?filmId={filmId}&count={count}")
+    @GetMapping
     public Collection<Review> getFilmReviews(@RequestParam(defaultValue = "all") String filmId,
                                             @RequestParam(defaultValue = "10") String count){
         return null;

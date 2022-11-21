@@ -36,4 +36,8 @@ public class ReviewService {
     public Integer removeReview(String id) {
         return storage.removeReview(id);
     }
+
+    public Review getReview(String id) {
+        return storage.getReview(Integer.parseInt(id));
+    }
 }

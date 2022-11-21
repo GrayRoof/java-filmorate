@@ -37,7 +37,7 @@ public class DBReviewStorage {
         return getReview(id);
     }
 
-    private Review getReview(int id) {
+    public Review getReview(int id) {
         String sqlQuery = "select * from reviews where id = ?;";
         return jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeReview(rs), id);
     }
