@@ -6,10 +6,10 @@ import lombok.Data;
 @Data
 @Builder
 public class Review {
-    private Integer id;
+    private int id;
     private String content;
     private boolean isPositive;
     private int userId;
     private int filmId;
-    private boolean usefull;
+    private int usefull;
 }

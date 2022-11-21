@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import java.util.Collection;
 
@@ -11,19 +13,28 @@ import java.util.Collection;
 @RequestMapping("/reviews")
 public class ReviewController {
 
+    private final ReviewService service;
+
+
+    @Autowired
+    public ReviewController(ReviewService reviewService){
+        this.service = reviewService;
+
+    }
+
     @PostMapping
     public Review addReview(Review review){
-        return null;
+        return service.addReview(review);
     }
 
     @PutMapping
     public Review editReview(Review review){
-        return null;
+        return service.editReview(review);
     }
 
     @DeleteMapping("/{id}")
     public Integer deleteReview(@PathVariable String id){
-        return null;
+        return service.removeReview(id);
     }
 
     @GetMapping("/{id}")
