@@ -60,12 +60,12 @@ public class ReviewController {
 
     @PutMapping("/{id}/dislike/{userId}")
     public boolean addReviewDislike(@PathVariable String id, @PathVariable String userId){
-        return null;
+        return service.removeLike(id, userId);
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
     public boolean removeReviewDislike(@PathVariable String id, @PathVariable String userId){
-        return null;
+        return service.addLike(id, userId);
     }
 
 
