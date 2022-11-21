@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.event.OnDeleteUserEvent;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
@@ -23,11 +25,17 @@ public class UserService {
     private final Validator validator;
 
     private final UserStorage userStorage;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
-    public UserService(Validator validator,@Qualifier("DBUserStorage") UserStorage userStorage) {
+    public UserService(
+            Validator validator,
+            @Qualifier("DBUserStorage") UserStorage userStorage,
+            ApplicationEventPublisher eventPublisher
+    ) {
         this.validator = validator;
         this.userStorage = userStorage;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -124,6 +132,7 @@ public class UserService {
     public void deleteUser(String supposedId) {
         int storedUserId = getStoredUserId(supposedId);
         userStorage.deleteUser(storedUserId);
+        eventPublisher.publishEvent(new OnDeleteUserEvent(storedUserId));
     }
 
     /**

@@ -2,12 +2,14 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.event.OnDeleteUserEvent;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -195,4 +197,10 @@ public class DBFilmStorage implements FilmStorage {
         return true;
     }
 
+    @EventListener
+    private void handleOnDeleteUser(OnDeleteUserEvent event) {
+        String sqlUpdateAllRates =
+                "update FILM set RATE = ( select count(USERID) from LIKES where LIKES.FILMID = FILM.FILMID );";
+        jdbcTemplate.update(sqlUpdateAllRates);
+    }
 }
