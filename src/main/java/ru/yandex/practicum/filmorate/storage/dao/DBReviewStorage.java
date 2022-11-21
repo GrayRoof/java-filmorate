@@ -91,9 +91,11 @@ public class DBReviewStorage {
     public Collection<Review> getAll(String filmId, int count) {
         String sqlQuery = "select * from reviews order by useful desc limit ?;";
 
-        if (filmId == "all") return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), count);
-
-        sqlQuery = "select * from reviews where FilmID = ? order by useful desc limit ?;";
+        if (filmId == "all") {
+            return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), count);
+        } else {
+            sqlQuery = "select * from reviews where FilmID = ? order by useful desc limit ?;";
+        }
 
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), Integer.parseInt(filmId), count);
 
