@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.dao.DBReviewStorage;
 
+import java.util.Collection;
+
 @Component
 public class ReviewService {
 
@@ -49,5 +51,9 @@ public class ReviewService {
     public boolean removeLike(String id, String userId) {
         userService.getUser(userId);
         return storage.removeLike(Integer.parseInt(id));
+    }
+
+    public Collection<Review> getAll(String filmId, String count) {
+        return storage.getAll(filmId, Integer.parseInt(count));
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.*;
+import java.util.Collection;
 import java.util.Objects;
 
 @Component
@@ -85,5 +86,16 @@ public class DBReviewStorage {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, useful, reviewId);
         return true;
+    }
+
+    public Collection<Review> getAll(String filmId, int count) {
+        String sqlQuery = "select * from reviews order by useful desc limit ?;";
+
+        if (filmId == "all") return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), count);
+
+        sqlQuery = "select * from reviews where FilmID = ? order by useful desc limit ?;";
+
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), Integer.parseInt(filmId), count);
+
     }
 }

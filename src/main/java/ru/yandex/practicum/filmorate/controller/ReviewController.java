@@ -45,7 +45,7 @@ public class ReviewController {
     @GetMapping
     public Collection<Review> getFilmReviews(@RequestParam(defaultValue = "all") String filmId,
                                             @RequestParam(defaultValue = "10") String count){
-        return null;
+        return service.getAll(filmId, count);
     }
 
     @PutMapping("/{id}/like/{userId}")
