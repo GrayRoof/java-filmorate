@@ -33,9 +33,9 @@ public class DBDirectorStorage {
         String sqlDirector = "select * from DIRECTORS where DIRECTORID = ?";
         Director director;
         try {
-            director = jdbcTemplate.queryForObject(sqlDirector, (rs, rowNum) -> makeDirector(rs,0), id);
+            director = jdbcTemplate.queryForObject(sqlDirector, (rs, rowNum) -> makeDirector(rs), id);
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Режисер с идентификатором " +
+            throw new NotFoundException("Режиссер с идентификатором " +
                     id + " не зарегистрирован!");
         }
         return director;
@@ -43,7 +43,7 @@ public class DBDirectorStorage {
 
     public Collection<Director> getAllDirectors() {
         String sqlAllDirectors = "select * from DIRECTORS";
-        return jdbcTemplate.query(sqlAllDirectors, (rs, rowNum) -> makeDirector(rs,0));
+        return jdbcTemplate.query(sqlAllDirectors, (rs, rowNum) -> makeDirector(rs));
     }
 
     public Director addDirector(Director director) {
@@ -63,12 +63,11 @@ public class DBDirectorStorage {
 
     public Director updateDirector(Director director) {
         isExist(director.getId());
-        String sqlDirector = "update Directors set " +
+        String sqlDirector = "update DIRECTORS set " +
                 "NAME = ?" +
                 "where DIRECTORID = ?";
         jdbcTemplate.update(sqlDirector,
                 director.getName(), director.getId());
-
         return getDirector(director.getId());
     }
 
@@ -85,19 +84,18 @@ public class DBDirectorStorage {
         return true;
     }
 
-    private Director makeDirector(ResultSet rs, int rowNum) throws SQLException {
-        int directorId = rs.getInt("DirectorID");
-        Director director = new Director(
-                directorId,
-                rs.getString("Name"));
-        return director;
-    }
-
-    private boolean isExist(Integer id) {
+    public boolean isExist(Integer id) {
         if (getDirector(id) == null) {
-            throw new NotFoundException(String.format("Director with id=%d not found.", id));
+            throw new NotFoundException(String.format("Режиссер с id=%d не найден.", id));
         }
         return true;
+    }
+
+    private Director makeDirector(ResultSet rs) throws SQLException {
+        int directorId = rs.getInt("DirectorID");
+        return new Director(
+                directorId,
+                rs.getString("Name"));
     }
 
     public void load(Collection<Film> films) {
@@ -108,7 +106,7 @@ public class DBDirectorStorage {
 
         jdbcTemplate.query(sqlQuery, (rs) -> {
             final Film film = filmById.get(rs.getInt("FILMID"));
-            film.getDirectors().add(makeDirector(rs, 0));
+            film.getDirectors().add(makeDirector(rs));
         }, films.stream().map(Film::getId).toArray());
     }
 }

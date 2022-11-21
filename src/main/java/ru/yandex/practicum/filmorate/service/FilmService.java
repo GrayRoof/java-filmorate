@@ -113,6 +113,14 @@ public class FilmService {
         return getStoredFilm(id);
     }
 
+    public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy){
+        directorStorage.isExist(id);
+        Collection<Film> films = filmStorage.getSortedFilmWithDirector(id,sortBy);
+        dbGenreStorage.load(films);
+        directorStorage.load(films);
+        return films;
+    }
+
     private void validate(Film film) {
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         if (!violations.isEmpty()) {

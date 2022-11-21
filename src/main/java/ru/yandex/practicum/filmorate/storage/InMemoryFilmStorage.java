@@ -75,4 +75,9 @@ public class InMemoryFilmStorage implements FilmStorage{
         return mostPopularFilms;
     }
 
+    @Override
+    public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
+        return null;
+    }
+
 }

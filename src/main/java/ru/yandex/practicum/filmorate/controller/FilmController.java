@@ -71,4 +71,10 @@ public class FilmController {
                 Film.class.getSimpleName(), id, userId);
 
     }
+
+    @GetMapping("/director/{id}")
+    public Collection<Film> getSortedFilmWithDirector(@PathVariable Integer id, @RequestParam String sortBy){
+        log.info("Получен запрос GET к эндпоинту: /films/director/"+id + "?sortBy=" + sortBy);
+        return filmService.getSortedFilmWithDirector(id,sortBy);
+    }
 }

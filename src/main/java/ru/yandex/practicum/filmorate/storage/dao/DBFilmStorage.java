@@ -30,7 +30,7 @@ public class DBFilmStorage implements FilmStorage {
 
     public DBFilmStorage(JdbcTemplate jdbcTemplate, DBGenreStorage genreStorage, DBDirectorStorage directorStorage) {
         this.jdbcTemplate = jdbcTemplate;
-        this.genreStorage=genreStorage;
+        this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
     }
 
@@ -79,7 +79,7 @@ public class DBFilmStorage implements FilmStorage {
         if (!film.getGenres().isEmpty()) {
             mergeFilmGenres(film);
         }
-        if(!film.getDirectors().isEmpty()){
+        if (!film.getDirectors().isEmpty()) {
             mergeFilmDirectors(film);
         }
         if (film.getLikes() != null) {
@@ -88,40 +88,7 @@ public class DBFilmStorage implements FilmStorage {
             }
         }
         updateLikeRating(id);
-        //return getFilm(id);
         return film;
-    }
-
-    private void mergeFilmGenres(Film film) {
-        final List<Genre> genreList = new ArrayList<>(film.getGenres());
-        jdbcTemplate.batchUpdate("MERGE INTO GENRELINE (FILMID, GENREID) values (?, ?)", new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setLong(1, film.getId());
-                ps.setLong(2, genreList.get(i).getId());
-            }
-
-            @Override
-            public int getBatchSize() {
-                return film.getGenres().size();
-            }
-        });
-    }
-
-    private void mergeFilmDirectors(Film film) {
-        final List<Director> directorsList = new ArrayList<>(film.getDirectors());
-        jdbcTemplate.batchUpdate("MERGE INTO DIRECTORLINE (FILMID, DIRECTOR) values (?, ?)", new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setLong(1, film.getId());
-                ps.setLong(2, directorsList.get(i).getId());
-            }
-
-            @Override
-            public int getBatchSize() {
-                return film.getDirectors().size();
-            }
-        });
     }
 
 
@@ -144,7 +111,7 @@ public class DBFilmStorage implements FilmStorage {
             mergeFilmGenres(film);
         }
         directorStorage.deleteFilmDirector(film.getId());
-        if(!film.getDirectors().isEmpty()){
+        if (!film.getDirectors().isEmpty()) {
             mergeFilmDirectors(film);
         }
         if (film.getLikes() != null) {
@@ -194,8 +161,32 @@ public class DBFilmStorage implements FilmStorage {
                 "group by FILM.FILMID " +
                 "ORDER BY RATE desc " +
                 "limit ?";
-        Collection<Film> films = jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), count);
-        return films;
+        return jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), count);
+    }
+
+    @Override
+    public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
+        String sort;
+        switch (sortBy) {
+            case "year":
+                sort = "f.RELEASEDATE";
+                break;
+            case "likes":
+                sort = "count(DISTINCT L.USERID )";
+                break;
+            default:
+                sort = "f.FILMID";
+                break;
+        }
+        String sql = "SELECT *" +
+                " FROM film as f" +
+                " INNER JOIN MPA R on R.RATINGID = f.RATINGID" +
+                " LEFT OUTER JOIN DIRECTORLINE D on f.FILMID = D.FILMID" +
+                " LEFT OUTER JOIN LIKES L on f.FILMID = L.FILMID" +
+                " WHERE DIRECTORID = ?" +
+                " group by f.FILMID" +
+                " ORDER BY " + sort;
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), id);
     }
 
     private Film makeFilm(ResultSet rs) throws SQLException {
@@ -236,5 +227,35 @@ public class DBFilmStorage implements FilmStorage {
         return true;
     }
 
+    private void mergeFilmGenres(Film film) {
+        final List<Genre> genreList = new ArrayList<>(film.getGenres());
+        jdbcTemplate.batchUpdate("MERGE INTO GENRELINE (FILMID, GENREID) values (?, ?)", new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setLong(1, film.getId());
+                ps.setLong(2, genreList.get(i).getId());
+            }
 
+            @Override
+            public int getBatchSize() {
+                return film.getGenres().size();
+            }
+        });
+    }
+
+    private void mergeFilmDirectors(Film film) {
+        final List<Director> directorsList = new ArrayList<>(film.getDirectors());
+        jdbcTemplate.batchUpdate("MERGE INTO DIRECTORLINE (FILMID, DIRECTORID) values (?, ?)", new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setLong(1, film.getId());
+                ps.setLong(2, directorsList.get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return film.getDirectors().size();
+            }
+        });
+    }
 }
