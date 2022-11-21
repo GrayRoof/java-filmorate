@@ -48,8 +48,9 @@ public class InMemoryUserStorage implements UserStorage{
     }
 
     @Override
-    public boolean deleteUser(User user) {
-        users.remove(user.getId());
+    public boolean deleteUser(int userId) {
+        //TODO(?): cascade deletion, real retval
+        users.remove(userId);
         return true;
     }
 

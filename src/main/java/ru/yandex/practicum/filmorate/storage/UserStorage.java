@@ -10,7 +10,7 @@ public interface UserStorage {
     Collection<User> getAllUsers();
     User addUser(User user);
     User updateUser(User user);
-    boolean deleteUser(User user);
+    boolean deleteUser(int userId);
 
     boolean addFriend(int userId, int friendId);
     boolean deleteFriend(int userId, int friendId);

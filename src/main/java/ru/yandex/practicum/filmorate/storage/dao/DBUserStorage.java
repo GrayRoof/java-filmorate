@@ -86,9 +86,9 @@ public class DBUserStorage implements UserStorage {
     }
 
     @Override
-    public boolean deleteUser(User user) {
-
-        return false;
+    public boolean deleteUser(int userId) {
+        String sqlQuery = "delete from USERS where USERID = ?";
+        return jdbcTemplate.update(sqlQuery, userId) > 0;
     }
 
     private User makeUser(ResultSet rs) throws SQLException {
