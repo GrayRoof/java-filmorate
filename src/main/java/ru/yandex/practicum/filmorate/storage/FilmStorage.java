@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.BitSet;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public interface FilmStorage {
     Film getFilm(int filmId);
@@ -13,4 +16,7 @@ public interface FilmStorage {
     boolean addLike(int filmId, int userId);
     boolean deleteLike(int filmId, int userId);
     Collection<Film> getMostPopularFilms(int count);
+    Map<Integer, BitSet> getRelatedLikesByUserId(int userId);
+    BitSet getLikesOfUserList(List<Integer> usersId);
+    Collection<Film> getFilmsOfIdArray(String idString);
 }

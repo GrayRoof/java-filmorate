@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -147,7 +148,7 @@ public class UserService {
         }
     }
 
-    private User getStoredUser(final String supposedId) {
+    protected User getStoredUser(final String supposedId) {
         final int userId = idFromString(supposedId);
         if (userId == Integer.MIN_VALUE) {
             throw new WrongIdException("Не удалось распознать идентификатор пользователя: " +

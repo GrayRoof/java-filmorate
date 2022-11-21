@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
@@ -14,9 +16,12 @@ import java.util.Collection;
 public class UserController {
 
     private final UserService userService;
+    private final RecommendationService recommendationService;
 
-    public UserController(@Autowired(required = false) UserService userService) {
+    public UserController(@Autowired(required = false) UserService userService,
+                          RecommendationService recommendationService) {
         this.userService = userService;
+        this.recommendationService = recommendationService;
     }
 
     @GetMapping
@@ -74,5 +79,11 @@ public class UserController {
         userService.deleteFriend(id, friendId);
         log.info("Обновлен объект {} с идентификатором {}. Удален друг {}",
                 User.class.getSimpleName(), id, friendId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public Collection<Film> findRecommendations(@PathVariable String id){
+        log.info("Получен запрос GET к эндпоинту: /users/{}/recommendations", id);
+        return recommendationService.getRecommendations(id);
     }
 }

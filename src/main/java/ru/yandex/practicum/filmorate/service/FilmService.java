@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class FilmService {

@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component("DBFilmStorage")
 public class DBFilmStorage implements FilmStorage {
@@ -155,6 +156,41 @@ public class DBFilmStorage implements FilmStorage {
                 "limit ?";
         Collection<Film> films = jdbcTemplate.query(sqlMostPopular, (rs, rowNum) -> makeFilm(rs), count);
         return films;
+    }
+
+    @Override
+    public Map<Integer, BitSet> getRelatedLikesByUserId(int userId) {
+        Map<Integer, BitSet> likes = new HashMap<>();
+        String sql = "select L2.FILMID, L2.USERID from LIKES L " +
+                "inner join LIKES L2 on L.FILMID = L2.FILMID " +
+                "where L.USERID = ?";
+        SqlRowSet existLikes = jdbcTemplate.queryForRowSet(sql, userId);
+        while (existLikes.next()) {
+            int currentKey = existLikes.getInt("userId");
+            if (!likes.containsKey(currentKey)) { likes.put(currentKey, new BitSet()); }
+            likes.get(currentKey).set(existLikes.getInt("filmId"));
+        }
+        return likes;
+    }
+
+    @Override
+    public BitSet getLikesOfUserList(List<Integer> usersId) {
+        BitSet likes = new BitSet();
+        String sql = "select distinct FILMID from LIKES where USERID in (" +
+                usersId.stream().map(String::valueOf).collect(Collectors.joining(",")) + ")";
+        SqlRowSet existLikes = jdbcTemplate.queryForRowSet(sql);
+        while (existLikes.next()) {
+            likes.set(existLikes.getInt("filmId"));
+        }
+        return likes;
+    };
+
+    @Override
+    public Collection<Film> getFilmsOfIdArray(String idString) {
+        String sql = "select * from FILM " +
+                "inner join RATINGMPA R on FILM.RATINGID = R.RATINGID " +
+                "where FILM.FILMID in (" + idString + ")";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
 
     private Film makeFilm(ResultSet rs) throws SQLException {
