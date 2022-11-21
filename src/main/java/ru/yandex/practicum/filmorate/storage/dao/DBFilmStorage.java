@@ -35,6 +35,12 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
+    public boolean containsFilm(int filmId) {
+        SqlRowSet result = jdbcTemplate.queryForRowSet("select FILMID from FILM where FILMID = ?;", filmId);
+        return result.next();
+    }
+
+    @Override
     public Film getFilm(int filmId) {
 
         String sqlFilm = "select * from FILM " +

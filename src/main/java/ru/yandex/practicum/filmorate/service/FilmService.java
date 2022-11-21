@@ -64,18 +64,18 @@ public class FilmService {
      * Добавляет лайк пользователя к фильму в коллекции
      * */
     public void addLike(final String id, final String userId) {
-        Film film = getStoredFilm(id);
-        User user = userService.getUser(userId);
-        filmStorage.addLike(film.getId(), user.getId());
+        int storedFilmId = getStoredFilmId(id);
+        int storedUserId = userService.getStoredUserId(userId);
+        filmStorage.addLike(storedFilmId, storedUserId);
     }
 
     /**
      * Удаляет лайк пользователя к фильму в коллекции
      * */
     public void deleteLike(final String id, final String userId) {
-        Film film = getStoredFilm(id);
-        User user = userService.getUser(userId);
-        filmStorage.deleteLike(film.getId(), user.getId());
+        int storedFilmId = getStoredFilmId(id);
+        int storedUserId = userService.getStoredUserId(userId);
+        filmStorage.deleteLike(storedFilmId, storedUserId);
     }
 
     /**
@@ -128,17 +128,36 @@ public class FilmService {
         }
     }
 
-    private Film getStoredFilm(final String supposedId) {
-        final int filmId = intFromString(supposedId);
-        if (filmId == Integer.MIN_VALUE) {
-            throw new WrongIdException("Не удалось распознать идентификатор фильма: " +
-                    "значение " + supposedId);
+    private int getIntFilmId(final String supposedId) {
+        int id = intFromString(supposedId);
+        if (id == Integer.MIN_VALUE) {
+            throw new WrongIdException("Не удалось распознать идентификатор фильма: значение " + supposedId);
         }
+        return id;
+    }
+
+    private void onFilmNotFound(int filmId) {
+        throw new NotFoundException("Фильм с идентификатором " +
+                filmId + " не зарегистрирован!");
+    }
+
+    public Film getStoredFilm(final String supposedId) {
+        final int filmId = getIntFilmId(supposedId);
+
         Film film = filmStorage.getFilm(filmId);
         if (film == null) {
-            throw new NotFoundException("Фильм с идентификатором " +
-                    filmId + " не зарегистрирован!");
+            onFilmNotFound(filmId);
         }
         return film;
     }
+
+    public int getStoredFilmId(final String supposedId) {
+        final int filmId = getIntFilmId(supposedId);
+
+        if (!filmStorage.containsFilm(filmId)) {
+            onFilmNotFound(filmId);
+        }
+        return filmId;
+    }
+
 }

@@ -21,6 +21,13 @@ public class DBUserStorage implements UserStorage {
     public DBUserStorage(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;
     }
+
+    @Override
+    public boolean containsUser(int userId) {
+        SqlRowSet result = jdbcTemplate.queryForRowSet("select USERID from USERS where USERID = ?;", userId);
+        return result.next();
+    }
+
     @Override
     public User getUser(Integer id) {
         String sqlUser = "select * from USERS where USERID = ?";
