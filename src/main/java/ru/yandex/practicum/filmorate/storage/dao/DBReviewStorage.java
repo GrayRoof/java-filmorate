@@ -29,7 +29,7 @@ public class DBReviewStorage {
             ps.setBoolean(2, review.isPositive());
             ps.setInt(3, review.getUserId());
             ps.setInt(4, review.getFilmId());
-            ps.setInt(5, review.getUsefull());
+            ps.setInt(5, review.getUseful());
             return ps;
         }, keyHolder);
 
@@ -45,7 +45,7 @@ public class DBReviewStorage {
     private Review makeReview(ResultSet rs) throws SQLException {
         return Review.builder()
                 .id(rs.getInt("ReviewID"))
-                .usefull(rs.getInt("useful"))
+                .useful(rs.getInt("useful"))
                 .content(rs.getString("content"))
                 .userId(rs.getInt("UserID"))
                 .filmId(rs.getInt("FilmID"))
@@ -56,7 +56,7 @@ public class DBReviewStorage {
     public Review editReview(Review review) {
         String sqlQuery = "update reviews set useful = ?, content = ?, UserID = ?, FilmID = ?, isPositive = ?) " +
                 "where id = ?;";
-        jdbcTemplate.update(sqlQuery, review.getUsefull(), review.getContent(), review.getUserId(),
+        jdbcTemplate.update(sqlQuery, review.getUseful(), review.getContent(), review.getUserId(),
                 review.getFilmId(), review.isPositive(), review.getId());
         return getReview(review.getId());
     }
@@ -70,7 +70,7 @@ public class DBReviewStorage {
 
     public boolean addLike(int id) {
         Review review = getReview(id);
-        int useful = review.getUsefull();
+        int useful = review.getUseful();
         useful++;
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, useful, id);
@@ -78,4 +78,12 @@ public class DBReviewStorage {
     }
 
 
+    public boolean removeLike(int reviewId) {
+        Review review = getReview(reviewId);
+        int useful = review.getUseful();
+        useful--;
+        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
+        jdbcTemplate.update(sqlQuery, useful, reviewId);
+        return true;
+    }
 }

@@ -11,5 +11,5 @@ public class Review {
     private boolean isPositive;
     private int userId;
     private int filmId;
-    private int usefull;
+    private int useful;
 }

@@ -45,4 +45,9 @@ public class ReviewService {
         userService.getUser(userId);
         return storage.addLike(Integer.parseInt(id));
     }
+
+    public boolean removeLike(String id, String userId) {
+        userService.getUser(userId);
+        return storage.removeLike(Integer.parseInt(id));
+    }
 }
