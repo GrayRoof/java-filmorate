@@ -102,6 +102,17 @@ public class FilmService {
         return getStoredFilm(id);
     }
 
+    /**
+     * Удаляет фильм из коллекции по идентификатору
+     * @param id - идентификатор фильма
+     * @exception WrongIdException в случае, если программе не удастся распознать идентификатор
+     * @exception NotFoundException в случае, если фильм по идентификатору отсутствует
+     * */
+    public void deleteFilm(String id) {
+        int storedFilmId = getStoredFilmId(id);
+        filmStorage.deleteFilm(storedFilmId);
+    }
+
     private void validate(Film film) {
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         if (!violations.isEmpty()) {

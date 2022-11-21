@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -57,6 +58,14 @@ public class UserController {
         final User validUser = userService.update(user);
         log.info("Обновлен объект {} с идентификатором {}", User.class.getSimpleName(), validUser.getId());
         return validUser;
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable String id) {
+        log.info("Получен запрос DELETE к эндпоинту: users/{}", id);
+        userService.deleteUser(id);
+        log.info("Удален объект {} с идентификатором {}",
+                User.class.getSimpleName(), id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

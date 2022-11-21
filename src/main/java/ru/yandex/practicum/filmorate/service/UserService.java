@@ -118,6 +118,15 @@ public class UserService {
     }
 
     /**
+     * Удаляет пользователя по идентификатору
+     * @param supposedId - идентификатор фильма
+     * */
+    public void deleteUser(String supposedId) {
+        int storedUserId = getStoredUserId(supposedId);
+        userStorage.deleteUser(storedUserId);
+    }
+
+    /**
      * Возвращает идентификатор существующего пользователя по строковому идентификатору
      * @param supposedId - идентификатор пользователя
      * */
