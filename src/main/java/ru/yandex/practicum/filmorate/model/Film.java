@@ -27,7 +27,8 @@ public class Film {
     private int rate;
     @NotNull
     private Mpa mpa;
-    private List<Genre> genres = new ArrayList<>();
+    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+    private LinkedHashSet<Director> directors = new LinkedHashSet<>();
     private List<Integer> likes = new ArrayList<>();
 
 

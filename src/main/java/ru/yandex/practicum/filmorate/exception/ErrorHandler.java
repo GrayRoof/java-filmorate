@@ -19,7 +19,7 @@ import java.util.Map;
 @Slf4j
 public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(value = {FilmValidationException.class, UserValidationException.class})
+    @ExceptionHandler(value = {FilmValidationException.class, UserValidationException.class, ConflictException.class})
     public ErrorMessage handleException(ConstraintViolationException exception, WebRequest request) {
         Map<String, String> errors = new HashMap<>();
         exception.getConstraintViolations().forEach(error -> {

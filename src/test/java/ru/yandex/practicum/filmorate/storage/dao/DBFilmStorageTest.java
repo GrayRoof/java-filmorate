@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,7 +49,8 @@ class DBFilmStorageTest {
                 90L,
                 3,
                 new Mpa(1,"o","o"),
-                new ArrayList<>(),
+                new LinkedHashSet<>(),
+                new LinkedHashSet<>(),
                 new ArrayList<>());
         Film second = new Film(0,
                 "second",
@@ -57,7 +59,8 @@ class DBFilmStorageTest {
                 100L,
                 2,
                 new Mpa(3,"o","o"),
-                new ArrayList<>(),
+                new LinkedHashSet<>(),
+                new LinkedHashSet<>(),
                 new ArrayList<>());
         filmStorage.addFilm(first);
         filmStorage.addFilm(second);
@@ -75,7 +78,8 @@ class DBFilmStorageTest {
                 90L,
                 3,
                 new Mpa(1,"o","o"),
-                new ArrayList<>(),
+                new LinkedHashSet<>(),
+                new LinkedHashSet<>(),
                 new ArrayList<>());
         Film added = filmStorage.addFilm(first);
         added.setName("update");
@@ -93,7 +97,8 @@ class DBFilmStorageTest {
                 90L,
                 3,
                 new Mpa(1,"o","o"),
-                new ArrayList<>(),
+                new LinkedHashSet<>(),
+                new LinkedHashSet<>(),
                 new ArrayList<>());
         Film second = new Film(0,
                 "second",
@@ -102,7 +107,8 @@ class DBFilmStorageTest {
                 100L,
                 2,
                 new Mpa(3,"o","o"),
-                new ArrayList<>(),
+                new LinkedHashSet<>(),
+                new LinkedHashSet<>(),
                 new ArrayList<>());
         Film addedFirst = filmStorage.addFilm(first);
         Film addedSecond = filmStorage.addFilm(second);

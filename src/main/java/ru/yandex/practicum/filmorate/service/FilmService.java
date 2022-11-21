@@ -10,34 +10,43 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.dao.DBDirectorStorage;
+import ru.yandex.practicum.filmorate.storage.dao.DBGenreStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
     private static int increment = 0;
 
     private final Validator validator;
-
+    private final DBGenreStorage dbGenreStorage;
     private final FilmStorage filmStorage;
     private final UserService userService;
+    private final DBDirectorStorage directorStorage;
 
     @Autowired
-    public FilmService(Validator validator, @Qualifier("DBFilmStorage") FilmStorage filmStorage,
-                       @Autowired(required = false) UserService userService) {
+    public FilmService(Validator validator, DBGenreStorage dbGenreStorage, @Qualifier("DBFilmStorage") FilmStorage filmStorage,
+                       @Autowired(required = false) UserService userService, DBDirectorStorage directorStorage) {
         this.validator = validator;
+        this.dbGenreStorage = dbGenreStorage;
         this.filmStorage = filmStorage;
         this.userService = userService;
+        this.directorStorage = directorStorage;
     }
 
     /**
      * Возвращает коллекцию фильмов
      * */
     public Collection<Film> getFilms() {
-        return filmStorage.getAllFilms();
+        final Collection<Film> films = filmStorage.getAllFilms();
+        if (!films.isEmpty()) {
+            dbGenreStorage.load(films);
+            directorStorage.load(films);
+        }
+        return films;
     }
 
     /**
@@ -89,6 +98,8 @@ public class FilmService {
             size = 10;
         }
         Collection<Film> films = filmStorage.getMostPopularFilms(size);
+        dbGenreStorage.load(films);
+        directorStorage.load(films);
         return films;
     }
 
@@ -139,6 +150,8 @@ public class FilmService {
             throw new NotFoundException("Фильм с идентификатором " +
                     filmId + " не зарегистрирован!");
         }
+        dbGenreStorage.load(List.of(film));
+        directorStorage.load(List.of(film));
         return film;
     }
 }
