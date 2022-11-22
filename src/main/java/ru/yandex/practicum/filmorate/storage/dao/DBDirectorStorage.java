@@ -101,8 +101,8 @@ public class DBDirectorStorage {
     public void load(Collection<Film> films) {
         String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
         final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, identity()));
-        final String sqlQuery = "select * from DIRECTORS g, DIRECTORLINE gl " +
-                "where gl.DIRECTORID = g.DIRECTORID AND gl.FILMID IN (" + inSql + ")";
+        final String sqlQuery = "select * from DIRECTORS d, DIRECTORLINE dl " +
+                "where dl.DIRECTORID = d.DIRECTORID AND dl.FILMID IN (" + inSql + ")";
 
         jdbcTemplate.query(sqlQuery, (rs) -> {
             final Film film = filmById.get(rs.getInt("FILMID"));
