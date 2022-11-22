@@ -30,7 +30,7 @@ public class RecommendationService {
         int userId = user.getId();
 
         Map<Integer, BitSet> likes = filmStorage.getRelatedLikesByUserId(userId);
-        if (likes.get(userId).isEmpty()) return List.of();
+        if (likes.isEmpty() || likes.get(userId).isEmpty()) return List.of();
 
         BitSet requestUserLikes = likes.remove(userId);
         List<Integer> similarUsers = getSimilarUsers(requestUserLikes, likes);
