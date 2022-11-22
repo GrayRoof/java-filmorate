@@ -2,13 +2,10 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.validator.ReviewValidator;
 
 import java.sql.*;
 import java.util.Collection;
@@ -18,7 +15,6 @@ import java.util.Objects;
 public class DBReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
 
     @Autowired
     public DBReviewStorage(JdbcTemplate jdbcTemplate){
@@ -72,22 +68,27 @@ public class DBReviewStorage {
     }
 
     public Review addLike(Integer id) {
-        Review review = getReview(id);
-        Integer useful = review.getUseful();
-        useful++;
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
-        jdbcTemplate.update(sqlQuery, useful, id);
+        jdbcTemplate.update(sqlQuery, changeUsefulValue(id, true), id);
         return getReview(id);
     }
 
 
     public Review removeLike(Integer reviewId) {
-        Review review = getReview(reviewId);
-        int useful = review.getUseful();
-        useful--;
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
-        jdbcTemplate.update(sqlQuery, useful, reviewId);
+        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,false), reviewId);
         return getReview(reviewId);
+    }
+
+    private int changeUsefulValue(Integer reviewId, boolean increase){
+        int useful = getReview(reviewId).getUseful();
+
+        if (increase) {
+            useful++;
+        } else {
+            useful--;
+        }
+        return useful;
     }
 
     public Collection<Review> getAll(String filmId, int count) {
@@ -99,7 +100,6 @@ public class DBReviewStorage {
         } else {
             sqlQuery = "select * from reviews where FilmID = ? order by useful desc limit ?;";
         }
-
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), filmId, count);
 
     }
