@@ -26,7 +26,7 @@ public class DBGenreStorage {
 
     public boolean addFilmGenres(int filmId, Collection<Genre> genres) {
         for (Genre genre : genres) {
-            String setNewGenres = "insert into GENRELINE (FILMID, GENREID) values (?, ?) ON CONFLICT DO NOTHING";
+            String setNewGenres = "merge into GENRELINE (FILMID, GENREID) values (?, ?)";
             jdbcTemplate.update(setNewGenres, filmId, genre.getId());
         }
         return true;

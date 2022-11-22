@@ -39,7 +39,7 @@ public class DBFilmStorage implements FilmStorage {
     public Film getFilm(int filmId) {
 
         String sqlFilm = "select * from FILM " +
-                "INNER JOIN RATINGMPA R on FILM.RATINGID = R.RATINGID " +
+                "INNER JOIN MPA R on FILM.RATINGID = R.RATINGID " +
                 "where FILMID = ?";
         Film film;
         try {
@@ -56,7 +56,7 @@ public class DBFilmStorage implements FilmStorage {
     @Override
     public Collection<Film> getAllFilms() {
         String sql = "select * from FILM " +
-                "INNER JOIN RATINGMPA R on FILM.RATINGID = R.RATINGID ";
+                "INNER JOIN MPA R on FILM.RATINGID = R.RATINGID ";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
 
@@ -87,6 +87,7 @@ public class DBFilmStorage implements FilmStorage {
                 addLike(film.getId(), userId);
             }
         }
+        updateLikeRating(id);
         return getFilm(id);
     }
 
@@ -114,6 +115,7 @@ public class DBFilmStorage implements FilmStorage {
                 addLike(film.getId(), userId);
             }
         }
+        updateLikeRating(film.getId());
         return getFilm(film.getId());
     }
 
@@ -134,6 +136,7 @@ public class DBFilmStorage implements FilmStorage {
         }
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, userId, filmId);
         log.info(String.valueOf(rs.next()));
+        updateLikeRating(filmId);
         return rs.next();
     }
 
@@ -141,20 +144,20 @@ public class DBFilmStorage implements FilmStorage {
     public boolean deleteLike(int filmId, int userId) {
         String deleteLike = "delete from LIKES where FILMID = ? and USERID = ?";
         jdbcTemplate.update(deleteLike, filmId, userId);
+        updateLikeRating(filmId);
         return true;
     }
 
     @Override
     public Collection<Film> getMostPopularFilms(int count) {
-        String sqlMostPopular = "select count(L.LIKEID) as likeRate" +
-                ",FILM.FILMID" +
-                ",FILM.NAME ,FILM.DESCRIPTION ,RELEASEDATE ,DURATION ,RATE ,R.RATINGID, R.NAME, R.DESCRIPTION from FILM " +
-                "left join LIKES L on L.FILMID = FILM.FILMID " +
-                "inner join RATINGMPA R on R.RATINGID = FILM.RATINGID " +
+        String sqlCacheMostPopular = "select FILM.FILMID" +
+                ",FILM.NAME ,FILM.DESCRIPTION ,RELEASEDATE ,DURATION ,RATE " +
+                ",R.RATINGID, R.NAME, R.DESCRIPTION from FILM " +
+                "inner join MPA R on R.RATINGID = FILM.RATINGID " +
                 "group by FILM.FILMID " +
-                "ORDER BY likeRate desc " +
+                "ORDER BY RATE desc " +
                 "limit ?";
-        Collection<Film> films = jdbcTemplate.query(sqlMostPopular, (rs, rowNum) -> makeFilm(rs), count);
+        Collection<Film> films = jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), count);
         return films;
     }
 
@@ -202,9 +205,9 @@ public class DBFilmStorage implements FilmStorage {
                 Objects.requireNonNull(rs.getDate("ReleaseDate")).toLocalDate(),
                 rs.getLong("Duration"),
                 rs.getInt("Rate"),
-                new Mpa(rs.getInt("RatingMPA.RatingID"),
-                        rs.getString("RatingMPA.Name"),
-                        rs.getString("RatingMPA.Description")),
+                new Mpa(rs.getInt("MPA.RatingID"),
+                        rs.getString("MPA.Name"),
+                        rs.getString("MPA.Description")),
                 (List<Genre>) genreService.getFilmGenres(filmId),
                 getFilmLikes(filmId));
         return film;
@@ -214,6 +217,13 @@ public class DBFilmStorage implements FilmStorage {
         String sqlGetLikes = "select USERID from LIKES where FILMID = ?";
         List<Integer> likes = jdbcTemplate.queryForList(sqlGetLikes, Integer.class, filmId);
         return likes;
+    }
+
+    private boolean updateLikeRating(int filmId) {
+        String sqlUpdateRate = "update FILM set RATE = ( select count(USERID) from LIKES where FILMID = ?) where FILMID = ?";
+        int response = jdbcTemplate.update(sqlUpdateRate, filmId, filmId);
+        log.info(String.valueOf(response));
+        return true;
     }
 
 }
