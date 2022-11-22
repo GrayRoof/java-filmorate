@@ -13,6 +13,11 @@ public class InMemoryUserStorage implements UserStorage{
     private final Map<Integer, User> users = new HashMap<>();
 
     @Override
+    public boolean containsUser(int userId) {
+        return users.containsKey(userId);
+    }
+
+    @Override
     public User getUser(final Integer id) {
         return users.get(id);
     }
@@ -43,8 +48,9 @@ public class InMemoryUserStorage implements UserStorage{
     }
 
     @Override
-    public boolean deleteUser(User user) {
-        users.remove(user.getId());
+    public boolean deleteUser(int userId) {
+        //TODO(?): cascade deletion, real retval
+        users.remove(userId);
         return true;
     }
 
