@@ -79,4 +79,13 @@ public class FilmController {
                 Film.class.getSimpleName(), id, userId);
     }
 
+    @GetMapping("/common")
+    public Collection<Film> getCommon(
+            @RequestParam(name = "userId") String userId,
+            @RequestParam(name = "friendId") String friendId
+    ) {
+        log.info("Получен запрос GET к эндпоинту: /films/common, userId={}, friendId={}", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
 }
