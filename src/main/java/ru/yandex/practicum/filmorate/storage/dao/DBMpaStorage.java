@@ -19,12 +19,12 @@ public class DBMpaStorage {
     }
 
     public Collection<Mpa> getAllMpa() {
-        String sqlMpa = "select * from RATINGMPA";
+        String sqlMpa = "select * from MPA";
         return jdbcTemplate.query(sqlMpa, this::makeMpa);
     }
 
     public Mpa getMpaById(int mpaId) {
-        String sqlMpa = "select * from RATINGMPA where RATINGID = ?";
+        String sqlMpa = "select * from MPA where RATINGID = ?";
         Mpa mpa;
         try {
             mpa = jdbcTemplate.queryForObject(sqlMpa, this::makeMpa, mpaId);
