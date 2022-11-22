@@ -21,12 +21,12 @@ public class FilmStorageTestHelper {
     }
 
     public int getNewFilmId() {
-        return addFilm(1,List.of()).getId();
+        return addFilm(1,List.of(),List.of()).getId();
     }
 
 
 
-    public Film addFilm(int mpaId,Collection<Integer> genreIds) {
+    public Film addFilm(int mpaId,Collection<Integer> genreIds,Collection<Integer> directorsIds) {
         int idx = nextIdx++;
 
         return storage.addFilm(

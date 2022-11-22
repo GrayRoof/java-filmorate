@@ -78,7 +78,7 @@ class DBFilmStorageTest {
 
     @Test
     void updateFilm() {
-        Film film = filmStorageTestHelper.addFilm(1, List.of(1));
+        Film film = filmStorageTestHelper.addFilm(1, List.of(1),List.of());
 
         film.setName("update");
         filmStorage.updateFilm(film);
@@ -126,7 +126,7 @@ class DBFilmStorageTest {
 
     @Test
     void deleteFilmDeletesFilmGenres() {
-        final int filmId = filmStorageTestHelper.addFilm(1, List.of(1, 2, 3)).getId();
+        final int filmId = filmStorageTestHelper.addFilm(1, List.of(1, 2, 3),List.of()).getId();
 
         Supplier<Integer> filmGenresCount =
                 () -> jdbcTemplate.queryForObject(
