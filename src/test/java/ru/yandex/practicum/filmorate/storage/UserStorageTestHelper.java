@@ -18,10 +18,10 @@ public class UserStorageTestHelper {
     }
 
     public User addUser() {
-        int idx = ++nextIdx;
+        int idx = nextIdx++;
 
         return storage.addUser(
-                new User(idx,
+                new User(-1,
                         String.format("email-%d", idx),
                         String.format("description-%d", idx),
                         String.format("name-%d", idx),
