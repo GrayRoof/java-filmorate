@@ -15,14 +15,24 @@ public class ReviewService {
 
     private final ReviewValidator validator;
 
+    private final FilmService filmService;
+
+    private final UserService userService;
+
 
     @Autowired
-    public ReviewService(DBReviewStorage reviewStorage, ReviewValidator validator){
+    public ReviewService(DBReviewStorage reviewStorage,
+                         ReviewValidator validator,
+                         FilmService filmService,
+                         UserService userService){
         this.storage = reviewStorage;
         this.validator = validator;
+        this.filmService = filmService;
+        this.userService = userService;
     }
     public Review addReview(Review review) {
-        validator.validateUserById(review.getUserId());
+        userService.getStoredUserId(review.getUserId().toString());
+        filmService.getStoredFilmId(review.getFilmId().toString());
         return storage.addReview(review);
     }
 
