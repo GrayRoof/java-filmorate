@@ -198,7 +198,7 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @EventListener
-    private void handleOnDeleteUser(OnDeleteUserEvent event) {
+    public void handleOnDeleteUser(OnDeleteUserEvent event) {
         String sqlUpdateAllRates =
                 "update FILM set RATE = ( select count(USERID) from LIKES where LIKES.FILMID = FILM.FILMID );";
         jdbcTemplate.update(sqlUpdateAllRates);
