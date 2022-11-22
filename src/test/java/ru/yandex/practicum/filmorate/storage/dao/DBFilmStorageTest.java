@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorageTestHelper;
 import ru.yandex.practicum.filmorate.storage.UserStorageTestHelper;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
@@ -129,5 +130,36 @@ class DBFilmStorageTest {
         filmStorage.deleteFilm(filmId);
 
         assertEquals(0, filmGenresCount.get());
+    }
+
+    @Test
+    void getCommonFilms() {
+        final int annId = userStorageTestHelper.getNewUserId();
+        final int bobId = userStorageTestHelper.getNewUserId();
+        final int camId = userStorageTestHelper.getNewUserId();
+
+        final int amelieId = filmStorageTestHelper.getNewFilmId();
+        final int batmanId = filmStorageTestHelper.getNewFilmId();
+        final int carrieId = filmStorageTestHelper.getNewFilmId();
+        final int djangoId = filmStorageTestHelper.getNewFilmId();
+
+        filmStorage.addLike(amelieId, annId);
+
+        //common
+        filmStorage.addLike(batmanId, annId);
+        filmStorage.addLike(batmanId, bobId);
+
+        //common, top-rated
+        filmStorage.addLike(carrieId, annId);
+        filmStorage.addLike(carrieId, bobId);
+        filmStorage.addLike(carrieId, camId);
+
+        filmStorage.addLike(djangoId, bobId);
+
+        List<Film> result = new ArrayList<>(filmStorage.getCommonFilms(annId, bobId));
+
+        assertEquals(2, result.size());
+        assertEquals(carrieId, result.get(0).getId());
+        assertEquals(batmanId, result.get(1).getId());
     }
 }

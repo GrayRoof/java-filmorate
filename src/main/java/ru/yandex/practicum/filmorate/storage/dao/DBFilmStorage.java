@@ -167,6 +167,25 @@ public class DBFilmStorage implements FilmStorage {
         return films;
     }
 
+    @Override
+    public Collection<Film> getCommonFilms(int userId, int otherUserId) {
+        String sqlGetCommon =
+                "with COMMON (COMMONID) as " +
+                "( " +
+                "   select distinct FILMID from LIKES where USERID = ? " +
+                "   intersect " +
+                "   select distinct FILMID from LIKES where USERID = ? " +
+                ") " +
+                "select FILM.FILMID, FILM.NAME, FILM.DESCRIPTION, FILM.RELEASEDATE, FILM.DURATION, FILM.RATE, " +
+                "R.RATINGID, R.NAME, R.DESCRIPTION " +
+                "from FILM " +
+                "inner join MPA R on R.RATINGID = FILM.RATINGID " +
+                "where FILMID in (select COMMONID from COMMON) " +
+                "group by FILM.FILMID " +
+                "order by RATE desc;";
+        return jdbcTemplate.query(sqlGetCommon, (rs, rowNum) -> makeFilm(rs), userId, otherUserId);
+    }
+
     private Film makeFilm(ResultSet rs) throws SQLException {
         int filmId = rs.getInt("FilmID");
         Film film = new Film(

@@ -81,4 +81,9 @@ public class InMemoryFilmStorage implements FilmStorage{
         return mostPopularFilms;
     }
 
+    @Override
+    public Collection<Film> getCommonFilms(int userId, int otherUserId) {
+        throw new UnsupportedOperationException();
+    }
+
 }
