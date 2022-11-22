@@ -198,7 +198,7 @@ public class DBFilmStorage implements FilmStorage {
     @Override
     public Collection<Film> getFilmsOfIdArray(String idString) {
         String sql = "select * from FILM " +
-                "inner join RATINGMPA R on FILM.RATINGID = R.RATINGID " +
+                "inner join MPA M on FILM.RATINGID = M.RATINGID " +
                 "where FILM.FILMID in (" + idString + ")";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
