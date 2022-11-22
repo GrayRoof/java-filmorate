@@ -53,8 +53,7 @@ public class ErrorHandler {
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(value = {NotFoundException.class,
-            FilmValidationInReviewException.class,
-            NotFoundReviewException.class})
+            FilmValidationInReviewException.class})
     public ErrorMessage handleNotFoundException(Exception exception, WebRequest request) {
         ErrorMessage error = new ErrorMessage(
                 new Date(),

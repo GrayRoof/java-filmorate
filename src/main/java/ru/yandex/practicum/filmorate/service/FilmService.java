@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -14,7 +13,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
