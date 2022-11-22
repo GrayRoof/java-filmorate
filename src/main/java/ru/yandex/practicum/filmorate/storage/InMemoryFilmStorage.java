@@ -74,17 +74,15 @@ public class InMemoryFilmStorage implements FilmStorage{
 
     @Override
     public Map<Integer, BitSet> getRelatedLikesByUserId(int userId) {
-        return Map.of();
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public BitSet getLikesOfUserList(List<Integer> usersId) {
-        return new BitSet();
-    };
+    public BitSet getLikesOfUserList(List<Integer> usersId) { throw new UnsupportedOperationException(); };
 
     @Override
     public Collection<Film> getFilmsOfIdArray(String idString) {
-        return List.of();
+        throw new UnsupportedOperationException();
     }
 
 }
