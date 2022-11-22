@@ -3,19 +3,19 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
-import ru.yandex.practicum.filmorate.exception.WrongIdException;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.WrongIdException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.dao.DBDirectorStorage;
 import ru.yandex.practicum.filmorate.storage.dao.DBGenreStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class FilmService {
@@ -39,7 +39,7 @@ public class FilmService {
 
     /**
      * Возвращает коллекцию фильмов
-     * */
+     */
     public Collection<Film> getFilms() {
         final Collection<Film> films = filmStorage.getAllFilms();
         if (!films.isEmpty()) {
@@ -52,8 +52,9 @@ public class FilmService {
     /**
      * Добавляет фильм в коллекцию
      * Возвращает добавленный фильм
-     * @exception FilmValidationException в случае, если фильм содержит недопустимое содержание полей
-     * */
+     *
+     * @throws FilmValidationException в случае, если фильм содержит недопустимое содержание полей
+     */
     public Film add(Film film) {
         validate(film);
         return filmStorage.addFilm(film);
@@ -62,8 +63,9 @@ public class FilmService {
     /**
      * Обновляет фильм в коллекции
      * Возвращает обновленный фильм
-     * @exception FilmValidationException в случае, если фильм содержит недопустимое содержание полей
-     * */
+     *
+     * @throws FilmValidationException в случае, если фильм содержит недопустимое содержание полей
+     */
     public Film update(Film film) {
         validate(film);
         return filmStorage.updateFilm(film);
@@ -71,7 +73,7 @@ public class FilmService {
 
     /**
      * Добавляет лайк пользователя к фильму в коллекции
-     * */
+     */
     public void addLike(final String id, final String userId) {
         int storedFilmId = getStoredFilmId(id);
         int storedUserId = userService.getStoredUserId(userId);
@@ -80,7 +82,7 @@ public class FilmService {
 
     /**
      * Удаляет лайк пользователя к фильму в коллекции
-     * */
+     */
     public void deleteLike(final String id, final String userId) {
         int storedFilmId = getStoredFilmId(id);
         int storedUserId = userService.getStoredUserId(userId);
@@ -89,9 +91,10 @@ public class FilmService {
 
     /**
      * Возвращает коллекцию фильмов с наибольшим количеством лайков.
+     *
      * @param count задает ограничение количества фильмов,
-     * если параметр не задан, будут возвращены первые 10 фильмов
-     * */
+     *              если параметр не задан, будут возвращены первые 10 фильмов
+     */
     public Collection<Film> getMostPopularFilms(final String count) {
         Integer size = intFromString(count);
         if (size == Integer.MIN_VALUE) {
@@ -105,17 +108,18 @@ public class FilmService {
 
     /**
      * Возврашает фильм из коллекции по идентификатору
+     *
      * @param id - идентификатор фильма
-     * @exception WrongIdException в случае, если программе не удастся распознать идентификатор
-     * @exception NotFoundException в случае, если фильм по идентификатору отсутствует
-     * */
+     * @throws WrongIdException  в случае, если программе не удастся распознать идентификатор
+     * @throws NotFoundException в случае, если фильм по идентификатору отсутствует
+     */
     public Film getFilm(String id) {
         return getStoredFilm(id);
     }
 
-    public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy){
+    public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
         directorStorage.isExist(id);
-        Collection<Film> films = filmStorage.getSortedFilmWithDirector(id,sortBy);
+        Collection<Film> films = filmStorage.getSortedFilmWithDirector(id, sortBy);
         dbGenreStorage.load(films);
         directorStorage.load(films);
         return films;
@@ -123,10 +127,11 @@ public class FilmService {
 
     /**
      * Удаляет фильм из коллекции по идентификатору
+     *
      * @param id - идентификатор фильма
-     * @exception WrongIdException в случае, если программе не удастся распознать идентификатор
-     * @exception NotFoundException в случае, если фильм по идентификатору отсутствует
-     * */
+     * @throws WrongIdException  в случае, если программе не удастся распознать идентификатор
+     * @throws NotFoundException в случае, если фильм по идентификатору отсутствует
+     */
     public void deleteFilm(String id) {
         int storedFilmId = getStoredFilmId(id);
         filmStorage.deleteFilm(storedFilmId);
@@ -147,7 +152,7 @@ public class FilmService {
     }
 
     private static int getNextId() {
-       return ++increment;
+        return ++increment;
     }
 
     private Integer intFromString(final String supposedInt) {
@@ -183,5 +188,12 @@ public class FilmService {
         return film;
     }
 
+    public int getStoredFilmId(final String supposedId) {
+        final int filmId = getIntFilmId(supposedId);
 
+        if (!filmStorage.containsFilm(filmId)) {
+            onFilmNotFound(filmId);
+        }
+        return filmId;
+    }
 }

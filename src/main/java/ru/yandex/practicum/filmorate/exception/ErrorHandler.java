@@ -65,7 +65,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
     public ErrorMessage handleValidationExceptions(MethodArgumentNotValidException exception,
-                                                          WebRequest request) {
+                                                   WebRequest request) {
         Map<String, String> errors = new HashMap<>();
         exception.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();

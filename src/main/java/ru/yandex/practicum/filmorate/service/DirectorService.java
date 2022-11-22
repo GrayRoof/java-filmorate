@@ -18,33 +18,33 @@ public class DirectorService {
         this.directorStorage = directorStorage;
     }
 
-    public Director getDirector(Integer id){
+    public Director getDirector(Integer id) {
         return directorStorage.getDirector(id);
     }
 
-    public Collection<Director> getAllDirectors(){
+    public Collection<Director> getAllDirectors() {
         return directorStorage.getAllDirectors();
     }
 
-    public Director addDirector(Director director){
-        if(getAllDirectors().contains(director)){
-            throw new ConflictException("Режиссер с именем " + director.getName() +" уже существует");
+    public Director addDirector(Director director) {
+        if (getAllDirectors().contains(director)) {
+            throw new ConflictException("Режиссер с именем " + director.getName() + " уже существует");
         }
-       validateName(director);
+        validateName(director);
         return directorStorage.addDirector(director);
     }
 
-    public Director updateDirector(Director director){
+    public Director updateDirector(Director director) {
         validateName(director);
         return directorStorage.updateDirector(director);
     }
 
-    public boolean deleteDirector(Integer id){
+    public boolean deleteDirector(Integer id) {
         return directorStorage.deleteDirector(id);
     }
 
-    private boolean validateName(Director director){
-        if(director.getName().isBlank()){
+    private boolean validateName(Director director) {
+        if (director.getName() == null || director.getName().isBlank()) {
             throw new ValidationException("Имя режиссера не может быть пустым");
         }
         return true;

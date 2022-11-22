@@ -1,13 +1,12 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class FilmStorageTestHelper {
 
@@ -33,22 +32,16 @@ public class FilmStorageTestHelper {
                         100L + idx,
                         0,
                         createMpaLight(mpaId),
-                        createFilmGenresLight(genreIds),
+                        new LinkedHashSet<>(),
+                        new LinkedHashSet<>(),
                         List.of()
                 )
         );
     }
 
     private Mpa createMpaLight(int mpaId) {
-        return new Mpa(mpaId,null, null);
+        return new Mpa(mpaId, null, null);
     }
 
-    private Genre createFilmGenreLight(int genreId) {
-        return new Genre(genreId, null);
-    }
-
-    private List<Genre> createFilmGenresLight(Collection<Integer> genreIds) {
-        return genreIds.stream().map(this::createFilmGenreLight).collect(Collectors.toList());
-    }
 
 }

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.*;
+import java.util.Collection;
 
 @RestController
 @Slf4j
@@ -81,9 +81,9 @@ public class FilmController {
     }
 
     @GetMapping("/director/{id}")
-    public Collection<Film> getSortedFilmWithDirector(@PathVariable Integer id, @RequestParam String sortBy){
-        log.info("Получен запрос GET к эндпоинту: /films/director/"+id + "?sortBy=" + sortBy);
-        return filmService.getSortedFilmWithDirector(id,sortBy);
+    public Collection<Film> getSortedFilmWithDirector(@PathVariable Integer id, @RequestParam String sortBy) {
+        log.info("Получен запрос GET к эндпоинту: /films/director/" + id + "?sortBy=" + sortBy);
+        return filmService.getSortedFilmWithDirector(id, sortBy);
     }
 
 }

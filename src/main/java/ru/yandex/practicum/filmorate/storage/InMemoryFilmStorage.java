@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-public class InMemoryFilmStorage implements FilmStorage{
+public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Integer, Film> films = new HashMap<>();
 
     @Override
@@ -41,7 +41,7 @@ public class InMemoryFilmStorage implements FilmStorage{
 
     @Override
     public Film updateFilm(Film film) {
-        if(!getAllFilms().contains(film)) {
+        if (!getAllFilms().contains(film)) {
             throw new NotFoundException("Фильм с идентификатором " +
                     film.getId() + " не зарегистрирован!");
         }

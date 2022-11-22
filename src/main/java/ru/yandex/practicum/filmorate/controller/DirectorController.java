@@ -10,35 +10,35 @@ import java.util.Collection;
 @RestController
 @RequestMapping("/directors")
 public class DirectorController {
-private final DirectorService directorService;
+    private final DirectorService directorService;
 
-@Autowired
+    @Autowired
     public DirectorController(DirectorService directorService) {
         this.directorService = directorService;
     }
 
     @GetMapping
-    public Collection<Director> getAllDirector(){
+    public Collection<Director> getAllDirector() {
         return directorService.getAllDirectors();
     }
 
     @GetMapping("/{id}")
-    public Director getDirector(@PathVariable Integer id){
+    public Director getDirector(@PathVariable Integer id) {
         return directorService.getDirector(id);
     }
 
     @PostMapping
-    public Director addDirector(@RequestBody Director director){
+    public Director addDirector(@RequestBody Director director) {
         return directorService.addDirector(director);
     }
 
     @PutMapping
-    public Director updateDirector(@RequestBody Director director){
+    public Director updateDirector(@RequestBody Director director) {
         return directorService.updateDirector(director);
     }
 
     @DeleteMapping("/{id}")
-    public boolean deleteDirector(@PathVariable Integer id){
+    public boolean deleteDirector(@PathVariable Integer id) {
         return directorService.deleteDirector(id);
     }
 

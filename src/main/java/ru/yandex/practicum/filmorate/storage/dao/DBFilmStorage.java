@@ -35,6 +35,12 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
+    public boolean containsFilm(int filmId) {
+        SqlRowSet result = jdbcTemplate.queryForRowSet("select FILMID from FILM where FILMID = ?;", filmId);
+        return result.next();
+    }
+
+    @Override
     public Film getFilm(int filmId) {
         String sqlFilm = "select * from FILM " +
                 "INNER JOIN MPA R on FILM.RATINGID = R.RATINGID " +
@@ -123,11 +129,11 @@ public class DBFilmStorage implements FilmStorage {
         return film;
     }
 
+
     @Override
-    public boolean deleteFilm(Film film) {
+    public boolean deleteFilm(int filmId) {
         String sqlQuery = "delete from FILM where FILMID = ?";
-        jdbcTemplate.update(sqlQuery, film.getId());
-        return true;
+        return jdbcTemplate.update(sqlQuery, filmId) > 0;
     }
 
     @Override

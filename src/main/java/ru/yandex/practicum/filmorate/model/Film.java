@@ -5,9 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.annotation.ReleaseDateValidation;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
 
 @Data
 @AllArgsConstructor
@@ -29,7 +35,6 @@ public class Film {
     private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
     private LinkedHashSet<Director> directors = new LinkedHashSet<>();
     private List<Integer> likes = new ArrayList<>();
-
 
 
     public boolean addLike(Integer userId) {
