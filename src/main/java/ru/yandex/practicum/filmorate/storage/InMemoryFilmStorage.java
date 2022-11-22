@@ -83,7 +83,12 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
-        return null;
+       throw new UnsupportedOperationException();
+       }
+
+@Override
+    public Collection<Film> getCommonFilms(int userId, int otherUserId) {
+        throw new UnsupportedOperationException();
     }
 
 }
