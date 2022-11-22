@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -77,7 +78,7 @@ class DBFilmStorageTest {
 
     @Test
     void updateFilm() {
-        Film film = filmStorageTestHelper.addFilm(1);
+        Film film = filmStorageTestHelper.addFilm(1, List.of(1));
 
         film.setName("update");
         filmStorage.updateFilm(film);
@@ -125,26 +126,18 @@ class DBFilmStorageTest {
 
     @Test
     void deleteFilmDeletesFilmGenres() {
-        LinkedHashSet<Genre> newSet = new LinkedHashSet<>();
-        newSet.add(genreStorage.getGenreById(1));
-        newSet.add(genreStorage.getGenreById(2));
-        newSet.add(genreStorage.getGenreById(3));
-        Film film = new Film(1,
-                "Test film","test", LocalDate.now(),100,4,
-                mpaService.getMpa(String.valueOf(1)),newSet,new LinkedHashSet<>(),new ArrayList<>());
-       filmStorage.addFilm(film);
-        int filmId = film.getId();
-        filmStorage.getFilm(filmId);
-        Integer genreSizeFilm = genreStorage.getGenresByFilmId(filmId).size();
-        assertEquals(3, genreSizeFilm);
+        final int filmId = filmStorageTestHelper.addFilm(1, List.of(1, 2, 3)).getId();
 
-        filmStorage.deleteFilm(filmId);
-        Supplier<Integer> filmGenresCountUpd =
+        Supplier<Integer> filmGenresCount =
                 () -> jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM GENRELINE WHERE FILMID=?;",
+                        "SELECT COUNT(*) FROM GENRELINE WHERE filmid=?;",
                         Integer.class,
                         filmId
                 );
-        assertEquals(0, filmGenresCountUpd.get());
+        assertEquals(3, filmGenresCount.get());
+
+        filmStorage.deleteFilm(filmId);
+
+        assertEquals(0, filmGenresCount.get());
     }
 }

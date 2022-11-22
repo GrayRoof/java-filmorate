@@ -248,7 +248,7 @@ class FilmServiceTest {
         film2.setRate(0);
         film2.setMpa(new Mpa(1, "mpa", "description"));
         film2.getDirectors().add(director);
-        Film addedFilm2 = service.add(film);
+        Film addedFilm2 = service.add(film2);
         ArrayList<Film> sortedFilm = new ArrayList<>(service.getSortedFilmWithDirector(1, "year"));
         assertEquals(addedFilm2, sortedFilm.get(0));
     }
@@ -280,7 +280,7 @@ class FilmServiceTest {
         film2.setRate(0);
         film2.setMpa(new Mpa(1, "mpa", "description"));
         film2.getDirectors().add(director);
-        Film addedFilm2 = service.add(film);
+        Film addedFilm2 = service.add(film2);
         service.addLike(String.valueOf(addedFilm2.getId()), String.valueOf(addedUser.getId()));
         ArrayList<Film> sortedFilm = new ArrayList<>(service.getSortedFilmWithDirector(1, "likes"));
         assertEquals(addedFilm2, sortedFilm.get(0));

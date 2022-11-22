@@ -182,7 +182,7 @@ public class DBFilmStorage implements FilmStorage {
                 sort = "f.RELEASEDATE";
                 break;
             case "likes":
-                sort = "count(DISTINCT L.USERID )";
+                sort = "count(DISTINCT L.USERID) DESC";
                 break;
             default:
                 sort = "f.FILMID";

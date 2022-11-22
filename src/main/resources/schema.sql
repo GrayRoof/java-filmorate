@@ -60,8 +60,6 @@ CREATE TABLE IF NOT EXISTS GENRELINE
 (
     FilmID  int NOT NULL,
     GenreID int NOT NULL,
-    CONSTRAINT "film_genre_film_id_foreign" FOREIGN KEY (FilmID) references FILM (FilmID),
-    CONSTRAINT "film_genre_genre_id_foreign" FOREIGN KEY (GenreID) references GENRE (GenreID),
     PRIMARY KEY (FilmID, GenreID)
 );
 
