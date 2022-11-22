@@ -42,6 +42,7 @@ public class ReviewService {
     }
 
     public Review addLike(String id, String userId) {
+        validator.validateUserById(Integer.parseInt(userId));
         return storage.addLike(Integer.parseInt(id));
     }
 
