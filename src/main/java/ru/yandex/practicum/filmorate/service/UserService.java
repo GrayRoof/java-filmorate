@@ -26,7 +26,7 @@ public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(Validator validator,@Qualifier("DBUserStorage") UserStorage userStorage) {
+    public UserService(Validator validator, @Qualifier("DBUserStorage") UserStorage userStorage) {
         this.validator = validator;
         this.userStorage = userStorage;
     }
@@ -64,9 +64,9 @@ public class UserService {
      * @param supposedFriendId - идентификатор друга
      * */
     public void addFriend(final String supposedUserId, final String supposedFriendId) {
-        User user = getStoredUser(supposedUserId);
-        User friend = getStoredUser(supposedFriendId);
-        userStorage.addFriend(user.getId(), friend.getId());
+        int storedUserId = getStoredUserId(supposedUserId);
+        int storedFriendId = getStoredUserId(supposedFriendId);
+        userStorage.addFriend(storedUserId, storedFriendId);
     }
 
     /**
@@ -75,9 +75,9 @@ public class UserService {
      * @param supposedFriendId - идентификатор друга
      * */
     public void deleteFriend(final String supposedUserId, final  String supposedFriendId) {
-        User user = getStoredUser(supposedUserId);
-        User friend = getStoredUser(supposedFriendId);
-        userStorage.deleteFriend(user.getId(), friend.getId());
+        int storedUserId = getStoredUserId(supposedUserId);
+        int storedFriendId = getStoredUserId(supposedFriendId);
+        userStorage.deleteFriend(storedUserId, storedFriendId);
     }
 
     /**
@@ -118,6 +118,28 @@ public class UserService {
         return getStoredUser(supposedId);
     }
 
+    /**
+     * Удаляет пользователя по идентификатору
+     * @param supposedId - идентификатор фильма
+     * */
+    public void deleteUser(String supposedId) {
+        int storedUserId = getStoredUserId(supposedId);
+        userStorage.deleteUser(storedUserId);
+    }
+
+    /**
+     * Возвращает идентификатор существующего пользователя по строковому идентификатору
+     * @param supposedId - идентификатор пользователя
+     * */
+    public int getStoredUserId(final String supposedId) {
+        final int userId = getIntUserId(supposedId);
+
+        if (!userStorage.containsUser(userId)) {
+            onUserNotFound(userId);
+        }
+        return userId;
+    }
+
     private void validate(final User user) {
         if(user.getName() == null) {
             user.setName(user.getLogin());
@@ -148,16 +170,25 @@ public class UserService {
         }
     }
 
-    protected User getStoredUser(final String supposedId) {
-        final int userId = idFromString(supposedId);
-        if (userId == Integer.MIN_VALUE) {
-            throw new WrongIdException("Не удалось распознать идентификатор пользователя: " +
-                    "значение " + supposedId);
+    private int getIntUserId(final String supposedId) {
+        int id = idFromString(supposedId);
+        if (id == Integer.MIN_VALUE) {
+            throw new WrongIdException("Не удалось распознать идентификатор пользователя: значение " + supposedId);
         }
+        return id;
+    }
+
+    private void onUserNotFound(int userId) {
+        throw new NotFoundException("Пользователь с идентификатором " +
+                userId + " не зарегистрирован!");
+    }
+
+    protected User getStoredUser(final String supposedId) {
+        final int userId = getIntUserId(supposedId);
+
         User user = userStorage.getUser(userId);
         if (user == null) {
-            throw new NotFoundException("Пользователь с идентификатором " +
-                    userId + " не зарегистрирован!");
+            onUserNotFound(userId);
         }
         return user;
     }

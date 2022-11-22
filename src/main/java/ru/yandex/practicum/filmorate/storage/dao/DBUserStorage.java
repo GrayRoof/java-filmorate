@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.event.OnDeleteUserEvent;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -18,9 +20,22 @@ import java.util.*;
 public class DBUserStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    public DBUserStorage(JdbcTemplate jdbcTemplate){
+    private final ApplicationEventPublisher eventPublisher;
+
+    public DBUserStorage(
+            JdbcTemplate jdbcTemplate,
+            ApplicationEventPublisher eventPublisher
+    ){
         this.jdbcTemplate = jdbcTemplate;
+        this.eventPublisher = eventPublisher;
     }
+
+    @Override
+    public boolean containsUser(int userId) {
+        SqlRowSet result = jdbcTemplate.queryForRowSet("select USERID from USERS where USERID = ?;", userId);
+        return result.next();
+    }
+
     @Override
     public User getUser(Integer id) {
         String sqlUser = "select * from USERS where USERID = ?";
@@ -79,9 +94,13 @@ public class DBUserStorage implements UserStorage {
     }
 
     @Override
-    public boolean deleteUser(User user) {
-
-        return false;
+    public boolean deleteUser(int userId) {
+        String sqlQuery = "delete from USERS where USERID = ?";
+        boolean result = jdbcTemplate.update(sqlQuery, userId) > 0;
+        if (result) {
+            eventPublisher.publishEvent(new OnDeleteUserEvent(userId));
+        }
+        return result;
     }
 
     private User makeUser(ResultSet rs) throws SQLException {
