@@ -13,14 +13,11 @@ import javax.validation.ValidationException;
 @Component
 public class ReviewValidator {
 
-    private final DBReviewStorage storage;
-
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public ReviewValidator(DBReviewStorage storage, JdbcTemplate jdbcTemplate){
+    public ReviewValidator(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;
-        this.storage = storage;
     }
 
     public void validateReview(Review review){
@@ -50,7 +47,7 @@ public class ReviewValidator {
     public void validateFilmById(Integer filmId){
         String sqlQuery = "select count(*) from films where FilmID = ?;";
         Integer id = jdbcTemplate.queryForObject(sqlQuery, Integer.class, filmId);
-        if (id != 1) throw new FilmValidationInReviewException("Фильма с таким ID не существует");
+        if (id.equals(0)) throw new FilmValidationInReviewException("Фильма с таким ID не существует");
     }
 
 }

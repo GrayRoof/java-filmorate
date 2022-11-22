@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.validator.ReviewValidator;
 
 import java.sql.*;
 import java.util.Collection;
@@ -17,21 +18,23 @@ import java.util.Objects;
 public class DBReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final SimpleJdbcInsert simpleJdbcInsert;
+
+    private final ReviewValidator validator;
 
     @Autowired
-    public DBReviewStorage(JdbcTemplate jdbcTemplate){
+    public DBReviewStorage(JdbcTemplate jdbcTemplate, ReviewValidator validator){
         this.jdbcTemplate = jdbcTemplate;
-        this.simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
+        this.validator = validator;
     }
 
     public Review addReview(Review review) {
+//        validator.validateFilmById(review.getFilmId());
         String sqlQuery = "insert into reviews (content, isPositive, UserId, FilmID, Useful) values (?,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, review.getContent());
-            ps.setBoolean(2, review.getIsPositive());
+            ps.setString(2, review.getIsPositive().toString());
             ps.setInt(3, review.getUserId());
             ps.setInt(4, review.getFilmId());
             ps.setInt(5, review.getUseful());

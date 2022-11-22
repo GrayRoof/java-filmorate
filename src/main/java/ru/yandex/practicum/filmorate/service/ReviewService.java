@@ -22,13 +22,11 @@ public class ReviewService {
         this.validator = validator;
     }
     public Review addReview(Review review) {
-//        validator.validateReview(review);
         validator.validateUserById(review.getUserId());
         return storage.addReview(review);
     }
 
     public Review editReview(Review review) {
-//        validator.validateReview(review);
         return storage.editReview(review);
     }
 
@@ -42,7 +40,6 @@ public class ReviewService {
     }
 
     public Review addLike(String id, String userId) {
-        validator.validateUserById(Integer.parseInt(userId));
         return storage.addLike(Integer.parseInt(id));
     }
 
