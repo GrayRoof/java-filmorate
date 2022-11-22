@@ -8,7 +8,6 @@ import java.util.Set;
 
 public class UserValidationException extends ConstraintViolationException {
     public UserValidationException(String message, Set<ConstraintViolation<User>> violations) {
-
         super(message, violations);
     }
 }

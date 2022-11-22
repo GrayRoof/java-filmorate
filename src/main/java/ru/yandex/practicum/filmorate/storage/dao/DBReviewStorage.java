@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -15,89 +17,103 @@ import java.util.Objects;
 public class DBReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final SimpleJdbcInsert simpleJdbcInsert;
 
     @Autowired
     public DBReviewStorage(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;
+        this.simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
     }
 
     public Review addReview(Review review) {
-        String sqlQuery = "insert into reviews (content, isPositive, UserId, FilmID, Useful) values (?,?,?,?,?);";
+        String sqlQuery = "insert into reviews (content, isPositive, UserId, FilmID, Useful) values (?,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, review.getContent());
-            ps.setBoolean(2, review.isPositive());
+            ps.setBoolean(2, review.getIsPositive());
             ps.setInt(3, review.getUserId());
             ps.setInt(4, review.getFilmId());
             ps.setInt(5, review.getUseful());
             return ps;
         }, keyHolder);
 
+//
+//        simpleJdbcInsert.withTableName("reviews").usingGeneratedKeyColumns("ReviewID");
+//
+//        MapSqlParameterSource params = new MapSqlParameterSource()
+//                .addValue("content", review.getContent())
+//                .addValue("isPositive", review.getIsPositive())
+//                .addValue("UserId", review.getUserId())
+//                .addValue("FilmID", review.getFilmId())
+//                .addValue("Useful", review.getUseful());
+//
+//        Number id = simpleJdbcInsert.executeAndReturnKey(params);
+
         int id = Objects.requireNonNull(keyHolder.getKey()).intValue();
+
         return getReview(id);
     }
 
-    public Review getReview(int id) {
+    public Review getReview(Integer id) {
         String sqlQuery = "select * from reviews where ReviewID = ?;";
         return jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeReview(rs), id);
     }
 
     private Review makeReview(ResultSet rs) throws SQLException {
         return Review.builder()
-                .id(rs.getInt("ReviewID"))
-                .useful(rs.getInt("useful"))
+                .reviewId(rs.getInt("reviewId"))
                 .content(rs.getString("content"))
-                .userId(rs.getInt("UserID"))
-                .filmId(rs.getInt("FilmID"))
                 .isPositive(rs.getBoolean("isPositive"))
+                .userId(rs.getInt("userId"))
+                .filmId(rs.getInt("filmId"))
+                .useful(rs.getInt("useful"))
                 .build();
     }
 
     public Review editReview(Review review) {
-        String sqlQuery = "update reviews set useful = ?, content = ?, UserID = ?, FilmID = ?, isPositive = ?) " +
-                "where id = ?;";
-        jdbcTemplate.update(sqlQuery, review.getUseful(), review.getContent(), review.getUserId(),
-                review.getFilmId(), review.isPositive(), review.getId());
-        return getReview(review.getId());
+        String sqlQuery = "update reviews set content = ?, isPositive = ? where ReviewID = ?;";
+        jdbcTemplate.update(sqlQuery, review.getContent(), review.getIsPositive(), review.getReviewId());
+        return getReview(review.getReviewId());
     }
 
     public Integer removeReview(String id) {
         String sqlQuery = "delete from reviews where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, id);
         return Integer.parseInt(id);
-
     }
 
-    public boolean addLike(int id) {
+    public Review addLike(Integer id) {
         Review review = getReview(id);
-        int useful = review.getUseful();
+        Integer useful = review.getUseful();
         useful++;
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, useful, id);
-        return true;
+        return getReview(id);
     }
 
 
-    public boolean removeLike(int reviewId) {
+    public Review removeLike(Integer reviewId) {
         Review review = getReview(reviewId);
         int useful = review.getUseful();
         useful--;
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, useful, reviewId);
-        return true;
+        return getReview(reviewId);
     }
 
     public Collection<Review> getAll(String filmId, int count) {
         String sqlQuery = "select * from reviews order by useful desc limit ?;";
+        Integer id = 0;
 
-        if (filmId == "all") {
+        if (filmId.equals("all")) {
             return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), count);
         } else {
             sqlQuery = "select * from reviews where FilmID = ? order by useful desc limit ?;";
+//            id = Integer.valueOf(filmId);
         }
 
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), Integer.parseInt(filmId), count);
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), filmId, count);
 
     }
 }

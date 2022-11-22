@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.dao.DBReviewStorage;
+import ru.yandex.practicum.filmorate.validator.ReviewValidator;
 
 import java.util.Collection;
 
@@ -12,26 +13,22 @@ public class ReviewService {
 
     private final DBReviewStorage storage;
 
-    private final UserService userService;
-
-    private final FilmService filmService;
+    private final ReviewValidator validator;
 
 
     @Autowired
-    public ReviewService(DBReviewStorage reviewStorage, UserService userService,FilmService filmService){
+    public ReviewService(DBReviewStorage reviewStorage, ReviewValidator validator){
         this.storage = reviewStorage;
-        this.userService = userService;
-        this.filmService = filmService;
+        this.validator = validator;
     }
     public Review addReview(Review review) {
-        userService.getUser(String.valueOf(review.getUserId()));
-        filmService.getFilm(String.valueOf(review.getFilmId()));
+//        validator.validateReview(review);
+        validator.validateUserById(review.getUserId());
         return storage.addReview(review);
     }
 
     public Review editReview(Review review) {
-        userService.getUser(String.valueOf(review.getUserId()));
-        filmService.getFilm(String.valueOf(review.getFilmId()));
+//        validator.validateReview(review);
         return storage.editReview(review);
     }
 
@@ -40,16 +37,15 @@ public class ReviewService {
     }
 
     public Review getReview(String id) {
+        validator.validateReviewById(Integer.parseInt(id));
         return storage.getReview(Integer.parseInt(id));
     }
 
-    public boolean addLike(String id, String userId) {
-        userService.getUser(userId);
+    public Review addLike(String id, String userId) {
         return storage.addLike(Integer.parseInt(id));
     }
 
-    public boolean removeLike(String id, String userId) {
-        userService.getUser(userId);
+    public Review removeLike(String id, String userId) {
         return storage.removeLike(Integer.parseInt(id));
     }
 
