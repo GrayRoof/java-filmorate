@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.dao.DBFilmStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -13,15 +14,15 @@ public class FilmStorageTestHelper {
     private final FilmStorage storage;
     private int nextIdx = 0;
 
-    public FilmStorageTestHelper(FilmStorage storage) {
+    public FilmStorageTestHelper(DBFilmStorage storage) {
         this.storage = storage;
     }
 
     public int getNewFilmId() {
-        return addFilm(1, List.of(), List.of()).getId();
+        return addFilm(1).getId();
     }
 
-    public Film addFilm(int mpaId, Collection<Integer> genreIds, Collection<Integer> directorIds) {
+    public Film addFilm(int mpaId) {
         int idx = nextIdx++;
 
         return storage.addFilm(

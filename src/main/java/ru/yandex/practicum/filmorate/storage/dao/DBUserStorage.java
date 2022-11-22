@@ -79,7 +79,8 @@ public class DBUserStorage implements UserStorage {
                 addFriend(user.getId(), friendId);
             }
         }
-        return getUser(id);
+        user.setId(id);
+        return user;
     }
 
     @Override

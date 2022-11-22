@@ -9,11 +9,17 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.MpaService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorageTestHelper;
 import ru.yandex.practicum.filmorate.storage.UserStorageTestHelper;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +33,9 @@ class DBFilmStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private final DBUserStorage userStorage;
     private final DBFilmStorage filmStorage;
+    private final DBGenreStorage genreStorage;
+    private final FilmService filmService;
+    private final MpaService mpaService;
 
     private UserStorageTestHelper userStorageTestHelper;
     private FilmStorageTestHelper filmStorageTestHelper;
@@ -68,7 +77,7 @@ class DBFilmStorageTest {
 
     @Test
     void updateFilm() {
-        Film film = filmStorageTestHelper.addFilm(1, List.of(), List.of());
+        Film film = filmStorageTestHelper.addFilm(1);
 
         film.setName("update");
         filmStorage.updateFilm(film);
@@ -116,18 +125,26 @@ class DBFilmStorageTest {
 
     @Test
     void deleteFilmDeletesFilmGenres() {
-        final int filmId = filmStorageTestHelper.addFilm(1, List.of(1, 2, 3), List.of()).getId();
+        LinkedHashSet<Genre> newSet = new LinkedHashSet<>();
+        newSet.add(genreStorage.getGenreById(1));
+        newSet.add(genreStorage.getGenreById(2));
+        newSet.add(genreStorage.getGenreById(3));
+        Film film = new Film(1,
+                "Test film","test", LocalDate.now(),100,4,
+                mpaService.getMpa(String.valueOf(1)),newSet,new LinkedHashSet<>(),new ArrayList<>());
+       filmStorage.addFilm(film);
+        int filmId = film.getId();
+        filmStorage.getFilm(filmId);
+        Integer genreSizeFilm = genreStorage.getGenresByFilmId(filmId).size();
+        assertEquals(3, genreSizeFilm);
 
-        Supplier<Integer> filmGenresCount =
+        filmStorage.deleteFilm(filmId);
+        Supplier<Integer> filmGenresCountUpd =
                 () -> jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM GENRELINE WHERE filmid=?;",
+                        "SELECT COUNT(*) FROM GENRELINE WHERE FILMID=?;",
                         Integer.class,
                         filmId
                 );
-        assertEquals(3, filmGenresCount.get());
-
-        filmStorage.deleteFilm(filmId);
-
-        assertEquals(0, filmGenresCount.get());
+        assertEquals(0, filmGenresCountUpd.get());
     }
 }

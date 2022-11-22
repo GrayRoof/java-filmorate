@@ -111,7 +111,7 @@ class DBUserStorageTest {
 
         Supplier<Integer> userLikesCount =
                 () -> jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM likes WHERE userid=?;",
+                        "SELECT COUNT(*) FROM likes WHERE USERID=?;",
                         Integer.class,
                         userId
                 );
@@ -140,9 +140,7 @@ class DBUserStorageTest {
                         filmId
                 );
         assertEquals(3, filmRate.get());
-
         userStorage.deleteUser(camId);
-
         assertEquals(2, filmRate.get());
     }
 
