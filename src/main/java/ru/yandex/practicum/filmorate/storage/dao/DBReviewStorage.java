@@ -19,16 +19,13 @@ public class DBReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final ReviewValidator validator;
 
     @Autowired
-    public DBReviewStorage(JdbcTemplate jdbcTemplate, ReviewValidator validator){
+    public DBReviewStorage(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;
-        this.validator = validator;
     }
 
     public Review addReview(Review review) {
-//        validator.validateFilmById(review.getFilmId());
         String sqlQuery = "insert into reviews (content, isPositive, UserId, FilmID, Useful) values (?,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -40,18 +37,6 @@ public class DBReviewStorage {
             ps.setInt(5, review.getUseful());
             return ps;
         }, keyHolder);
-
-//
-//        simpleJdbcInsert.withTableName("reviews").usingGeneratedKeyColumns("ReviewID");
-//
-//        MapSqlParameterSource params = new MapSqlParameterSource()
-//                .addValue("content", review.getContent())
-//                .addValue("isPositive", review.getIsPositive())
-//                .addValue("UserId", review.getUserId())
-//                .addValue("FilmID", review.getFilmId())
-//                .addValue("Useful", review.getUseful());
-//
-//        Number id = simpleJdbcInsert.executeAndReturnKey(params);
 
         int id = Objects.requireNonNull(keyHolder.getKey()).intValue();
 
@@ -113,7 +98,6 @@ public class DBReviewStorage {
             return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), count);
         } else {
             sqlQuery = "select * from reviews where FilmID = ? order by useful desc limit ?;";
-//            id = Integer.valueOf(filmId);
         }
 
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), filmId, count);
