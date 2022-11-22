@@ -15,6 +15,11 @@ public class InMemoryFilmStorage implements FilmStorage{
     private final Map<Integer, Film> films = new HashMap<>();
 
     @Override
+    public boolean containsFilm(int filmId) {
+        return films.containsKey(filmId);
+    }
+
+    @Override
     public Film getFilm(int filmId) {
         return films.get(filmId);
     }
@@ -45,8 +50,9 @@ public class InMemoryFilmStorage implements FilmStorage{
     }
 
     @Override
-    public boolean deleteFilm(Film film) {
-        films.remove(film.getId());
+    public boolean deleteFilm(int filmId) {
+        //TODO(?): cascade deletion, real retval
+        films.remove(filmId);
         return true;
     }
 
