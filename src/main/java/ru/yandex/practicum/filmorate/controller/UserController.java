@@ -59,6 +59,14 @@ public class UserController {
         return validUser;
     }
 
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable String id) {
+        log.info("Получен запрос DELETE к эндпоинту: users/{}", id);
+        userService.deleteUser(id);
+        log.info("Удален объект {} с идентификатором {}",
+                User.class.getSimpleName(), id);
+    }
+
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable String id, @PathVariable String friendId) {
         log.info("Получен запрос PUT к эндпоинту: /users/{}/friends/{}", id, friendId);

@@ -55,6 +55,14 @@ public class FilmController {
         return validFilm;
     }
 
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable String id) {
+        log.info("Получен запрос DELETE к эндпоинту: films/{}", id);
+        filmService.deleteFilm(id);
+        log.info("Удален объект {} с идентификатором {}",
+                Film.class.getSimpleName(), id);
+    }
+
     @PutMapping("/{id}/like/{userId}")
     public void putLike(@PathVariable String id, @PathVariable String userId) {
         log.info("Получен запрос PUT к эндпоинту: /films/{}/like/{}", id, userId);
@@ -77,4 +85,5 @@ public class FilmController {
         log.info("Получен запрос GET к эндпоинту: /films/director/"+id + "?sortBy=" + sortBy);
         return filmService.getSortedFilmWithDirector(id,sortBy);
     }
+
 }
