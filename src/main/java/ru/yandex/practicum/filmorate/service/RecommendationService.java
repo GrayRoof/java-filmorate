@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.util.*;
 
@@ -13,13 +15,19 @@ public class RecommendationService {
 
     private final UserService userService;
     private final FilmStorage filmStorage;
+    private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
 
     public RecommendationService(
             UserService userService,
-            @Qualifier(UsedStorageConsts.QUALIFIER) FilmStorage filmStorage
+            @Qualifier(UsedStorageConsts.QUALIFIER) FilmStorage filmStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) GenreStorage genreStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) DirectorStorage directorStorage
     ) {
         this.userService = userService;
         this.filmStorage = filmStorage;
+        this.genreStorage = genreStorage;
+        this.directorStorage = directorStorage;
     }
 
     /**
@@ -42,7 +50,15 @@ public class RecommendationService {
         likesOfUserList.andNot(requestUserLikes);
         if (likesOfUserList.cardinality() == 0) { return List.of(); }
 
-        return filmStorage.getFilmsOfIdArray(likesOfUserList.toString().replace("{", "").replace("}", ""));
+        Collection<Film> films = filmStorage.getFilmsOfIdArray(
+                likesOfUserList
+                        .toString()
+                        .replace("{", "")
+                        .replace("}", "")
+        );
+        directorStorage.load(films);
+        genreStorage.load(films);
+        return films;
     }
 
     private List<Integer> getSimilarUsers(BitSet requestUserLikes, Map<Integer, BitSet> likes) {
