@@ -30,14 +30,14 @@ public class FilmService {
     public FilmService(
             UserService userService,
             Validator validator,
-            @Qualifier(UsedStorageConsts.QUALIFIER) GenreStorage genreStorage,
             @Qualifier(UsedStorageConsts.QUALIFIER) FilmStorage filmStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) GenreStorage genreStorage,
             @Qualifier(UsedStorageConsts.QUALIFIER) DirectorStorage directorStorage
     ) {
-        this.validator = validator;
-        this.genreStorage = genreStorage;
-        this.filmStorage = filmStorage;
         this.userService = userService;
+        this.validator = validator;
+        this.filmStorage = filmStorage;
+        this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
     }
 

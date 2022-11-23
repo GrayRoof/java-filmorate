@@ -25,13 +25,13 @@ public class ReviewService {
     public ReviewService(
             UserService userService,
             FilmService filmService,
-            @Qualifier(UsedStorageConsts.QUALIFIER) ReviewStorage storage,
-            ReviewValidator validator
+            ReviewValidator validator,
+            @Qualifier(UsedStorageConsts.QUALIFIER) ReviewStorage storage
     ) {
-        this.storage = storage;
-        this.validator = validator;
-        this.filmService = filmService;
         this.userService = userService;
+        this.filmService = filmService;
+        this.validator = validator;
+        this.storage = storage;
     }
     public Review addReview(Review review) {
         userService.getStoredUserId(review.getUserId().toString());
