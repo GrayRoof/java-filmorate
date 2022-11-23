@@ -88,4 +88,11 @@ public class FilmController {
         return filmService.getCommonFilms(userId, friendId);
     }
 
+    @GetMapping("/popular")
+    public Collection<Film> findByYearGenre(@RequestParam(defaultValue = "10") String count,
+                                       @RequestParam String genreId,
+                                       @RequestParam String year){
+        return filmService.getMostPopularFilms(count, genreId, year);
+    }
+
 }
