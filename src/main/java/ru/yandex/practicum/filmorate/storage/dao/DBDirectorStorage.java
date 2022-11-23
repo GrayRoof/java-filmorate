@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,13 +24,15 @@ import java.util.stream.Collectors;
 import static java.util.function.UnaryOperator.identity;
 
 @Component
-public class DBDirectorStorage {
+@Qualifier(DBStorageConsts.QUALIFIER)
+public class DBDirectorStorage implements DirectorStorage {
     private final JdbcTemplate jdbcTemplate;
 
     public DBDirectorStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Override
     public Director getDirector(Integer id) {
         String sqlDirector = "select * from DIRECTORS where DIRECTORID = ?";
         Director director;
@@ -41,11 +45,13 @@ public class DBDirectorStorage {
         return director;
     }
 
+    @Override
     public Collection<Director> getAllDirectors() {
         String sqlAllDirectors = "select * from DIRECTORS";
         return jdbcTemplate.query(sqlAllDirectors, (rs, rowNum) -> makeDirector(rs));
     }
 
+    @Override
     public Director addDirector(Director director) {
         String sqlQuery = "insert into DIRECTORS " +
                 "(NAME) " +
@@ -61,6 +67,7 @@ public class DBDirectorStorage {
         return director;
     }
 
+    @Override
     public Director updateDirector(Director director) {
         isExist(director.getId());
         String sqlDirector = "update DIRECTORS set " +
@@ -71,6 +78,7 @@ public class DBDirectorStorage {
         return getDirector(director.getId());
     }
 
+    @Override
     public boolean deleteDirector(Integer id) {
         isExist(id);
         String sqlDirector = "DELETE from DIRECTORS where DIRECTORID = ?";
@@ -78,12 +86,14 @@ public class DBDirectorStorage {
         return true;
     }
 
+    @Override
     public boolean deleteFilmDirector(int filmId) {
         String deleteOldDirector = "delete from DIRECTORLINE where FILMID = ?";
         jdbcTemplate.update(deleteOldDirector, filmId);
         return true;
     }
 
+    @Override
     public boolean isExist(Integer id) {
         if (getDirector(id) == null) {
             throw new NotFoundException(String.format("Режиссер с id=%d не найден.", id));
@@ -98,6 +108,7 @@ public class DBDirectorStorage {
                 rs.getString("Name"));
     }
 
+    @Override
     public void load(Collection<Film> films) {
         String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
         final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, identity()));

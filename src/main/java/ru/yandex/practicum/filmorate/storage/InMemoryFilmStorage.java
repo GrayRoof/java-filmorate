@@ -81,12 +81,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         return mostPopularFilms;
     }
 
-
-    @Override
-    public Collection<Film> getMostPopularFilms(String count, String genreId, String year) {
-        throw new UnsupportedOperationException();
-    }
-
     @Override
     public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
        throw new UnsupportedOperationException();
@@ -95,26 +89,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 @Override
     public Collection<Film> getCommonFilms(int userId, int otherUserId) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Collection<Film> getSortedWithYear(int year, int count) {
-        return null;
-    }
-
-    @Override
-    public Collection<Film> getMostPopularByGenre(String parseInt, String parseInt1) {
-        return null;
-    }
-
-    @Override
-    public Collection<Film> getMostPopularByYear(int parseInt, int parseInt1) {
-        return null;
-    }
-
-    @Override
-    public Collection<Film> getSortedByGenreAndYear(String genreId, String year, String count) {
-        return null;
     }
 
 }

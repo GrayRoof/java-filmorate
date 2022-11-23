@@ -5,9 +5,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorageTestHelper;
 import ru.yandex.practicum.filmorate.storage.UserStorageTestHelper;
 
@@ -22,7 +24,9 @@ class DBUserStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
     private final DBUserStorage userStorage;
-    private final DBFilmStorage filmStorage;
+
+    @Qualifier(DBStorageConsts.QUALIFIER)
+    private final FilmStorage filmStorage;
 
     private UserStorageTestHelper userStorageTestHelper;
     private FilmStorageTestHelper filmStorageTestHelper;

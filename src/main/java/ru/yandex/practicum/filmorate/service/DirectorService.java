@@ -1,20 +1,23 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConflictException;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.storage.dao.DBDirectorStorage;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
 import javax.validation.ValidationException;
 import java.util.Collection;
 
 @Service
 public class DirectorService {
-    private final DBDirectorStorage directorStorage;
+    private final DirectorStorage directorStorage;
 
     @Autowired
-    public DirectorService(DBDirectorStorage directorStorage) {
+    public DirectorService(
+            @Qualifier(UsedStorageConsts.QUALIFIER) DirectorStorage directorStorage
+    ) {
         this.directorStorage = directorStorage;
     }
 

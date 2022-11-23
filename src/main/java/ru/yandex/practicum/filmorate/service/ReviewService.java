@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.dao.DBReviewStorage;
+import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.validator.ReviewValidator;
 
 import java.util.Collection;
@@ -11,7 +12,7 @@ import java.util.Collection;
 @Component
 public class ReviewService {
 
-    private final DBReviewStorage storage;
+    private final ReviewStorage storage;
 
     private final ReviewValidator validator;
 
@@ -21,14 +22,16 @@ public class ReviewService {
 
 
     @Autowired
-    public ReviewService(DBReviewStorage reviewStorage,
-                         ReviewValidator validator,
-                         FilmService filmService,
-                         UserService userService){
-        this.storage = reviewStorage;
-        this.validator = validator;
-        this.filmService = filmService;
+    public ReviewService(
+            UserService userService,
+            FilmService filmService,
+            ReviewValidator validator,
+            @Qualifier(UsedStorageConsts.QUALIFIER) ReviewStorage storage
+    ) {
         this.userService = userService;
+        this.filmService = filmService;
+        this.validator = validator;
+        this.storage = storage;
     }
     public Review addReview(Review review) {
         userService.getStoredUserId(review.getUserId().toString());

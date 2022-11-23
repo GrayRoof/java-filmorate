@@ -25,7 +25,10 @@ public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(Validator validator, @Qualifier("DBUserStorage") UserStorage userStorage) {
+    public UserService(
+            Validator validator,
+            @Qualifier(UsedStorageConsts.QUALIFIER) UserStorage userStorage
+    ) {
         this.validator = validator;
         this.userStorage = userStorage;
     }
@@ -191,7 +194,7 @@ public class UserService {
                 userId + " не зарегистрирован!");
     }
 
-    private User getStoredUser(final String supposedId) {
+    protected User getStoredUser(final String supposedId) {
         final int userId = getIntUserId(supposedId);
 
         User user = userStorage.getUser(userId);

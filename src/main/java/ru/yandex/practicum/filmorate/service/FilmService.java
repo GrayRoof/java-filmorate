@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.stereotype.Service;
 
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
@@ -206,23 +205,5 @@ public class FilmService {
             onFilmNotFound(filmId);
         }
         return filmId;
-    }
-
-    public Collection<Film> getMostPopularFilms(String count, String genreId, String year) {
-        if (!genreId.equals("all") && !year.equals("all"))
-            return filmStorage.getSortedByGenreAndYear(genreId, year, count);
-
-        if (!genreId.equals("all") && year.equals("all"))
-            return filmStorage.getMostPopularByGenre(count, genreId);
-
-
-        if (genreId.equals("all") && !year.equals("all"))
-            return filmStorage.getMostPopularByYear(Integer.parseInt(count), Integer.parseInt(year));
-
-        return filmStorage.getMostPopularFilms(Integer.valueOf(count));
-
-
-
-
     }
 }
