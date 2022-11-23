@@ -4,10 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -82,11 +79,26 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Map<Integer, BitSet> getRelatedLikesByUserId(int userId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public BitSet getLikesOfUserList(List<Integer> usersId) { 
+        throw new UnsupportedOperationException(); 
+    }
+
+    @Override
+    public Collection<Film> getFilmsOfIdArray(String idString) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
        throw new UnsupportedOperationException();
        }
 
-@Override
+    @Override
     public Collection<Film> getCommonFilms(int userId, int otherUserId) {
         throw new UnsupportedOperationException();
     }
