@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component("DBFilmStorage")
 public class DBFilmStorage implements FilmStorage {
@@ -221,5 +222,16 @@ public class DBFilmStorage implements FilmStorage {
         String sqlUpdateAllRates =
                 "update FILM set RATE = ( select count(USERID) from LIKES where LIKES.FILMID = FILM.FILMID );";
         jdbcTemplate.update(sqlUpdateAllRates);
+    }
+
+    @Override
+    public Collection<Film> getMostPopularFilms(Integer countNum, Integer genreNum, Integer yearNum) {
+        String sqlQuery = "select f.* from film as f where YEAR(ReleaseDate) = ? " +
+                "join genreline as gl on f.FilmID=gl.FilmID and " +
+                "join genre as g on g.genreID = ?";
+        Collection<Film> films = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), yearNum, genreNum);
+        return films.stream()
+                .sorted((film1, film2) -> film2.getRate()-film1.getRate())
+                .limit(countNum).collect(Collectors.toList());
     }
 }
