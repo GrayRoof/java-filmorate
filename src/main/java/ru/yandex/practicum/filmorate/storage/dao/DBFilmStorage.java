@@ -176,27 +176,52 @@ public class DBFilmStorage implements FilmStorage {
 
 
     @Override
-    public Collection<Film> yearGenreSorted(String count, String genreId, String year) {
-        String sqlQuery = getRightQuery(genreId, year);
-        return getRightCollection(sqlQuery, year, count, genreId);
-    }
+    public Collection<Film> getMostPopularFilms(String count, String genreId, String year) {
+        if (genreId.contains("all") && !year.contains("all")) {
 
-    private String getRightQuery(String genreId, String year){
-        if (genreId.equals("all") && !year.equals("all")) {
-            return SqlQueries.FILMS_SELECTED_BY_YEAR;
-        } else if (!genreId.equals("all") && year.equals("all")) {
-            return SqlQueries.FILMS_SELECTED_BY_GENRE;
-        } else return SqlQueries.FILMS_SELECTED_BY_YEAR_GENRE;
-    }
-
-    private Collection<Film> getRightCollection(String query, String year, String count, String genre){
-        if (!query.contains("GENREID") && query.contains("RELEASEDATE")) {
-            return jdbcTemplate.query(query, (rs, rowNum) -> makeFilm(rs), year, count);
-        } else if (!query.contains("RELEASEDATE") && query.contains("GENREID")) {
-            return jdbcTemplate.query(query, (rs, rowNum) -> makeFilm(rs), Integer.parseInt(genre), Integer.parseInt(count));
-        } else {
-            return jdbcTemplate.query(query, (rs, rowNum) -> makeFilm(rs), genre, year, count);
+            return jdbcTemplate
+                    .query(SqlQueries.FILMS_SELECTED_BY_YEAR, (rs, rowNum) -> makeFilm(rs), genreId, year, count);
         }
+        if (!genreId.contains("all") && year.contains("all")) {
+            return jdbcTemplate
+                    .query(SqlQueries.FILMS_SELECTED_BY_GENRE, (rs, rowNum) -> makeFilm(rs),
+                            Integer.parseInt(genreId), Integer.parseInt(count));
+        }
+        return jdbcTemplate.query(SqlQueries.FILMS_SELECTED_BY_YEAR_GENRE, (rs, rowNum) -> makeFilm(rs), genreId, year, count);
+
+    }
+
+    @Override
+    public Collection<Film> getMostPopularByGenre(String count, String genreId){
+        String sqlQuery = "select * " +
+                "FROM FILM " +
+                "JOIN MPA R on FILM.RATINGID = R.RATINGID " +
+                "JOIN GENRELINE gl ON gl.FILMID = film.FILMID AND gl.GENREID = ? " +
+                "ORDER BY FILM.RATE DESC " +
+                "LIMIT ?";
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), genreId, count);
+    }
+
+    @Override
+    public Collection<Film> getMostPopularByYear(int year, int count){
+        String sqlQuery = "select * " +
+                "FROM FILM " +
+                "JOIN MPA R on FILM.RATINGID = R.RATINGID " +
+                "WHERE YEAR(film.RELEASEDATE) = ? " +
+                "ORDER BY FILM.RATE DESC " +
+                "LIMIT ?";
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), year, count);
+    }
+
+    @Override
+    public Collection<Film> getSortedByGenreAndYear(String genreId, String year, String count){
+        String sqlQuery = "select * " +
+                "FROM FILM " +
+                "JOIN MPA R on FILM.RATINGID = R.RATINGID " +
+                "JOIN GENRELINE gl ON gl.FILMID = film.FILMID AND gl.GENREID = ? AND YEAR(film.RELEASEDATE) = ? " +
+                "ORDER BY FILM.RATE DESC " +
+                "LIMIT ?";
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), genreId, year, count);
     }
 
     @Override
@@ -243,7 +268,12 @@ public class DBFilmStorage implements FilmStorage {
         return jdbcTemplate.query(sqlGetCommon, (rs, rowNum) -> makeFilm(rs), userId, otherUserId);
     }
 
-      private Film makeFilm(ResultSet rs) throws SQLException {
+    @Override
+    public Collection<Film> getSortedWithYear(int year, int count) {
+        return jdbcTemplate.query(SqlQueries.FILMS_SELECTED_BY_YEAR, (rs, rowNum) -> makeFilm(rs), year, count);
+    }
+
+    private Film makeFilm(ResultSet rs) throws SQLException {
         int filmId = rs.getInt("FilmID");
         Film film = new Film(
                 filmId,
