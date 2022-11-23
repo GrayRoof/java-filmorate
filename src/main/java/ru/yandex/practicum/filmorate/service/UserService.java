@@ -32,7 +32,7 @@ public class UserService {
 
     /**
      * Возвращает коллекцию пользователей
-     * */
+     */
     public Collection<User> getAllUsers() {
         return userStorage.getAllUsers();
     }
@@ -40,8 +40,9 @@ public class UserService {
     /**
      * Добавляет пользователя в коллекцию
      * Возвращает добавленного пользователя
-     * @exception UserValidationException в случае, если пользователь содержит недопустимое содержание полей
-     * */
+     *
+     * @throws UserValidationException в случае, если пользователь содержит недопустимое содержание полей
+     */
     public User add(final User user) {
         validate(user);
         return userStorage.addUser(user);
@@ -50,8 +51,9 @@ public class UserService {
     /**
      * Обновляет пользователя в коллекции
      * Возвращает обновленного пользователя
-     * @exception UserValidationException в случае, если пользователь содержит недопустимое содержание полей
-     * */
+     *
+     * @throws UserValidationException в случае, если пользователь содержит недопустимое содержание полей
+     */
     public User update(final User user) {
         validate(user);
         return userStorage.updateUser(user);
@@ -59,9 +61,10 @@ public class UserService {
 
     /**
      * Добавляет пользователя в друзья другому пользователю
-     * @param supposedUserId - идентификатор пользователя
+     *
+     * @param supposedUserId   - идентификатор пользователя
      * @param supposedFriendId - идентификатор друга
-     * */
+     */
     public void addFriend(final String supposedUserId, final String supposedFriendId) {
         int storedUserId = getStoredUserId(supposedUserId);
         int storedFriendId = getStoredUserId(supposedFriendId);
@@ -70,10 +73,11 @@ public class UserService {
 
     /**
      * Удаляет пользователя из друзей другого пользователя
-     * @param supposedUserId - идентификатор пользователя
+     *
+     * @param supposedUserId   - идентификатор пользователя
      * @param supposedFriendId - идентификатор друга
-     * */
-    public void deleteFriend(final String supposedUserId, final  String supposedFriendId) {
+     */
+    public void deleteFriend(final String supposedUserId, final String supposedFriendId) {
         int storedUserId = getStoredUserId(supposedUserId);
         int storedFriendId = getStoredUserId(supposedFriendId);
         userStorage.deleteFriend(storedUserId, storedFriendId);
@@ -81,8 +85,9 @@ public class UserService {
 
     /**
      * Возвращает коллекцию пользователей, которые являются друзьями для заданного пользователя
+     *
      * @param supposedUserId - идентификатор пользователя
-     * */
+     */
     public Collection<User> getFriends(final String supposedUserId) {
         User user = getStoredUser(supposedUserId);
         Collection<User> friends = new HashSet<>();
@@ -94,9 +99,10 @@ public class UserService {
 
     /**
      * Возвращает коллекцию пользователей, которые являются общими друзьями двух заданных пользователей
-     * @param supposedUserId - идентификатор пользователя
+     *
+     * @param supposedUserId  - идентификатор пользователя
      * @param supposedOtherId - идентификатор другого пользователя
-     * */
+     */
     public Collection<User> getCommonFriends(final String supposedUserId, final String supposedOtherId) {
         User user = getStoredUser(supposedUserId);
         User otherUser = getStoredUser(supposedOtherId);
@@ -111,16 +117,18 @@ public class UserService {
 
     /**
      * Возвращает пользователя по идентификатора
+     *
      * @param supposedId - идентификатор пользователя
-     * */
+     */
     public User getUser(final String supposedId) {
         return getStoredUser(supposedId);
     }
 
     /**
      * Удаляет пользователя по идентификатору
+     *
      * @param supposedId - идентификатор фильма
-     * */
+     */
     public void deleteUser(String supposedId) {
         int storedUserId = getStoredUserId(supposedId);
         userStorage.deleteUser(storedUserId);
@@ -128,8 +136,9 @@ public class UserService {
 
     /**
      * Возвращает идентификатор существующего пользователя по строковому идентификатору
+     *
      * @param supposedId - идентификатор пользователя
-     * */
+     */
     public int getStoredUserId(final String supposedId) {
         final int userId = getIntUserId(supposedId);
 
@@ -140,10 +149,10 @@ public class UserService {
     }
 
     private void validate(final User user) {
-        if(user.getName() == null) {
+        if (user.getName() == null) {
             user.setName(user.getLogin());
             log.info("UserService: Поле name не задано. Установлено значение {} из поля login", user.getLogin());
-        }else if (user.getName().isEmpty() || user.getName().isBlank()) {
+        } else if (user.getName().isEmpty() || user.getName().isBlank()) {
             user.setName(user.getLogin());
             log.info("UserService: Поле name не содержит буквенных символов. " +
                     "Установлено значение {} из поля login", user.getLogin());

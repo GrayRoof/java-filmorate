@@ -31,12 +31,12 @@ public class GenreService {
     }
 
     public boolean deleteFilmGenres(int filmId) {
-       return dbGenreStorage.deleteFilmGenres(filmId);
+        return dbGenreStorage.deleteFilmGenres(filmId);
     }
 
-    public boolean addFilmGenres(int filmId, Collection<Genre> genres) {
+/*    public boolean addFilmGenres(int filmId, Collection<Genre> genres) {
         return dbGenreStorage.addFilmGenres(filmId, genres);
-    }
+    }*/
 
     private Integer intFromString(final String supposedInt) {
         try {

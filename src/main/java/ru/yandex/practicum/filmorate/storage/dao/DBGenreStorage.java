@@ -4,11 +4,17 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static java.util.function.UnaryOperator.identity;
 
 @Component
 public class DBGenreStorage {
@@ -21,14 +27,6 @@ public class DBGenreStorage {
     public boolean deleteFilmGenres(int filmId) {
         String deleteOldGenres = "delete from GENRELINE where FILMID = ?";
         jdbcTemplate.update(deleteOldGenres, filmId);
-        return true;
-    }
-
-    public boolean addFilmGenres(int filmId, Collection<Genre> genres) {
-        for (Genre genre : genres) {
-            String setNewGenres = "merge into GENRELINE (FILMID, GENREID) key(FILMID, GENREID) values (?, ?)";
-            jdbcTemplate.update(setNewGenres, filmId, genre.getId());
-        }
         return true;
     }
 
@@ -49,8 +47,7 @@ public class DBGenreStorage {
         Genre genre;
         try {
             genre = jdbcTemplate.queryForObject(sqlGenre, this::makeGenre, genreId);
-        }
-        catch (EmptyResultDataAccessException e) {
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Жанр с идентификатором " +
                     genreId + " не зарегистрирован!");
         }
@@ -60,5 +57,17 @@ public class DBGenreStorage {
     private Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {
         Genre genre = new Genre(rs.getInt("GenreID"), rs.getString("Name"));
         return genre;
+    }
+
+    public void load(Collection<Film> films) {
+        String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
+        final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, identity()));
+        final String sqlQuery = "select * from GENRE g, GENRELINE gl " +
+                "where gl.GENREID = g.GENREID AND gl.FILMID IN (" + inSql + ")";
+
+        jdbcTemplate.query(sqlQuery, (rs) -> {
+            final Film film = filmById.get(rs.getInt("FILMID"));
+            film.getGenres().add(makeGenre(rs, 0));
+        }, films.stream().map(Film::getId).toArray());
     }
 }

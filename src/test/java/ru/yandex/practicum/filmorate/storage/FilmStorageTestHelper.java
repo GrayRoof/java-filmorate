@@ -3,9 +3,11 @@ package ru.yandex.practicum.filmorate.storage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.dao.DBFilmStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,15 +16,17 @@ public class FilmStorageTestHelper {
     private final FilmStorage storage;
     private int nextIdx = 0;
 
-    public FilmStorageTestHelper(FilmStorage storage) {
+    public FilmStorageTestHelper(DBFilmStorage storage) {
         this.storage = storage;
     }
 
     public int getNewFilmId() {
-        return addFilm(1, List.of(), List.of()).getId();
+        return addFilm(1,List.of(),List.of()).getId();
     }
 
-    public Film addFilm(int mpaId, Collection<Integer> genreIds, Collection<Integer> directorIds) {
+
+
+    public Film addFilm(int mpaId,Collection<Integer> genreIds,Collection<Integer> directorsIds) {
         int idx = nextIdx++;
 
         return storage.addFilm(
@@ -34,6 +38,7 @@ public class FilmStorageTestHelper {
                         0,
                         createMpaLight(mpaId),
                         createFilmGenresLight(genreIds),
+                        new LinkedHashSet<>(),
                         List.of()
                 )
         );
@@ -47,8 +52,9 @@ public class FilmStorageTestHelper {
         return new Genre(genreId, null);
     }
 
-    private List<Genre> createFilmGenresLight(Collection<Integer> genreIds) {
-        return genreIds.stream().map(this::createFilmGenreLight).collect(Collectors.toList());
+    private LinkedHashSet<Genre> createFilmGenresLight(Collection<Integer> genreIds) {
+
+        return new LinkedHashSet<>(genreIds.stream().map(this::createFilmGenreLight).collect(Collectors.toList()));
     }
 
 }
