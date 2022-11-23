@@ -6,13 +6,14 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.sql.*;
 import java.util.Collection;
 import java.util.Objects;
 
 @Component
-public class DBReviewStorage {
+public class DBReviewStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -21,6 +22,7 @@ public class DBReviewStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Override
     public Review addReview(Review review) {
         String sqlQuery = "insert into reviews (content, isPositive, UserId, FilmID, Useful) values (?,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -39,6 +41,7 @@ public class DBReviewStorage {
         return getReview(id);
     }
 
+    @Override
     public Review getReview(Integer id) {
         String sqlQuery = "select * from reviews where ReviewID = ?;";
         return jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeReview(rs), id);
@@ -55,18 +58,21 @@ public class DBReviewStorage {
                 .build();
     }
 
+    @Override
     public Review editReview(Review review) {
         String sqlQuery = "update reviews set content = ?, isPositive = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, review.getContent(), review.getIsPositive(), review.getReviewId());
         return getReview(review.getReviewId());
     }
 
+    @Override
     public Integer removeReview(String id) {
         String sqlQuery = "delete from reviews where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, id);
         return Integer.parseInt(id);
     }
 
+    @Override
     public Review addLike(Integer id) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, changeUsefulValue(id, true), id);
@@ -74,6 +80,7 @@ public class DBReviewStorage {
     }
 
 
+    @Override
     public Review removeLike(Integer reviewId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,false), reviewId);
@@ -91,6 +98,7 @@ public class DBReviewStorage {
         return useful;
     }
 
+    @Override
     public Collection<Review> getAll(String filmId, int count) {
         String sqlQuery = "select * from reviews order by useful desc limit ?;";
         Integer id = 0;
