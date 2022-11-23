@@ -7,11 +7,13 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
+import ru.yandex.practicum.filmorate.model.FeedEvent;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -107,6 +109,14 @@ public class UserService {
             }
         }
         return commonFriends;
+    }
+
+    /**
+     * Возвращает коллекцию событий пользователя
+     * @param supposedUserId - идентификатор пользователя
+     * */
+    public Collection<FeedEvent> getUserFeed(final String supposedUserId) {
+        return new ArrayList<>();
     }
 
     /**
