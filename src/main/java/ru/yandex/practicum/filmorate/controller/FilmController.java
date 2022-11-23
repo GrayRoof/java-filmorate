@@ -33,10 +33,12 @@ public class FilmController {
         return filmService.getFilm(id);
     }
 
-    @GetMapping({"/popular?count={count}", "/popular"})
-    public Collection<Film> findMostPopular(@RequestParam(defaultValue = "10") String count) {
+    @GetMapping("/popular")
+    public Collection<Film> findMostPopular(@RequestParam(defaultValue = "10") String count,
+                                       @RequestParam(defaultValue = "all") String genreId,
+                                       @RequestParam(defaultValue = "all") String year) {
         log.info("Получен запрос GET к эндпоинту: /films/popular?count={}", count);
-        return filmService.getMostPopularFilms(count);
+        return filmService.getMostPopularFilms(count, genreId, year);
     }
 
     @PostMapping
@@ -95,11 +97,5 @@ public class FilmController {
         return filmService.getCommonFilms(userId, friendId);
     }
 
-    @GetMapping("/popular")
-    public Collection<Film> findByYearGenre(@RequestParam(defaultValue = "10") String count,
-                                       @RequestParam String genreId,
-                                       @RequestParam String year){
-        return filmService.getMostPopularFilms(count, genreId, year);
-    }
 
 }

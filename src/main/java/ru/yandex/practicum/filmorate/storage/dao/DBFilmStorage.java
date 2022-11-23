@@ -10,6 +10,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.SqlQueries;
 import ru.yandex.practicum.filmorate.event.OnDeleteUserEvent;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -21,7 +22,6 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component("DBFilmStorage")
 public class DBFilmStorage implements FilmStorage {
@@ -174,6 +174,31 @@ public class DBFilmStorage implements FilmStorage {
         return jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), count);
     }
 
+
+    @Override
+    public Collection<Film> yearGenreSorted(String count, String genreId, String year) {
+        String sqlQuery = getRightQuery(genreId, year);
+        return getRightCollection(sqlQuery, year, count, genreId);
+    }
+
+    private String getRightQuery(String genreId, String year){
+        if (genreId.equals("all") && !year.equals("all")) {
+            return SqlQueries.FILMS_SELECTED_BY_YEAR;
+        } else if (!genreId.equals("all") && year.equals("all")) {
+            return SqlQueries.FILMS_SELECTED_BY_GENRE;
+        } else return SqlQueries.FILMS_SELECTED_BY_YEAR_GENRE;
+    }
+
+    private Collection<Film> getRightCollection(String query, String year, String count, String genre){
+        if (!query.contains("GENREID") && query.contains("RELEASEDATE")) {
+            return jdbcTemplate.query(query, (rs, rowNum) -> makeFilm(rs), year, count);
+        } else if (!query.contains("RELEASEDATE") && query.contains("GENREID")) {
+            return jdbcTemplate.query(query, (rs, rowNum) -> makeFilm(rs), Integer.parseInt(genre), Integer.parseInt(count));
+        } else {
+            return jdbcTemplate.query(query, (rs, rowNum) -> makeFilm(rs), genre, year, count);
+        }
+    }
+
     @Override
     public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
         String sort;
@@ -295,16 +320,5 @@ public class DBFilmStorage implements FilmStorage {
         jdbcTemplate.update(sqlUpdateAllRates);
     }
 
-    @Override
-    public Collection<Film> getMostPopularFilms(Integer countNum, Integer genreNum, Integer yearNum) {
-        String sqlQuery = "select F.FILMID" +
-                ",F.NAME ,F.DESCRIPTION, F.RELEASEDATE, F.DURATION, F.RATE, GL.GENREID as GENREID " +
-                "FROM FILMS as F WHERE YEAR(F.RELEASEDATE) = ? " +
-                "inner join GENRELINE GL on GL.FILMID = F.FILMID and GL.GENREID = ?" +
-                "group by FILM.FILMID " +
-                "ORDER BY RATE desc " +
-                "limit ?";
 
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), yearNum, genreNum, countNum);
-    }
 }
