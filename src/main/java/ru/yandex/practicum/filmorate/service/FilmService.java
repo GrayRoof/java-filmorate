@@ -47,8 +47,7 @@ public class FilmService {
     public Collection<Film> getFilms() {
         final Collection<Film> films = filmStorage.getAllFilms();
         if (!films.isEmpty()) {
-            genreStorage.load(films);
-            directorStorage.load(films);
+            addExtraFilmData(films);
         }
         return films;
     }
@@ -105,8 +104,7 @@ public class FilmService {
             size = 10;
         }
         Collection<Film> films = filmStorage.getMostPopularFilms(size);
-        genreStorage.load(films);
-        directorStorage.load(films);
+        addExtraFilmData(films);
         return films;
     }
 
@@ -118,7 +116,9 @@ public class FilmService {
     public Collection<Film> getCommonFilms(final String userId, final String otherUserId) {
         int storedUserId = userService.getStoredUserId(userId);
         int storedOtherUserId = userService.getStoredUserId(otherUserId);
-        return filmStorage.getCommonFilms(storedUserId, storedOtherUserId);
+        Collection<Film> films = filmStorage.getCommonFilms(storedUserId, storedOtherUserId);
+        addExtraFilmData(films);
+        return films;
     }
 
     /**
@@ -135,8 +135,7 @@ public class FilmService {
     public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
         directorStorage.isExist(id);
         Collection<Film> films = filmStorage.getSortedFilmWithDirector(id, sortBy);
-        genreStorage.load(films);
-        directorStorage.load(films);
+        addExtraFilmData(films);
         return films;
     }
 
@@ -198,8 +197,7 @@ public class FilmService {
         if (film == null) {
             onFilmNotFound(filmId);
         }
-        genreStorage.load(List.of(film));
-        directorStorage.load(List.of(film));
+        addExtraFilmData(film);
         return film;
     }
 
@@ -210,5 +208,14 @@ public class FilmService {
             onFilmNotFound(filmId);
         }
         return filmId;
+    }
+
+    private void addExtraFilmData(Film film) {
+        addExtraFilmData(List.of(film));
+    }
+
+    private void addExtraFilmData(Collection<Film> films) {
+        genreStorage.load(films);
+        directorStorage.load(films);
     }
 }

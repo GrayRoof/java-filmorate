@@ -56,8 +56,8 @@ public class RecommendationService {
                         .replace("{", "")
                         .replace("}", "")
         );
-        directorStorage.load(films);
         genreStorage.load(films);
+        directorStorage.load(films);
         return films;
     }
 
