@@ -19,7 +19,8 @@ import java.util.Map;
 @Slf4j
 public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(value = {FilmValidationException.class, UserValidationException.class})
+    @ExceptionHandler(value = {FilmValidationException.class,
+            UserValidationException.class})
     public ErrorMessage handleException(ConstraintViolationException exception, WebRequest request) {
         Map<String, String> errors = new HashMap<>();
         exception.getConstraintViolations().forEach(error -> {
@@ -38,7 +39,7 @@ public class ErrorHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(value = {WrongIdException.class})
+    @ExceptionHandler(value = {WrongIdException.class, WrongReviewException.class})
     public ErrorMessage handleWrongIdException(Exception exception, WebRequest request) {
         ErrorMessage error = new ErrorMessage(
                 new Date(),
@@ -51,7 +52,8 @@ public class ErrorHandler {
 
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(value = {NotFoundException.class})
+    @ExceptionHandler(value = {NotFoundException.class,
+            FilmValidationInReviewException.class})
     public ErrorMessage handleNotFoundException(Exception exception, WebRequest request) {
         ErrorMessage error = new ErrorMessage(
                 new Date(),

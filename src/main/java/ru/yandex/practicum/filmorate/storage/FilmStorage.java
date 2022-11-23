@@ -20,4 +20,6 @@ public interface FilmStorage {
     Map<Integer, BitSet> getRelatedLikesByUserId(int userId);
     BitSet getLikesOfUserList(List<Integer> usersId);
     Collection<Film> getFilmsOfIdArray(String idString);
+    Collection<Film> getCommonFilms(int userId, int otherUserId);
+
 }

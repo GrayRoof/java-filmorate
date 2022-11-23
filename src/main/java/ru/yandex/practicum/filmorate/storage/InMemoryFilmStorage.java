@@ -84,10 +84,17 @@ public class InMemoryFilmStorage implements FilmStorage{
     }
 
     @Override
-    public BitSet getLikesOfUserList(List<Integer> usersId) { throw new UnsupportedOperationException(); };
+    public BitSet getLikesOfUserList(List<Integer> usersId) { 
+        throw new UnsupportedOperationException(); 
+    }
 
     @Override
     public Collection<Film> getFilmsOfIdArray(String idString) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public Collection<Film> getCommonFilms(int userId, int otherUserId) {
         throw new UnsupportedOperationException();
     }
 

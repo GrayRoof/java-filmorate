@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -89,6 +88,17 @@ public class FilmService {
         }
         Collection<Film> films = filmStorage.getMostPopularFilms(size);
         return films;
+    }
+
+    /**
+     * Возвращает общую коллекцию фильмов для двух пользователей.
+     * @param userId идентификатор первого пользователя
+     * @param otherUserId идентификатор второго пользователя
+     * */
+    public Collection<Film> getCommonFilms(final String userId, final String otherUserId) {
+        int storedUserId = userService.getStoredUserId(userId);
+        int storedOtherUserId = userService.getStoredUserId(otherUserId);
+        return filmStorage.getCommonFilms(storedUserId, storedOtherUserId);
     }
 
     /**
