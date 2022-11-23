@@ -206,4 +206,19 @@ public class FilmService {
         }
         return filmId;
     }
+
+    public Collection<Film> getMostPopularFilms(String count, String genreId, String year) {
+        int cnt = Integer.parseInt(count);
+        int gId;
+        int yr;
+        try {
+            gId = Integer.parseInt(genreId);
+            yr = Integer.parseInt(year);
+        } catch (NumberFormatException e){
+            throw new NotFoundException("Неверный формат параметра запроса: "+e.getStackTrace());
+        }
+
+        return filmStorage.getMostPopularFilms(cnt,gId, yr);
+
+    }
 }

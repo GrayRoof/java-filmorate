@@ -297,12 +297,14 @@ public class DBFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getMostPopularFilms(Integer countNum, Integer genreNum, Integer yearNum) {
-        String sqlQuery = "select f.* from film as f where YEAR(ReleaseDate) = ? " +
-                "join genreline as gl on f.FilmID=gl.FilmID and " +
-                "join genre as g on g.genreID = ?";
-        Collection<Film> films = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), yearNum, genreNum);
-        return films.stream()
-                .sorted((film1, film2) -> film2.getRate()-film1.getRate())
-                .limit(countNum).collect(Collectors.toList());
+        String sqlQuery = "select F.FILMID" +
+                ",F.NAME ,F.DESCRIPTION, F.RELEASEDATE, F.DURATION, F.RATE, GL.GENREID as GENREID " +
+                "FROM FILMS as F WHERE YEAR(F.RELEASEDATE) = ? " +
+                "inner join GENRELINE GL on GL.FILMID = F.FILMID and GL.GENREID = ?" +
+                "group by FILM.FILMID " +
+                "ORDER BY RATE desc " +
+                "limit ?";
+
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), yearNum, genreNum, countNum);
     }
 }
