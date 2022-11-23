@@ -9,11 +9,16 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.MpaService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorageTestHelper;
 import ru.yandex.practicum.filmorate.storage.UserStorageTestHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -28,6 +33,9 @@ class DBFilmStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private final DBUserStorage userStorage;
     private final DBFilmStorage filmStorage;
+    private final DBGenreStorage genreStorage;
+    private final FilmService filmService;
+    private final MpaService mpaService;
 
     private UserStorageTestHelper userStorageTestHelper;
     private FilmStorageTestHelper filmStorageTestHelper;
@@ -69,7 +77,7 @@ class DBFilmStorageTest {
 
     @Test
     void updateFilm() {
-        Film film = filmStorageTestHelper.addFilm(1, List.of(), List.of());
+        Film film = filmStorageTestHelper.addFilm(1, List.of(1),List.of());
 
         film.setName("update");
         filmStorage.updateFilm(film);
@@ -117,7 +125,7 @@ class DBFilmStorageTest {
 
     @Test
     void deleteFilmDeletesFilmGenres() {
-        final int filmId = filmStorageTestHelper.addFilm(1, List.of(1, 2, 3), List.of()).getId();
+        final int filmId = filmStorageTestHelper.addFilm(1, List.of(1, 2, 3),List.of()).getId();
 
         Supplier<Integer> filmGenresCount =
                 () -> jdbcTemplate.queryForObject(

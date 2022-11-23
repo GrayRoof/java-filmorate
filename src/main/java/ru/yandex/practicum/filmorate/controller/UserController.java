@@ -31,19 +31,19 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> findFriends(@PathVariable String id){
+    public Collection<User> findFriends(@PathVariable String id) {
         log.info("Получен запрос GET к эндпоинту: /users/{}/friends", id);
         return userService.getFriends(id);
     }
 
     @GetMapping("/{id}")
-    public User findUser(@PathVariable String id){
+    public User findUser(@PathVariable String id) {
         log.info("Получен запрос GET к эндпоинту: /users/{}/", id);
         return userService.getUser(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> findCommonFriends(@PathVariable String id, @PathVariable String otherId){
+    public Collection<User> findCommonFriends(@PathVariable String id, @PathVariable String otherId) {
         log.info("Получен запрос GET к эндпоинту: /users/{}/friends/common/{}", id, otherId);
         return userService.getCommonFriends(id, otherId);
     }

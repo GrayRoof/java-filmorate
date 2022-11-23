@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class InMemoryUserStorage implements UserStorage{
+public class InMemoryUserStorage implements UserStorage {
     private final Map<Integer, User> users = new HashMap<>();
 
     @Override
@@ -39,7 +39,7 @@ public class InMemoryUserStorage implements UserStorage{
 
     @Override
     public User updateUser(User user) {
-        if(!getAllUsers().contains(user)) {
+        if (!getAllUsers().contains(user)) {
             throw new NotFoundException("Пользователь с идентификатором " +
                     user.getId() + " не зарегистрирован!");
         }
