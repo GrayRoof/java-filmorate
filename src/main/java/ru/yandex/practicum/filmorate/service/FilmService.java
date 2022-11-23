@@ -9,8 +9,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.dao.DBDirectorStorage;
-import ru.yandex.practicum.filmorate.storage.dao.DBGenreStorage;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -21,16 +21,21 @@ public class FilmService {
     private static int increment = 0;
 
     private final Validator validator;
-    private final DBGenreStorage dbGenreStorage;
+    private final GenreStorage genreStorage;
     private final FilmStorage filmStorage;
     private final UserService userService;
-    private final DBDirectorStorage directorStorage;
+    private final DirectorStorage directorStorage;
 
     @Autowired
-    public FilmService(Validator validator, DBGenreStorage dbGenreStorage, @Qualifier("DBFilmStorage") FilmStorage filmStorage,
-                       @Autowired(required = false) UserService userService, DBDirectorStorage directorStorage) {
+    public FilmService(
+            UserService userService,
+            Validator validator,
+            @Qualifier(UsedStorageConsts.QUALIFIER) GenreStorage genreStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) FilmStorage filmStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) DirectorStorage directorStorage
+    ) {
         this.validator = validator;
-        this.dbGenreStorage = dbGenreStorage;
+        this.genreStorage = genreStorage;
         this.filmStorage = filmStorage;
         this.userService = userService;
         this.directorStorage = directorStorage;
@@ -42,7 +47,7 @@ public class FilmService {
     public Collection<Film> getFilms() {
         final Collection<Film> films = filmStorage.getAllFilms();
         if (!films.isEmpty()) {
-            dbGenreStorage.load(films);
+            genreStorage.load(films);
             directorStorage.load(films);
         }
         return films;
@@ -100,7 +105,7 @@ public class FilmService {
             size = 10;
         }
         Collection<Film> films = filmStorage.getMostPopularFilms(size);
-        dbGenreStorage.load(films);
+        genreStorage.load(films);
         directorStorage.load(films);
         return films;
     }
@@ -130,7 +135,7 @@ public class FilmService {
     public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
         directorStorage.isExist(id);
         Collection<Film> films = filmStorage.getSortedFilmWithDirector(id, sortBy);
-        dbGenreStorage.load(films);
+        genreStorage.load(films);
         directorStorage.load(films);
         return films;
     }
@@ -193,7 +198,7 @@ public class FilmService {
         if (film == null) {
             onFilmNotFound(filmId);
         }
-        dbGenreStorage.load(List.of(film));
+        genreStorage.load(List.of(film));
         directorStorage.load(List.of(film));
         return film;
     }

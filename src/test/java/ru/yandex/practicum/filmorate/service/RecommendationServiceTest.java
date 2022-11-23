@@ -5,14 +5,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorageTestHelper;
-import ru.yandex.practicum.filmorate.storage.UserStorageTestHelper;
-import ru.yandex.practicum.filmorate.storage.dao.DBFilmStorage;
-import ru.yandex.practicum.filmorate.storage.dao.DBUserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.storage.dao.DBStorageConsts;
 
 import java.util.Collection;
 
@@ -23,8 +22,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class RecommendationServiceTest {
     private final JdbcTemplate jdbcTemplate;
-    private final DBUserStorage userStorage;
-    private final DBFilmStorage filmStorage;
+    @Qualifier(DBStorageConsts.QUALIFIER)
+    private final UserStorage userStorage;
+    @Qualifier(DBStorageConsts.QUALIFIER)
+    private final FilmStorage filmStorage;
     private final RecommendationService recommendationService;
 
     private UserStorageTestHelper userStorageTestHelper;

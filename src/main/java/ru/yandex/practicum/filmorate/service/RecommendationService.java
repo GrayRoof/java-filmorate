@@ -14,8 +14,10 @@ public class RecommendationService {
     private final UserService userService;
     private final FilmStorage filmStorage;
 
-    public RecommendationService(UserService userService,
-                                 @Qualifier("DBFilmStorage") FilmStorage filmStorage) {
+    public RecommendationService(
+            UserService userService,
+            @Qualifier(UsedStorageConsts.QUALIFIER) FilmStorage filmStorage
+    ) {
         this.userService = userService;
         this.filmStorage = filmStorage;
     }

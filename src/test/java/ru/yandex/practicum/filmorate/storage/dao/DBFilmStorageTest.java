@@ -5,20 +5,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.MpaService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorageTestHelper;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorageTestHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -31,11 +28,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class DBFilmStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
-    private final DBUserStorage userStorage;
+    @Qualifier(DBStorageConsts.QUALIFIER)
+    private final UserStorage userStorage;
     private final DBFilmStorage filmStorage;
-    private final DBGenreStorage genreStorage;
-    private final FilmService filmService;
-    private final MpaService mpaService;
 
     private UserStorageTestHelper userStorageTestHelper;
     private FilmStorageTestHelper filmStorageTestHelper;

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 
 @Component
+@Qualifier(DBStorageConsts.QUALIFIER)
 public class DBMpaStorage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
 

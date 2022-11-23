@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 import static java.util.function.UnaryOperator.identity;
 
 @Component
+@Qualifier(DBStorageConsts.QUALIFIER)
 public class DBDirectorStorage implements DirectorStorage {
     private final JdbcTemplate jdbcTemplate;
 
