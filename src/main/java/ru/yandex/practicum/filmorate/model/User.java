@@ -8,7 +8,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 @Data
 @AllArgsConstructor
@@ -26,7 +27,7 @@ public class User {
     private List<Integer> friends;
 
     public boolean addFriend(final Integer id) {
-       return friends.add(id);
+        return friends.add(id);
     }
 
     public boolean deleteFriend(final Integer id) {

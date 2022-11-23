@@ -15,7 +15,7 @@ public class MpaService {
     }
 
     public Collection<Mpa> getAllMpa() {
-       return dbMpaStorage.getAllMpa();
+        return dbMpaStorage.getAllMpa();
     }
 
     public Mpa getMpa(String supposedId) {

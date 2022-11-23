@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
@@ -11,7 +13,6 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,6 +22,18 @@ class UserServiceTest {
 
     @Autowired
     UserService service;
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    @AfterEach
+    void tearDown() {
+        jdbcTemplate.update("DELETE FROM friendship;");
+        jdbcTemplate.update("DELETE FROM likes;");
+        jdbcTemplate.update("DELETE FROM users;");
+        jdbcTemplate.update("DELETE FROM film;");
+        jdbcTemplate.update("ALTER TABLE users ALTER COLUMN userid RESTART WITH 1;");
+        jdbcTemplate.update("ALTER TABLE film ALTER COLUMN filmid RESTART WITH 1;");
+    }
 
     @Test
     void shouldAddUserWhenValidUserData() {
