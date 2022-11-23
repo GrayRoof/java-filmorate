@@ -4,10 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -82,13 +79,48 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> getMostPopularByGenre(String count, String genreId) {
+        return null;
+    }
+
+    @Override
+    public Collection<Film> getMostPopularByYear(int year, int count) {
+        return null;
+    }
+
+    @Override
+    public Collection<Film> getSortedByGenreAndYear(String genreId, String year, String count) {
+        return null;
+    }
+
+    @Override
     public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
        throw new UnsupportedOperationException();
        }
 
-@Override
+    @Override
+    public Map<Integer, BitSet> getRelatedLikesByUserId(int userId) {
+        return null;
+    }
+
+    @Override
+    public BitSet getLikesOfUserList(List<Integer> usersId) {
+        return null;
+    }
+
+    @Override
+    public Collection<Film> getFilmsOfIdArray(String idString) {
+        return null;
+    }
+
+    @Override
     public Collection<Film> getCommonFilms(int userId, int otherUserId) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Collection<Film> getSortedWithYear(int year, int count) {
+        return null;
     }
 
 }

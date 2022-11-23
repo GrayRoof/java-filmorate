@@ -206,4 +206,16 @@ public class FilmService {
         }
         return filmId;
     }
+
+    public Collection<Film> getMostPopularFilms(String count, String genreId, String year) {
+        if (!genreId.equals("all") && !year.equals("all"))
+            return filmStorage.getSortedByGenreAndYear(genreId, year, count);
+        if (!genreId.equals("all") && year.equals("all"))
+            return filmStorage.getMostPopularByGenre(genreId, count);
+        if (genreId.equals("all") && !year.equals("all"))
+            return filmStorage.getMostPopularByYear(Integer.parseInt(year), Integer.parseInt(count));
+        return filmStorage.getMostPopularFilms(Integer.parseInt(count));
+
+
+    }
 }

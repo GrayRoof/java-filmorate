@@ -183,23 +183,6 @@ public class DBFilmStorage implements FilmStorage {
         return jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), count);
     }
 
-
-    @Override
-    public Collection<Film> getMostPopularFilms(String count, String genreId, String year) {
-        if (genreId.contains("all") && !year.contains("all")) {
-
-            return jdbcTemplate
-                    .query(SqlQueries.FILMS_SELECTED_BY_YEAR, (rs, rowNum) -> makeFilm(rs), genreId, year, count);
-        }
-        if (!genreId.contains("all") && year.contains("all")) {
-            return jdbcTemplate
-                    .query(SqlQueries.FILMS_SELECTED_BY_GENRE, (rs, rowNum) -> makeFilm(rs),
-                            Integer.parseInt(genreId), Integer.parseInt(count));
-        }
-        return jdbcTemplate.query(SqlQueries.FILMS_SELECTED_BY_YEAR_GENRE, (rs, rowNum) -> makeFilm(rs), genreId, year, count);
-
-    }
-
     @Override
     public Collection<Film> getMostPopularByGenre(String count, String genreId){
         String sqlQuery = "select * " +
