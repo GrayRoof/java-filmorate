@@ -79,7 +79,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getMostPopularByGenre(String count, String genreId) {
+    public Collection<Film> getMostPopularByGenre(int count, int genreId) {
         return null;
     }
 
@@ -89,7 +89,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getSortedByGenreAndYear(String genreId, String year, String count) {
+    public Collection<Film> getSortedByGenreAndYear(int genreId, int year, int count) {
         return null;
     }
 

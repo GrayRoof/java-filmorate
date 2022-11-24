@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.dao.DBDirectorStorage;
 import ru.yandex.practicum.filmorate.storage.dao.DBGenreStorage;
+import ru.yandex.practicum.filmorate.validator.GenreValidator;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -26,14 +27,18 @@ public class FilmService {
     private final UserService userService;
     private final DBDirectorStorage directorStorage;
 
+    private final GenreValidator genreValidator;
+
     @Autowired
     public FilmService(Validator validator, DBGenreStorage dbGenreStorage, @Qualifier("DBFilmStorage") FilmStorage filmStorage,
-                       @Autowired(required = false) UserService userService, DBDirectorStorage directorStorage) {
+                       @Autowired(required = false) UserService userService, DBDirectorStorage directorStorage,
+                       GenreValidator genreValidator) {
         this.validator = validator;
         this.dbGenreStorage = dbGenreStorage;
         this.filmStorage = filmStorage;
         this.userService = userService;
         this.directorStorage = directorStorage;
+        this.genreValidator = genreValidator;
     }
 
     /**
@@ -208,10 +213,13 @@ public class FilmService {
     }
 
     public Collection<Film> getMostPopularFilms(String count, String genreId, String year) {
-        if (!genreId.equals("all") && !year.equals("all"))
-            return filmStorage.getSortedByGenreAndYear(genreId, year, count);
+        if (!genreId.equals("all") && !year.equals("all")) {
+            genreValidator.validateGenreById(Integer.parseInt(genreId));
+            return filmStorage.getSortedByGenreAndYear(Integer.parseInt(genreId),
+                    Integer.parseInt(year), Integer.parseInt(count));
+        }
         if (!genreId.equals("all") && year.equals("all"))
-            return filmStorage.getMostPopularByGenre(genreId, count);
+            return filmStorage.getMostPopularByGenre(Integer.parseInt(count), Integer.parseInt(genreId));
         if (genreId.equals("all") && !year.equals("all"))
             return filmStorage.getMostPopularByYear(Integer.parseInt(year), Integer.parseInt(count));
         return filmStorage.getMostPopularFilms(Integer.parseInt(count));

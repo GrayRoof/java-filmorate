@@ -173,9 +173,8 @@ public class DBFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getMostPopularFilms(int count) {
-        String sqlCacheMostPopular = "select FILM.FILMID" +
-                ",FILM.NAME ,FILM.DESCRIPTION ,RELEASEDATE ,DURATION ,RATE " +
-                ",R.RATINGID, R.NAME, R.DESCRIPTION from FILM " +
+        String sqlCacheMostPopular = "select FILM.FILMID, FILM.NAME, FILM.DESCRIPTION, " +
+                "RELEASEDATE, DURATION, RATE, R.RATINGID, R.NAME, R.DESCRIPTION from FILM " +
                 "inner join MPA R on R.RATINGID = FILM.RATINGID " +
                 "group by FILM.FILMID " +
                 "ORDER BY RATE desc " +
@@ -184,19 +183,15 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getMostPopularByGenre(String count, String genreId){
-        String sqlQuery = "select * " +
-                "FROM FILM " +
-                "JOIN MPA R on FILM.RATINGID = R.RATINGID " +
-                "JOIN GENRELINE gl ON gl.FILMID = film.FILMID AND gl.GENREID = ? " +
-                "ORDER BY RATE DESC " +
-                "LIMIT ?";
-//        return getAllFilms().stream().filter(film -> film.getGenres().stream()
-//                        .filter(genre -> genre.getId() == Integer.parseInt(genreId)).isParallel())
-//                .sorted((film1, film2) -> film2.getRate()-film1.getRate())
-//                .collect(Collectors.collectingAndThen(
-//                        Collectors.toList(), l -> {Collections.reverse(l); return l;}));
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), genreId, count);
+    public Collection<Film> getMostPopularByGenre(int count, int genreId){
+        String sqlCacheMostPopular = "select * " +
+                "from FILM F " +
+                "inner join MPA R on R.RATINGID = F.RATINGID " +
+                "JOIN GENRELINE GL ON GL.FILMID=F.FILMID " +
+                "WHERE GL.GENREID = ? " +
+                "ORDER BY RATE desc " +
+                "limit ?";
+        return jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), genreId, count);
     }
 
     @Override
@@ -204,19 +199,21 @@ public class DBFilmStorage implements FilmStorage {
         String sqlQuery = "select * " +
                 "FROM FILM " +
                 "JOIN MPA R on FILM.RATINGID = R.RATINGID " +
-                "WHERE YEAR(film.RELEASEDATE) = ? " +
-                "ORDER BY FILM.RATE DESC " +
+                "WHERE YEAR(RELEASEDATE) = ? " +
+                "ORDER BY RATE DESC " +
                 "LIMIT ?";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), year, count);
     }
 
     @Override
-    public Collection<Film> getSortedByGenreAndYear(String genreId, String year, String count){
+    public Collection<Film> getSortedByGenreAndYear(int genreId, int year, int count){
         String sqlQuery = "select * " +
                 "FROM FILM " +
                 "JOIN MPA R on FILM.RATINGID = R.RATINGID " +
-                "JOIN GENRELINE gl ON gl.FILMID = film.FILMID AND gl.GENREID = ? AND YEAR(film.RELEASEDATE) = ? " +
-                "ORDER BY FILM.RATE DESC " +
+                "JOIN GENRELINE gl ON gl.FILMID = FILM.FILMID " +
+                "WHERE gl.GENREID = ? AND YEAR(RELEASEDATE) = ? " +
+                "GROUP BY FILM.FILMID " +
+                "ORDER BY RATE DESC " +
                 "LIMIT ?";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), genreId, year, count);
     }
@@ -307,6 +304,8 @@ public class DBFilmStorage implements FilmStorage {
 
     private Film makeFilm(ResultSet rs) throws SQLException {
         int filmId = rs.getInt("FilmID");
+        LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+        genreStorage.getGenresByFilmId(filmId).forEach(genre -> genres.add(genre));
         Film film = new Film(
                 filmId,
                 rs.getString("Name"),
@@ -317,7 +316,7 @@ public class DBFilmStorage implements FilmStorage {
                 new Mpa(rs.getInt("MPA.RatingID"),
                         rs.getString("MPA.Name"),
                         rs.getString("MPA.Description")),
-                new LinkedHashSet<>(),
+                genres,
                 new LinkedHashSet<>(),
                 getFilmLikes(filmId));
         return film;

@@ -21,11 +21,11 @@ public interface FilmStorage {
     boolean deleteLike(int filmId, int userId);
     Collection<Film> getMostPopularFilms(int count);
 
-    Collection<Film> getMostPopularByGenre(String count, String genreId);
+    Collection<Film> getMostPopularByGenre(int count, int genreId);
 
     Collection<Film> getMostPopularByYear(int year, int count);
 
-    Collection<Film> getSortedByGenreAndYear(String genreId, String year, String count);
+    Collection<Film> getSortedByGenreAndYear(int genreId, int year, int count);
 
     Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy);
 
