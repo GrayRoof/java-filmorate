@@ -26,6 +26,7 @@ class DBFilmStorageTest {
     private final FilmStorage filmStorage;
     private final UserStorageTestHelper userStorageTestHelper;
     private final DirectorStorageTestHelper directorStorageTestHelper;
+    private final ReviewStorageTestHelper reviewStorageTestHelper;
     private final FilmStorageTestHelper filmStorageTestHelper;
 
     @Autowired
@@ -33,6 +34,7 @@ class DBFilmStorageTest {
             JdbcTemplate jdbcTemplate,
             UserStorage userStorage,
             DirectorStorage directorStorage,
+            ReviewStorage reviewStorage,
             DBFilmStorage filmStorage
     ) {
         this.jdbcTemplate = jdbcTemplate;
@@ -40,6 +42,7 @@ class DBFilmStorageTest {
 
         this.userStorageTestHelper = new UserStorageTestHelper(userStorage);
         this.directorStorageTestHelper = new DirectorStorageTestHelper(directorStorage);
+        this.reviewStorageTestHelper = new ReviewStorageTestHelper(reviewStorage);
         this.filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
     }
 
@@ -166,6 +169,32 @@ class DBFilmStorageTest {
         filmStorage.deleteFilm(filmId);
 
         assertEquals(0, filmDirectorsCount.get());
+    }
+
+    @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
+    void deleteFilmDeletesReviews() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+
+        final int annId = userStorageTestHelper.getNewUserId();
+        final int bobId = userStorageTestHelper.getNewUserId();
+        final int camId = userStorageTestHelper.getNewUserId();
+
+        reviewStorageTestHelper.addReview(filmId, annId, true);
+        reviewStorageTestHelper.addReview(filmId, bobId, true);
+        reviewStorageTestHelper.addReview(filmId, camId, true);
+
+        Supplier<Integer> filmReviewsCount =
+                () -> jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM reviews WHERE filmid=?;",
+                        Integer.class,
+                        filmId
+                );
+        assertEquals(3, filmReviewsCount.get());
+
+        filmStorage.deleteFilm(filmId);
+
+        assertEquals(0, filmReviewsCount.get());
     }
 
     @Test
