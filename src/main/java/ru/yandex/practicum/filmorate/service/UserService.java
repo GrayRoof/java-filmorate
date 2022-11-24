@@ -125,8 +125,8 @@ public class UserService {
      * @param supposedUserId - идентификатор пользователя
      * */
     public Collection<FeedEvent> getUserFeed(final String supposedUserId) {
-
-        return new ArrayList<>();
+        final int userId = getStoredUserId(supposedUserId);
+        return userStorage.getFeed(userId);
     }
 
     /**

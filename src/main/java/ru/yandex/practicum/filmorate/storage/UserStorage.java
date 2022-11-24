@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import ru.yandex.practicum.filmorate.model.FeedEvent;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -10,6 +11,8 @@ public interface UserStorage {
     User getUser(final Integer id);
 
     Collection<User> getAllUsers();
+
+    Collection<FeedEvent> getFeed(int userId);
 
     User addUser(User user);
 

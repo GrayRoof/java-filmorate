@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Data
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class FeedEvent {
     private int id;
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
     private int userId;
     private EventType eventType;
     private Operation operation;
