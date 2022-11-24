@@ -67,16 +67,22 @@ public class DBReviewStorage {
         return Integer.parseInt(id);
     }
 
-    public Review addLike(Integer id) {
+    public Review addLike(Integer reviewId, Integer userId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
-        jdbcTemplate.update(sqlQuery, changeUsefulValue(id, true), id);
-        return getReview(id);
+        String sqlQuery2 = "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
+
+        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId, true), reviewId);
+
+        jdbcTemplate.update(sqlQuery2, reviewId, userId, true);
+        return getReview(reviewId);
     }
 
 
-    public Review removeLike(Integer reviewId) {
+    public Review removeLike(Integer reviewId, Integer userId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,false), reviewId);
+        String sqlQuery2 = "delete from useful where ReviewID = ? and userid = ? and useful = ?";
+        jdbcTemplate.update(sqlQuery2, reviewId, userId, true);
         return getReview(reviewId);
     }
 
@@ -102,5 +108,23 @@ public class DBReviewStorage {
         }
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), filmId, count);
 
+    }
+
+    public Review addDislike(int reviewId, int userId) {
+        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
+        String sqlQuery2 = "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
+
+        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId, false), reviewId);
+        jdbcTemplate.update(sqlQuery2, reviewId, userId, false);
+
+        return getReview(reviewId);
+    }
+
+    public Review removeDislike(int reviewId, int userId) {
+        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
+        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,true), reviewId);
+        String sqlQuery2 = "delete from useful where ReviewID = ? and userid = ? and useful = ?";
+        jdbcTemplate.update(sqlQuery2, reviewId, userId, false);
+        return getReview(reviewId);
     }
 }

@@ -21,6 +21,20 @@ public class ReviewValidator {
         if (id != 1) throw new NotFoundException("Отзыва с ID "+ reviewId +" не существует");
     }
 
+    public void validateGoodReviewByUserAndId(Integer reviewId, Integer userId){
+        String sqlQuery = "select count(*) from useful where ReviewID = ? and userId = ? and useful = ?";
+        Integer id = jdbcTemplate.queryForObject(sqlQuery, Integer.class, reviewId, userId, true);
+        if (id == 1) throw new ReviewAlreadyLikedException("Пользователь с ID "+ userId
+                + "уже поставил лайк отзыву с ID " + reviewId);
+    }
+
+    public void validateBadReviewByUserAndId(Integer reviewId, Integer userId){
+        String sqlQuery = "select count(*) from useful where ReviewID = ? and userId = ? and useful = ?";
+        Integer id = jdbcTemplate.queryForObject(sqlQuery, Integer.class, reviewId, userId, false);
+        if (id == 1) throw new ReviewAlreadyDislikedException("Пользователь с ID "+ userId
+                + "уже поставил дизлайк отзыву с ID " + reviewId);
+    }
+
 
 
 

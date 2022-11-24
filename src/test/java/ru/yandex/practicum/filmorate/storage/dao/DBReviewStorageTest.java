@@ -141,7 +141,7 @@ class DBReviewStorageTest {
                 build();
 
         reviewStorage.addReview(review);
-        reviewStorage.addLike(1);
+        reviewStorage.addLike(1, userId);
 
         assertThat(reviewStorage.getReview(1)).hasFieldOrPropertyWithValue("useful", 1);
 
@@ -152,7 +152,7 @@ class DBReviewStorageTest {
     void shouldRemoveLike() {
         addLike();
         assertThat(reviewStorage.getReview(1)).hasFieldOrPropertyWithValue("useful", 1);
-        reviewStorage.removeLike(1);
+        reviewStorage.removeLike(1, 1);
         assertThat(reviewStorage.getReview(1)).hasFieldOrPropertyWithValue("useful", 0);
 
     }
