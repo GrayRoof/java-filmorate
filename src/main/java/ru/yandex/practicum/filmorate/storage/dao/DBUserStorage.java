@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -9,11 +10,14 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.event.OnDeleteUserEvent;
+import ru.yandex.practicum.filmorate.event.OnFeedEvent;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.AllowedFeedEvents;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -106,6 +110,54 @@ public class DBUserStorage implements UserStorage {
         return result;
     }
 
+    @Override
+    public boolean addFriend(int userId, int friendId) {
+        boolean friendAccepted;
+        String sqlGetReversFriend = "select * from FRIENDSHIP " +
+                "where USERID = ? and FRIENDID = ?";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlGetReversFriend, friendId, userId);
+        friendAccepted = rs.next();
+        String sqlSetFriend = "insert into FRIENDSHIP (USERID, FRIENDID, STATUS) " +
+                "VALUES (?,?,?)";
+        boolean result = jdbcTemplate.update(sqlSetFriend, userId, friendId, friendAccepted) > 0;
+        if (friendAccepted) {
+            String sqlSetStatus = "update FRIENDSHIP set STATUS = true " +
+                    "where USERID = ? and FRIENDID = ?";
+            jdbcTemplate.update(sqlSetStatus, friendId, userId);
+        }
+        if (result) {
+            eventPublisher.publishEvent(new OnFeedEvent(userId, friendId, AllowedFeedEvents.ADD_FRIEND));
+        }
+        return true;
+    }
+
+    @Override
+    public boolean deleteFriend(int userId, int friendId) {
+        String sqlDeleteFriend = "delete from FRIENDSHIP where USERID = ? and FRIENDID = ?";
+        boolean result = jdbcTemplate.update(sqlDeleteFriend, userId, friendId) > 0;
+        String sqlSetStatus = "update FRIENDSHIP set STATUS = false " +
+                "where USERID = ? and FRIENDID = ?";
+        jdbcTemplate.update(sqlSetStatus, friendId, userId);
+        if (result) {
+            eventPublisher.publishEvent(new OnFeedEvent(userId, friendId, AllowedFeedEvents.REMOVE_FRIEND));
+        }
+        return true;
+    }
+
+    @EventListener
+    public void handleOnFeedEvent(OnFeedEvent event) {
+        LocalDateTime timestamp = LocalDateTime.now();
+        int userId = event.getUserId();
+        int type = event.getFeedDetails().getType().getId();
+        int operation = event.getFeedDetails().getOperation().getId();
+        int entityId = event.getEntityId();
+
+        String sqlFeedEvent =
+                "insert into EVENTS (EVENTTIMESTAMP, USERID, EVENTTYPE, OPERATION, ENTITYID) " +
+                        "values ( ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sqlFeedEvent, timestamp, userId, type, operation, entityId);
+    }
+
     private User makeUser(ResultSet rs) throws SQLException {
         int userId = rs.getInt("UserID");
         User user = new User(
@@ -121,34 +173,6 @@ public class DBUserStorage implements UserStorage {
     private List<Integer> getUserFriends(int userId) {
         String sqlGetFriends = "select FRIENDID from FRIENDSHIP where USERID = ?";
         return jdbcTemplate.queryForList(sqlGetFriends, Integer.class, userId);
-    }
-
-    @Override
-    public boolean addFriend(int userId, int friendId) {
-        boolean friendAccepted;
-        String sqlGetReversFriend = "select * from FRIENDSHIP " +
-                "where USERID = ? and FRIENDID = ?";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlGetReversFriend, friendId, userId);
-        friendAccepted = rs.next();
-        String sqlSetFriend = "insert into FRIENDSHIP (USERID, FRIENDID, STATUS) " +
-                "VALUES (?,?,?)";
-        jdbcTemplate.update(sqlSetFriend, userId, friendId, friendAccepted);
-        if (friendAccepted) {
-            String sqlSetStatus = "update FRIENDSHIP set STATUS = true " +
-                    "where USERID = ? and FRIENDID = ?";
-            jdbcTemplate.update(sqlSetStatus, friendId, userId);
-        }
-        return true;
-    }
-
-    @Override
-    public boolean deleteFriend(int userId, int friendId) {
-        String sqlDeleteFriend = "delete from FRIENDSHIP where USERID = ? and FRIENDID = ?";
-        jdbcTemplate.update(sqlDeleteFriend, userId, friendId);
-        String sqlSetStatus = "update FRIENDSHIP set STATUS = false " +
-                "where USERID = ? and FRIENDID = ?";
-        jdbcTemplate.update(sqlSetStatus, friendId, userId);
-        return true;
     }
 
 }

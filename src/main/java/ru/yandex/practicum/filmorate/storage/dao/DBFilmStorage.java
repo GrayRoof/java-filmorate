@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.dao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -12,11 +13,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.event.OnDeleteUserEvent;
+import ru.yandex.practicum.filmorate.event.OnFeedEvent;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
@@ -34,15 +33,17 @@ public class DBFilmStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
+    private final ApplicationEventPublisher eventPublisher;
 
     public DBFilmStorage(
             JdbcTemplate jdbcTemplate,
             @Qualifier(DBStorageConsts.QUALIFIER) GenreStorage genreStorage,
-            @Qualifier(DBStorageConsts.QUALIFIER) DirectorStorage directorStorage
-    ) {
+            @Qualifier(DBStorageConsts.QUALIFIER) DirectorStorage directorStorage,
+            ApplicationEventPublisher eventPublisher) {
         this.jdbcTemplate = jdbcTemplate;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -150,23 +151,30 @@ public class DBFilmStorage implements FilmStorage {
 
     @Override
     public boolean addLike(int filmId, int userId) {
+        boolean result = false;
         String sql = "select * from LIKES where USERID = ? and FILMID = ?";
         SqlRowSet existLike = jdbcTemplate.queryForRowSet(sql, userId, filmId);
         if (!existLike.next()) {
             String setLike = "insert into LIKES (USERID, FILMID) values (?, ?) ";
-            jdbcTemplate.update(setLike, userId, filmId);
+            result = jdbcTemplate.update(setLike, userId, filmId) > 0;
         }
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, userId, filmId);
         log.info(String.valueOf(rs.next()));
         updateLikeRating(filmId);
+        if (result) {
+            eventPublisher.publishEvent(new OnFeedEvent(userId, filmId, AllowedFeedEvents.ADD_LIKE));
+        }
         return rs.next();
     }
 
     @Override
     public boolean deleteLike(int filmId, int userId) {
         String deleteLike = "delete from LIKES where FILMID = ? and USERID = ?";
-        jdbcTemplate.update(deleteLike, filmId, userId);
+        boolean result = jdbcTemplate.update(deleteLike, filmId, userId) > 0;
         updateLikeRating(filmId);
+        if (result) {
+            eventPublisher.publishEvent(new OnFeedEvent(userId, filmId, AllowedFeedEvents.REMOVE_LIKE));
+        }
         return true;
     }
 
@@ -261,7 +269,14 @@ public class DBFilmStorage implements FilmStorage {
         return jdbcTemplate.query(sqlGetCommon, (rs, rowNum) -> makeFilm(rs), userId, otherUserId);
     }
 
-      private Film makeFilm(ResultSet rs) throws SQLException {
+    @EventListener
+    public void handleOnDeleteUser(OnDeleteUserEvent event) {
+        String sqlUpdateAllRates =
+                "update FILM set RATE = ( select count(USERID) from LIKES where LIKES.FILMID = FILM.FILMID );";
+        jdbcTemplate.update(sqlUpdateAllRates);
+    }
+
+    private Film makeFilm(ResultSet rs) throws SQLException {
         int filmId = rs.getInt("FilmID");
         Film film = new Film(
                 filmId,
@@ -329,12 +344,5 @@ public class DBFilmStorage implements FilmStorage {
                 return film.getDirectors().size();
             }
         });
-    }
-
-    @EventListener
-    public void handleOnDeleteUser(OnDeleteUserEvent event) {
-        String sqlUpdateAllRates =
-                "update FILM set RATE = ( select count(USERID) from LIKES where LIKES.FILMID = FILM.FILMID );";
-        jdbcTemplate.update(sqlUpdateAllRates);
     }
 }

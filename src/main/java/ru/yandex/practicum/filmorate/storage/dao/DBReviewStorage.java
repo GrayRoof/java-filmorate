@@ -2,10 +2,13 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.event.OnFeedEvent;
+import ru.yandex.practicum.filmorate.model.AllowedFeedEvents;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
@@ -18,10 +21,12 @@ import java.util.Objects;
 public class DBReviewStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
-    public DBReviewStorage(JdbcTemplate jdbcTemplate){
+    public DBReviewStorage(JdbcTemplate jdbcTemplate, ApplicationEventPublisher eventPublisher){
         this.jdbcTemplate = jdbcTemplate;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -39,7 +44,7 @@ public class DBReviewStorage implements ReviewStorage {
         }, keyHolder);
 
         int id = Objects.requireNonNull(keyHolder.getKey()).intValue();
-
+        eventPublisher.publishEvent(new OnFeedEvent(review.getUserId(), id, AllowedFeedEvents.ADD_REVIEW));
         return getReview(id);
     }
 
@@ -63,14 +68,23 @@ public class DBReviewStorage implements ReviewStorage {
     @Override
     public Review editReview(Review review) {
         String sqlQuery = "update reviews set content = ?, isPositive = ? where ReviewID = ?;";
-        jdbcTemplate.update(sqlQuery, review.getContent(), review.getIsPositive(), review.getReviewId());
-        return getReview(review.getReviewId());
+        boolean result = jdbcTemplate.update(sqlQuery,
+                review.getContent(), review.getIsPositive(), review.getReviewId()) > 0;
+        Review updatedReview = getReview(review.getReviewId());
+        if (result) {
+            eventPublisher.publishEvent(new OnFeedEvent(updatedReview.getUserId(), updatedReview.getReviewId(), AllowedFeedEvents.UPDATE_REVIEW));
+        }
+        return updatedReview;
     }
 
     @Override
     public Integer removeReview(String id) {
+        Review review = getReview(Integer.parseInt(id));
         String sqlQuery = "delete from reviews where ReviewID = ?;";
-        jdbcTemplate.update(sqlQuery, id);
+        boolean result = jdbcTemplate.update(sqlQuery, id) > 0;
+        if (result) {
+            eventPublisher.publishEvent(new OnFeedEvent(review.getUserId(), review.getReviewId(), AllowedFeedEvents.REMOVE_REVIEW));
+        }
         return Integer.parseInt(id);
     }
 

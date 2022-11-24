@@ -125,6 +125,7 @@ public class UserService {
      * @param supposedUserId - идентификатор пользователя
      * */
     public Collection<FeedEvent> getUserFeed(final String supposedUserId) {
+
         return new ArrayList<>();
     }
 

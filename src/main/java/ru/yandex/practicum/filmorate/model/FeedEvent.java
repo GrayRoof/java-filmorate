@@ -10,11 +10,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FeedEvent {
-    int id;
-    LocalDateTime timestamp;
-    int userId;
-    EventType eventType;
-    Operation operation;
-    int entityId;
+    private int id;
+    private LocalDateTime timestamp = LocalDateTime.now();
+    private int userId;
+    private EventType eventType;
+    private Operation operation;
+    private int entityId;
 }
 
