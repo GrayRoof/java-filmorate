@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.dao;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,6 +27,7 @@ class DBReviewStorageTest {
     public DBReviewStorageTest(
             JdbcTemplate jdbcTemplate,
             UserStorage userStorage,
+            @Qualifier(DBStorageConsts.QUALIFIER)
             FilmStorage filmStorage,
             DBReviewStorage reviewStorage
     ) {
