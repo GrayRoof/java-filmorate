@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -63,6 +64,7 @@ class DBUserStorageTest {
     }
 
     @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
     void deleteUserDeletesActiveFriendship() {
         final int annId = userStorageTestHelper.getNewUserId();
         final int bobId = userStorageTestHelper.getNewUserId();
@@ -84,6 +86,7 @@ class DBUserStorageTest {
     }
 
     @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
     void deleteUserDeletesPassiveFriendship() {
         final int annId = userStorageTestHelper.getNewUserId();
         final int bobId = userStorageTestHelper.getNewUserId();
@@ -105,6 +108,7 @@ class DBUserStorageTest {
     }
 
     @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
     void deleteUserDeletesLikes() {
         final int amelieId = filmStorageTestHelper.getNewFilmId();
         final int batmanId = filmStorageTestHelper.getNewFilmId();
@@ -129,6 +133,7 @@ class DBUserStorageTest {
     }
 
     @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
     void deleteUserUpdatesFilmRate() {
         final int filmId = filmStorageTestHelper.getNewFilmId();
 

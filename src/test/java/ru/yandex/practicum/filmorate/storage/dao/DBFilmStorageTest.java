@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -99,6 +100,7 @@ class DBFilmStorageTest {
     }
 
     @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
     void deleteFilmDeletesLikes() {
         final int filmId = filmStorageTestHelper.getNewFilmId();
 
@@ -123,6 +125,7 @@ class DBFilmStorageTest {
     }
 
     @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
     void deleteFilmDeletesFilmGenres() {
         final int filmId = filmStorageTestHelper.addFilm(1, List.of(1, 2, 3),List.of()).getId();
 
@@ -140,6 +143,7 @@ class DBFilmStorageTest {
     }
 
     @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
     void deleteFilmDeletesFilmDirectors() {
         final int allenId = directorStorageTestHelper.getNewDirectorId();
         final int brassId = directorStorageTestHelper.getNewDirectorId();
