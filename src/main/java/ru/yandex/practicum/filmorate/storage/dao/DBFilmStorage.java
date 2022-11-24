@@ -189,8 +189,13 @@ public class DBFilmStorage implements FilmStorage {
                 "FROM FILM " +
                 "JOIN MPA R on FILM.RATINGID = R.RATINGID " +
                 "JOIN GENRELINE gl ON gl.FILMID = film.FILMID AND gl.GENREID = ? " +
-                "ORDER BY FILM.RATE DESC " +
+                "ORDER BY RATE DESC " +
                 "LIMIT ?";
+//        return getAllFilms().stream().filter(film -> film.getGenres().stream()
+//                        .filter(genre -> genre.getId() == Integer.parseInt(genreId)).isParallel())
+//                .sorted((film1, film2) -> film2.getRate()-film1.getRate())
+//                .collect(Collectors.collectingAndThen(
+//                        Collectors.toList(), l -> {Collections.reverse(l); return l;}));
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), genreId, count);
     }
 
