@@ -9,8 +9,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.dao.DBDirectorStorage;
-import ru.yandex.practicum.filmorate.storage.dao.DBGenreStorage;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -21,18 +21,23 @@ public class FilmService {
     private static int increment = 0;
 
     private final Validator validator;
-    private final DBGenreStorage dbGenreStorage;
+    private final GenreStorage genreStorage;
     private final FilmStorage filmStorage;
     private final UserService userService;
-    private final DBDirectorStorage directorStorage;
+    private final DirectorStorage directorStorage;
 
     @Autowired
-    public FilmService(Validator validator, DBGenreStorage dbGenreStorage, @Qualifier("DBFilmStorage") FilmStorage filmStorage,
-                       @Autowired(required = false) UserService userService, DBDirectorStorage directorStorage) {
-        this.validator = validator;
-        this.dbGenreStorage = dbGenreStorage;
-        this.filmStorage = filmStorage;
+    public FilmService(
+            UserService userService,
+            Validator validator,
+            @Qualifier(UsedStorageConsts.QUALIFIER) FilmStorage filmStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) GenreStorage genreStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) DirectorStorage directorStorage
+    ) {
         this.userService = userService;
+        this.validator = validator;
+        this.filmStorage = filmStorage;
+        this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
     }
 
@@ -42,8 +47,7 @@ public class FilmService {
     public Collection<Film> getFilms() {
         final Collection<Film> films = filmStorage.getAllFilms();
         if (!films.isEmpty()) {
-            dbGenreStorage.load(films);
-            directorStorage.load(films);
+            addExtraFilmData(films);
         }
         return films;
     }
@@ -100,8 +104,7 @@ public class FilmService {
             size = 10;
         }
         Collection<Film> films = filmStorage.getMostPopularFilms(size);
-        dbGenreStorage.load(films);
-        directorStorage.load(films);
+        addExtraFilmData(films);
         return films;
     }
 
@@ -113,7 +116,9 @@ public class FilmService {
     public Collection<Film> getCommonFilms(final String userId, final String otherUserId) {
         int storedUserId = userService.getStoredUserId(userId);
         int storedOtherUserId = userService.getStoredUserId(otherUserId);
-        return filmStorage.getCommonFilms(storedUserId, storedOtherUserId);
+        Collection<Film> films = filmStorage.getCommonFilms(storedUserId, storedOtherUserId);
+        addExtraFilmData(films);
+        return films;
     }
 
     /**
@@ -130,8 +135,7 @@ public class FilmService {
     public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
         directorStorage.isExist(id);
         Collection<Film> films = filmStorage.getSortedFilmWithDirector(id, sortBy);
-        dbGenreStorage.load(films);
-        directorStorage.load(films);
+        addExtraFilmData(films);
         return films;
     }
 
@@ -193,8 +197,7 @@ public class FilmService {
         if (film == null) {
             onFilmNotFound(filmId);
         }
-        dbGenreStorage.load(List.of(film));
-        directorStorage.load(List.of(film));
+        addExtraFilmData(film);
         return film;
     }
 
@@ -205,5 +208,14 @@ public class FilmService {
             onFilmNotFound(filmId);
         }
         return filmId;
+    }
+
+    private void addExtraFilmData(Film film) {
+        addExtraFilmData(List.of(film));
+    }
+
+    private void addExtraFilmData(Collection<Film> films) {
+        genreStorage.load(films);
+        directorStorage.load(films);
     }
 }

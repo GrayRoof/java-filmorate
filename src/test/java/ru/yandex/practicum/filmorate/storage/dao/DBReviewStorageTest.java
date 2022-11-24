@@ -1,16 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.FilmStorageTestHelper;
-import ru.yandex.practicum.filmorate.storage.UserStorageTestHelper;
+import ru.yandex.practicum.filmorate.storage.*;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,25 +15,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class DBReviewStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
+    private final ReviewStorage reviewStorage;
+    private final UserStorageTestHelper userStorageTestHelper;
+    private final FilmStorageTestHelper filmStorageTestHelper;
 
-    private final DBUserStorage userStorage;
+    @Autowired
+    public DBReviewStorageTest(
+            JdbcTemplate jdbcTemplate,
+            UserStorage userStorage,
+            FilmStorage filmStorage,
+            DBReviewStorage reviewStorage
+    ) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.reviewStorage = reviewStorage;
 
-    private final DBFilmStorage filmStorage;
-
-    private final DBReviewStorage reviewStorage;
-
-    private UserStorageTestHelper userStorageTestHelper;
-    private FilmStorageTestHelper filmStorageTestHelper;
-
-
-    @BeforeEach
-    void beforeEach() {
-        userStorageTestHelper = new UserStorageTestHelper(userStorage);
-        filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
+        this.userStorageTestHelper = new UserStorageTestHelper(userStorage);
+        this.filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
     }
 
     @AfterEach

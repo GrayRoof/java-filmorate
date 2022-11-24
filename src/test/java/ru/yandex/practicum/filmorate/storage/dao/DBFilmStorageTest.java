@@ -1,24 +1,19 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.MpaService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorageTestHelper;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorageTestHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -27,23 +22,24 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class DBFilmStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
-    private final DBUserStorage userStorage;
-    private final DBFilmStorage filmStorage;
-    private final DBGenreStorage genreStorage;
-    private final FilmService filmService;
-    private final MpaService mpaService;
+    private final FilmStorage filmStorage;
+    private final UserStorageTestHelper userStorageTestHelper;
+    private final FilmStorageTestHelper filmStorageTestHelper;
 
-    private UserStorageTestHelper userStorageTestHelper;
-    private FilmStorageTestHelper filmStorageTestHelper;
+    @Autowired
+    public DBFilmStorageTest(
+            JdbcTemplate jdbcTemplate,
+            UserStorage userStorage,
+            DBFilmStorage filmStorage
+    ) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.filmStorage = filmStorage;
 
-    @BeforeEach
-    void beforeEach() {
-        userStorageTestHelper = new UserStorageTestHelper(userStorage);
-        filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
+        this.userStorageTestHelper = new UserStorageTestHelper(userStorage);
+        this.filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
     }
 
     @AfterEach

@@ -1,14 +1,14 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorageTestHelper;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorageTestHelper;
 
 import java.util.function.Supplier;
@@ -17,20 +17,26 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class DBUserStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
-    private final DBUserStorage userStorage;
-    private final DBFilmStorage filmStorage;
+    private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
+    private final UserStorageTestHelper userStorageTestHelper;
+    private final FilmStorageTestHelper filmStorageTestHelper;
 
-    private UserStorageTestHelper userStorageTestHelper;
-    private FilmStorageTestHelper filmStorageTestHelper;
+    @Autowired
+    public DBUserStorageTest(
+            JdbcTemplate jdbcTemplate,
+            DBUserStorage userStorage,
+            FilmStorage filmStorage
+    ) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
 
-    @BeforeEach
-    void beforeEach() {
-        userStorageTestHelper = new UserStorageTestHelper(userStorage);
-        filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
+        this.userStorageTestHelper = new UserStorageTestHelper(userStorage);
+        this.filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
     }
 
     @AfterEach

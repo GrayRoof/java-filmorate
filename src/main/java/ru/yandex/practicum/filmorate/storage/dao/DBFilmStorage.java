@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.EventListener;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -16,21 +17,29 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
-@Component("DBFilmStorage")
+@Component
+@Qualifier(DBStorageConsts.QUALIFIER)
 public class DBFilmStorage implements FilmStorage {
 
     private final Logger log = LoggerFactory.getLogger(DBFilmStorage.class);
     private final JdbcTemplate jdbcTemplate;
-    private final DBGenreStorage genreStorage;
-    private final DBDirectorStorage directorStorage;
+    private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
 
-    public DBFilmStorage(JdbcTemplate jdbcTemplate, DBGenreStorage genreStorage, DBDirectorStorage directorStorage) {
+    public DBFilmStorage(
+            JdbcTemplate jdbcTemplate,
+            @Qualifier(DBStorageConsts.QUALIFIER) GenreStorage genreStorage,
+            @Qualifier(DBStorageConsts.QUALIFIER) DirectorStorage directorStorage
+    ) {
         this.jdbcTemplate = jdbcTemplate;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
@@ -196,6 +205,41 @@ public class DBFilmStorage implements FilmStorage {
                 " group by f.FILMID" +
                 " ORDER BY " + sort;
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), id);
+    }
+
+    @Override
+    public Map<Integer, BitSet> getRelatedLikesByUserId(int userId) {
+        Map<Integer, BitSet> likes = new HashMap<>();
+        String sql = "select L2.FILMID, L2.USERID from LIKES L " +
+                "inner join LIKES L2 on L.FILMID = L2.FILMID " +
+                "where L.USERID = ?";
+        SqlRowSet existLikes = jdbcTemplate.queryForRowSet(sql, userId);
+        while (existLikes.next()) {
+            int currentKey = existLikes.getInt("userId");
+            if (!likes.containsKey(currentKey)) { likes.put(currentKey, new BitSet()); }
+            likes.get(currentKey).set(existLikes.getInt("filmId"));
+        }
+        return likes;
+    }
+
+    @Override
+    public BitSet getLikesOfUserList(List<Integer> usersId) {
+        BitSet likes = new BitSet();
+        String sql = "select distinct FILMID from LIKES where USERID in (" +
+                usersId.stream().map(String::valueOf).collect(Collectors.joining(",")) + ")";
+        SqlRowSet existLikes = jdbcTemplate.queryForRowSet(sql);
+        while (existLikes.next()) {
+            likes.set(existLikes.getInt("filmId"));
+        }
+        return likes;
+    }
+
+    @Override
+    public Collection<Film> getFilmsOfIdArray(String idString) {
+        String sql = "select * from FILM " +
+                "inner join MPA M on FILM.RATINGID = M.RATINGID " +
+                "where FILM.FILMID in (" + idString + ")";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
 
     @Override
