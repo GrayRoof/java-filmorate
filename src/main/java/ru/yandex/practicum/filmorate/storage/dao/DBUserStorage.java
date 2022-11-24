@@ -156,7 +156,7 @@ public class DBUserStorage implements UserStorage {
 
     @EventListener
     public void handleOnFeedEvent(OnFeedEvent event) {
-        LocalDateTime timestamp = LocalDateTime.now();
+        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
         int userId = event.getUserId();
         int type = event.getFeedDetails().getType().getId();
         int operation = event.getFeedDetails().getOperation().getId();
@@ -183,7 +183,7 @@ public class DBUserStorage implements UserStorage {
     private FeedEvent makeFeed(ResultSet rs) throws SQLException {
         FeedEvent feed = new FeedEvent(
                 rs.getInt("EventID"),
-                rs.getTimestamp("EventTimestamp"),
+                rs.getTimestamp("EventTimestamp").getTime(),
                 rs.getInt("UserID"),
                 EventType.valueOf(rs.getString("TypeName")),
                 Operation.valueOf(rs.getString("OpName")),
