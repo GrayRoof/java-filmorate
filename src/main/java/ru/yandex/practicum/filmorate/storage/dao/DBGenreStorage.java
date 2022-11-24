@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,19 +19,22 @@ import java.util.stream.Collectors;
 import static java.util.function.UnaryOperator.identity;
 
 @Component
-public class DBGenreStorage {
+@Qualifier(DBStorageConsts.QUALIFIER)
+public class DBGenreStorage implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
 
     public DBGenreStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Override
     public boolean deleteFilmGenres(int filmId) {
         String deleteOldGenres = "delete from GENRELINE where FILMID = ?";
         jdbcTemplate.update(deleteOldGenres, filmId);
         return true;
     }
 
+    @Override
     public Collection<Genre> getGenresByFilmId(int filmId) {
         String sqlGenre = "select GENRE.GENREID, NAME from GENRE " +
                 "INNER JOIN GENRELINE GL on GENRE.GENREID = GL.GENREID " +
@@ -37,11 +42,13 @@ public class DBGenreStorage {
         return jdbcTemplate.query(sqlGenre, this::makeGenre, filmId);
     }
 
+    @Override
     public Collection<Genre> getAllGenres() {
         String sqlGenre = "select GENREID, NAME from GENRE ORDER BY GENREID";
         return jdbcTemplate.query(sqlGenre, this::makeGenre);
     }
 
+    @Override
     public Genre getGenreById(int genreId) {
         String sqlGenre = "select * from GENRE where GENREID = ?";
         Genre genre;
@@ -59,6 +66,7 @@ public class DBGenreStorage {
         return genre;
     }
 
+    @Override
     public void load(Collection<Film> films) {
         String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
         final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, identity()));

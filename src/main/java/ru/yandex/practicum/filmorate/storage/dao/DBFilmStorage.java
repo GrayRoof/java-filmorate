@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.EventListener;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -16,22 +17,29 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component("DBFilmStorage")
+@Component
+@Qualifier(DBStorageConsts.QUALIFIER)
 public class DBFilmStorage implements FilmStorage {
 
     private final Logger log = LoggerFactory.getLogger(DBFilmStorage.class);
     private final JdbcTemplate jdbcTemplate;
-    private final DBGenreStorage genreStorage;
-    private final DBDirectorStorage directorStorage;
+    private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
 
-    public DBFilmStorage(JdbcTemplate jdbcTemplate, DBGenreStorage genreStorage, DBDirectorStorage directorStorage) {
+    public DBFilmStorage(
+            JdbcTemplate jdbcTemplate,
+            @Qualifier(DBStorageConsts.QUALIFIER) GenreStorage genreStorage,
+            @Qualifier(DBStorageConsts.QUALIFIER) DirectorStorage directorStorage
+    ) {
         this.jdbcTemplate = jdbcTemplate;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;

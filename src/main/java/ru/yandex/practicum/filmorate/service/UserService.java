@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -26,7 +25,10 @@ public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(Validator validator, @Qualifier("DBUserStorage") UserStorage userStorage) {
+    public UserService(
+            Validator validator,
+            @Qualifier(UsedStorageConsts.QUALIFIER) UserStorage userStorage
+    ) {
         this.validator = validator;
         this.userStorage = userStorage;
     }
