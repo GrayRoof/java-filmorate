@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.WrongSearchException;
 import ru.yandex.practicum.filmorate.service.FilmSearchOptions;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Component
@@ -14,7 +15,8 @@ public class SearchValidator {
         }
     }
 
-    public void validateBy(Set<String> by){
+    public Set<FilmSearchOptions> validateBy(Set<String> by){
+        Set<FilmSearchOptions> params = new HashSet<>();
         if (by.isEmpty()) {
             throw new WrongSearchException("Должен быть указан параметр запроса by");
         }
@@ -22,7 +24,9 @@ public class SearchValidator {
             if (!FilmSearchOptions.has(b)) {
                 throw new WrongSearchException("Параметр запроса by должен соответствовать возможным значениям");
             }
+            params.add(FilmSearchOptions.valueOf(b.toUpperCase()));
         }
+        return params;
     }
 
 }

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmSearchOptions;
 
 import java.util.*;
 
@@ -22,6 +23,6 @@ public interface FilmStorage {
     Collection<Film> getFilmsOfIdArray(List<Integer> ids);
     Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy);
     Collection<Film> getCommonFilms(int userId, int otherUserId);
-    Collection<Film> getSortedFilmFromSearch(String query, Set<String> by);
+    Collection<Film> getSortedFilmFromSearch(String query, Set<FilmSearchOptions> params);
 
 }

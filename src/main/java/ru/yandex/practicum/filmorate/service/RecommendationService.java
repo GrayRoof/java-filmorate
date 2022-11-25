@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.*;
@@ -45,14 +44,7 @@ public class RecommendationService {
         if (likesOfUserList.cardinality() == 0) { return List.of(); }
 
         Collection<Film> films = filmStorage.getFilmsOfIdArray(
-                Arrays.stream(likesOfUserList
-                        .toString()
-                        .replace("{", "")
-                        .replace("}", "")
-                        .split(","))
-                        .map(Integer::valueOf)
-                        .collect(Collectors.toList())
-        );
+                likesOfUserList.stream().boxed().collect(Collectors.toList()));
         if(!films.isEmpty()) filmService.addExtraFilmData(films);
         return films;
     }

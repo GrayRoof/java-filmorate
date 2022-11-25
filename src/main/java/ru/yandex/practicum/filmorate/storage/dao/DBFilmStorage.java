@@ -262,28 +262,18 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getSortedFilmFromSearch(String query, Set<String> by) {
+    public Collection<Film> getSortedFilmFromSearch(String query, Set<FilmSearchOptions> params) {
         String directorsJoin = "";
-        String whereString = "";
-        for (String param: by) {
-            switch (FilmSearchOptions.valueOf(param.toUpperCase())) {
+        List<String> filterExpressions = new ArrayList<>();
+        for (FilmSearchOptions param: params) {
+            switch (param) {
                 case DIRECTOR:
-                    if(!whereString.equals("")) {
-                        whereString += "or ";
-                    } else {
-                        whereString += "where ";
-                    }
-                    whereString += "lower(ds.NAME) like lower('%" + query + "%') ";
+                    filterExpressions.add("lower(ds.NAME) like lower('%" + query + "%') ");
                     directorsJoin += "left outer join DIRECTORLINE d on f.FILMID = d.FILMID " +
                             "left outer join DIRECTORS ds on d.DIRECTORID = ds.DIRECTORID ";
                     break;
                 case TITLE:
-                    if(!whereString.equals("")) {
-                        whereString += "or ";
-                    } else {
-                        whereString += "where ";
-                    }
-                    whereString += "lower(f.NAME) like lower('%" + query + "%') ";
+                    filterExpressions.add("lower(f.NAME) like lower('%" + query + "%') ");
                     break;
             }
         }
@@ -291,8 +281,8 @@ public class DBFilmStorage implements FilmStorage {
                 "r.RATINGID, r.NAME, r.DESCRIPTION " +
                 "from FILM f " +
                 "inner join MPA r on r.RATINGID = f.RATINGID " +
-                directorsJoin +
-                whereString +
+                directorsJoin + "where " + String.join(" or ", filterExpressions) +
+                //whereString +
                 "group by f.FILMID " +
                 "order by f.RATE desc";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
