@@ -6,11 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.model.FeedEvent;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorageTestHelper;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorageTestHelper;
 
+import java.util.Collection;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -148,6 +150,30 @@ class DBUserStorageTest {
         assertEquals(3, filmRate.get());
         userStorage.deleteUser(camId);
         assertEquals(2, filmRate.get());
+    }
+
+    @Test
+    void shouldReturnFeed() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+        final int firstUserId = userStorageTestHelper.getNewUserId();
+        final int secondUserId = userStorageTestHelper.getNewUserId();
+        final int thirdUserId = userStorageTestHelper.getNewUserId();
+        filmStorage.addLike(filmId, firstUserId);
+        userStorage.addFriend(thirdUserId, firstUserId);
+        userStorage.addFriend(firstUserId, secondUserId);
+
+
+        FeedEvent[] actual = userStorage.getFeed(firstUserId).toArray(FeedEvent[]::new);
+        assertEquals(2, actual.length, "Количество объектов в ленте не совпадает с ожидаемым");
+        assertEquals(filmId, actual[0].getEntityId(), "id сущности для первого события не тот");
+        assertEquals(1, actual[0].getEventId(), "id первого события не тот");
+        assertEquals("LIKE", actual[0].getEventType().toString(), "Неверный тип первого события");
+        assertEquals("ADD", actual[0].getOperation().toString(), "Неверная операция первого события");
+
+        assertEquals(secondUserId, actual[1].getEntityId(), "id сущности для второго события не тот");
+        assertEquals(3, actual[1].getEventId(), "id второго события не тот");
+        assertEquals("FRIEND", actual[1].getEventType().toString(), "Неверный тип второго события");
+        assertEquals("ADD", actual[1].getOperation().toString(), "Неверная операция второго события");
     }
 
 }
