@@ -37,5 +37,4 @@ public interface FilmStorage {
 
     Collection<Film> getCommonFilms(int userId, int otherUserId);
 
-    Collection<Film> getSortedWithYear(int year, int count);
 }

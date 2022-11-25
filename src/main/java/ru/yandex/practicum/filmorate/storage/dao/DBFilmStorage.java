@@ -11,7 +11,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.SqlQueries;
 import ru.yandex.practicum.filmorate.event.OnDeleteUserEvent;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -295,11 +294,6 @@ public class DBFilmStorage implements FilmStorage {
                         "group by FILM.FILMID " +
                         "order by RATE desc;";
         return jdbcTemplate.query(sqlGetCommon, (rs, rowNum) -> makeFilm(rs), userId, otherUserId);
-    }
-
-    @Override
-    public Collection<Film> getSortedWithYear(int year, int count) {
-        return jdbcTemplate.query(SqlQueries.FILMS_SELECTED_BY_YEAR, (rs, rowNum) -> makeFilm(rs), year, count);
     }
 
     private Film makeFilm(ResultSet rs) throws SQLException {
