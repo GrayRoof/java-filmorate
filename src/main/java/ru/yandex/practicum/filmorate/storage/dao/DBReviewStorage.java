@@ -110,7 +110,7 @@ public class DBReviewStorage {
 
     }
 
-    public Review addDislike(int reviewId, int userId) {
+    public Review addDislike(Integer reviewId, Integer userId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         String sqlQuery2 = "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
 
@@ -120,7 +120,7 @@ public class DBReviewStorage {
         return getReview(reviewId);
     }
 
-    public Review removeDislike(int reviewId, int userId) {
+    public Review removeDislike(Integer reviewId, Integer userId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,true), reviewId);
         String sqlQuery2 = "delete from useful where ReviewID = ? and userid = ? and useful = ?";
