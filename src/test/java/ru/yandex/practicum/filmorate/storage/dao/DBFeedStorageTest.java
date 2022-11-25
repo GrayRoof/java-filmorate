@@ -52,7 +52,6 @@ class DBFeedStorageTest {
     }
 
     @Test
-
     void shouldReturnOneFeed() {
         final int filmId = filmStorageTestHelper.getNewFilmId();
         final int firstUserId = userStorageTestHelper.getNewUserId();
@@ -85,8 +84,6 @@ class DBFeedStorageTest {
                 "Количество объектов в ленте firstUser не совпадает с ожидаемым");
         assertEquals(filmId, actualFirst[0].getEntityId(),
                 "id сущности для первого события ленты firstUser не тот");
-        assertEquals(1, actualFirst[0].getEventId(),
-                "id первого события ленты firstUser не тот");
         assertEquals("LIKE", actualFirst[0].getEventType().toString(),
                 "Неверный тип первого события ленты firstUser");
         assertEquals("ADD", actualFirst[0].getOperation().toString(),
@@ -94,8 +91,6 @@ class DBFeedStorageTest {
 
         assertEquals(secondUserId, actualFirst[1].getEntityId(),
                 "id сущности для второго события ленты firstUser не тот");
-        assertEquals(3, actualFirst[1].getEventId(),
-                "id второго события ленты firstUser не тот");
         assertEquals("FRIEND", actualFirst[1].getEventType().toString(),
                 "Неверный тип второго события ленты firstUser");
         assertEquals("ADD", actualFirst[1].getOperation().toString(),
@@ -106,8 +101,6 @@ class DBFeedStorageTest {
                 "Количество объектов в ленте secondUserId не совпадает с ожидаемым");
         assertEquals(reviewId, actualSecond[0].getEntityId(),
                 "id сущности для первого события ленты secondUserId не тот");
-        assertEquals(4, actualSecond[0].getEventId(),
-                "id первого события ленты secondUserId не тот");
         assertEquals("REVIEW", actualSecond[0].getEventType().toString(),
                 "Неверный тип первого события ленты secondUserId");
         assertEquals("ADD", actualSecond[0].getOperation().toString(),
@@ -118,8 +111,6 @@ class DBFeedStorageTest {
                 "Количество объектов в ленте thirdUserId не совпадает с ожидаемым");
         assertEquals(firstUserId, actualThird[0].getEntityId(),
                 "id сущности для первого события ленты thirdUserId не тот");
-        assertEquals(2, actualThird[0].getEventId(),
-                "id первого события ленты thirdUserId не тот");
         assertEquals("FRIEND", actualThird[0].getEventType().toString(),
                 "Неверный тип первого события ленты thirdUserId");
         assertEquals("ADD", actualThird[0].getOperation().toString(),
