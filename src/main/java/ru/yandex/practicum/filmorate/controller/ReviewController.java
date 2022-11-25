@@ -50,23 +50,23 @@ public class ReviewController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public boolean addReviewLike(@PathVariable String id, @PathVariable String userId){
-        return service.addLike(Integer.parseInt(id), Integer.parseInt(userId));
+    public boolean addReviewLike(@PathVariable Integer id, @PathVariable Integer userId){
+        return service.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public boolean removeReviewLike(@PathVariable String id, @PathVariable String userId){
-        return service.removeLike(Integer.parseInt(id), Integer.parseInt(userId));
+    public boolean removeReviewLike(@PathVariable Integer id, @PathVariable Integer userId){
+        return service.removeLike(id, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
-    public boolean addReviewDislike(@PathVariable String id, @PathVariable String userId){
-        return service.addDislike(Integer.parseInt(id), Integer.parseInt(userId));
+    public boolean addReviewDislike(@PathVariable Integer id, @PathVariable Integer userId){
+        return service.addDislike(id, userId);
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
-    public boolean removeReviewDislike(@PathVariable String id, @PathVariable String userId){
-        return service.addLike(Integer.parseInt(id), Integer.parseInt(userId));
+    public boolean removeReviewDislike(@PathVariable Integer id, @PathVariable Integer userId){
+        return service.addLike(id, userId);
     }
 
 

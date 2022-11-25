@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.validator;
+package ru.yandex.practicum.filmorate.storage.validator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
