@@ -53,23 +53,23 @@ public class ReviewService {
 
     public Review addLike(String id, String userId) {
         try {
-            validator.validateGoodReviewByUserAndId(Integer.parseInt(id), Integer.parseInt(userId));
-            validator.validateBadReviewByUserAndId(Integer.parseInt(id), Integer.parseInt(userId));
+            validator.validateGoodReviewByUserAndId(Integer.valueOf(id), Integer.valueOf(userId));
+            validator.validateBadReviewByUserAndId(Integer.valueOf(id), Integer.valueOf(userId));
         } catch (ReviewAlreadyLikedException e){
-            return storage.removeLike(Integer.parseInt(id), Integer.parseInt(userId));
+            return storage.removeLike(Integer.valueOf(id), Integer.valueOf(userId));
         } catch (ReviewAlreadyDislikedException e){
-            storage.removeDislike(Integer.parseInt(id), Integer.parseInt(userId));
+            storage.removeDislike(Integer.valueOf(id), Integer.valueOf(userId));
         }
-        return storage.addLike(Integer.parseInt(id), Integer.parseInt(userId));
+        return storage.addLike(Integer.valueOf(id), Integer.valueOf(userId));
     }
 
     public Review removeLike(String id, String userId) {
         try{
-            validator.validateGoodReviewByUserAndId(Integer.parseInt(id), Integer.parseInt(userId));
+            validator.validateGoodReviewByUserAndId(Integer.valueOf(id), Integer.valueOf(userId));
         } catch (ReviewAlreadyLikedException e){
             return null;
         }
-        return storage.removeLike(Integer.parseInt(id), Integer.parseInt(userId));
+        return storage.removeLike(Integer.valueOf(id), Integer.valueOf(userId));
     }
 
     public Collection<Review> getAll(String filmId, String count) {
