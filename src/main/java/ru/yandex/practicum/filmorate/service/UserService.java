@@ -121,15 +121,6 @@ public class UserService {
     }
 
     /**
-     * Возвращает коллекцию событий пользователя
-     * @param supposedUserId - идентификатор пользователя
-     * */
-    public Collection<FeedEvent> getUserFeed(final String supposedUserId) {
-        final int userId = getStoredUserId(supposedUserId);
-        return userStorage.getFeed(userId);
-    }
-
-    /**
      * Возвращает пользователя по идентификатора
      *
      * @param supposedId - идентификатор пользователя

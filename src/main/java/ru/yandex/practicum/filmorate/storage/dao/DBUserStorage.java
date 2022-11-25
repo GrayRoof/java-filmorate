@@ -62,17 +62,6 @@ public class DBUserStorage implements UserStorage {
     }
 
     @Override
-    public Collection<FeedEvent> getFeed(int userId) {
-        String sqlFeeds = "select EVENTID, EVENTTIMESTAMP, USERID, " +
-                "E.NAME TYPENAME, O.NAME OPNAME, ENTITYID from EVENTS " +
-                "INNER JOIN EVENTTYPES E on EVENTS.EVENTTYPE = E.TYPEID " +
-                "INNER JOIN OPERATIONS O on O.OPERATIONID = EVENTS.OPERATION " +
-                "where USERID = ?";
-
-        return jdbcTemplate.query(sqlFeeds, (rs, rowNum) -> makeFeed(rs), userId);
-    }
-
-    @Override
     public User addUser(User user) {
         String sqlQuery = "insert into USERS " +
                 "(EMAIL, LOGIN, NAME, BIRTHDAY) " +
@@ -154,20 +143,6 @@ public class DBUserStorage implements UserStorage {
         return true;
     }
 
-    @EventListener
-    public void handleOnFeedEvent(OnFeedEvent event) {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
-        int userId = event.getUserId();
-        int type = event.getFeedDetails().getType().getId();
-        int operation = event.getFeedDetails().getOperation().getId();
-        int entityId = event.getEntityId();
-
-        String sqlFeedEvent =
-                "insert into EVENTS (EVENTTIMESTAMP, USERID, EVENTTYPE, OPERATION, ENTITYID) " +
-                        "values ( ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sqlFeedEvent, timestamp, userId, type, operation, entityId);
-    }
-
     private User makeUser(ResultSet rs) throws SQLException {
         int userId = rs.getInt("UserID");
         User user = new User(
@@ -178,18 +153,6 @@ public class DBUserStorage implements UserStorage {
                 Objects.requireNonNull(rs.getDate("BirthDay")).toLocalDate(),
                 getUserFriends(userId));
         return user;
-    }
-
-    private FeedEvent makeFeed(ResultSet rs) throws SQLException {
-        FeedEvent feed = new FeedEvent(
-                rs.getInt("EventID"),
-                rs.getTimestamp("EventTimestamp").getTime(),
-                rs.getInt("UserID"),
-                EventType.valueOf(rs.getString("TypeName")),
-                Operation.valueOf(rs.getString("OpName")),
-                rs.getInt("EntityID")
-        );
-        return feed;
     }
 
     private List<Integer> getUserFriends(int userId) {

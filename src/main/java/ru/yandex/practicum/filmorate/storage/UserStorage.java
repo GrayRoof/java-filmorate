@@ -12,8 +12,6 @@ public interface UserStorage {
 
     Collection<User> getAllUsers();
 
-    Collection<FeedEvent> getFeed(int userId);
-
     User addUser(User user);
 
     User updateUser(User user);
