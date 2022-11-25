@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,10 +14,12 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.*;
-import java.sql.Date;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
-@Component("DBUserStorage")
+@Component
+@Qualifier(DBStorageConsts.QUALIFIER)
 public class DBUserStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
@@ -25,7 +28,7 @@ public class DBUserStorage implements UserStorage {
     public DBUserStorage(
             JdbcTemplate jdbcTemplate,
             ApplicationEventPublisher eventPublisher
-    ){
+    ) {
         this.jdbcTemplate = jdbcTemplate;
         this.eventPublisher = eventPublisher;
     }
@@ -42,8 +45,7 @@ public class DBUserStorage implements UserStorage {
         User user;
         try {
             user = jdbcTemplate.queryForObject(sqlUser, (rs, rowNum) -> makeUser(rs), id);
-        }
-        catch (EmptyResultDataAccessException e) {
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Пользователь с идентификатором " +
                     id + " не зарегистрирован!");
         }
@@ -79,7 +81,8 @@ public class DBUserStorage implements UserStorage {
                 addFriend(user.getId(), friendId);
             }
         }
-        return getUser(id);
+        user.setId(id);
+        return user;
     }
 
     @Override
