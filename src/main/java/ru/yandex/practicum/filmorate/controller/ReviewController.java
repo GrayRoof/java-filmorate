@@ -51,7 +51,7 @@ public class ReviewController {
 
     @PutMapping("/{id}/like/{userId}")
     public Review addReviewLike(@PathVariable String id, @PathVariable String userId){
-        return service.addLike(id, userId);
+        return service.addLike(Integer.parseInt(id), Integer.parseInt(userId));
     }
 
     @DeleteMapping("/{id}/like/{userId}")
