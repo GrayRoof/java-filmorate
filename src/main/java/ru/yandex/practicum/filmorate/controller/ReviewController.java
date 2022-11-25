@@ -46,26 +46,26 @@ public class ReviewController {
     @GetMapping
     public Collection<Review> getFilmReviews(@RequestParam(defaultValue = "all") String filmId,
                                             @RequestParam(defaultValue = "10") String count){
-        return service.getAll(filmId, count);
+        return service.getFilmReviews(filmId, count);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public Review addReviewLike(@PathVariable String id, @PathVariable String userId){
+    public boolean addReviewLike(@PathVariable String id, @PathVariable String userId){
         return service.addLike(Integer.parseInt(id), Integer.parseInt(userId));
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public Review removeReviewLike(@PathVariable String id, @PathVariable String userId){
+    public boolean removeReviewLike(@PathVariable String id, @PathVariable String userId){
         return service.removeLike(Integer.parseInt(id), Integer.parseInt(userId));
     }
 
     @PutMapping("/{id}/dislike/{userId}")
-    public Review addReviewDislike(@PathVariable String id, @PathVariable String userId){
+    public boolean addReviewDislike(@PathVariable String id, @PathVariable String userId){
         return service.addDislike(Integer.parseInt(id), Integer.parseInt(userId));
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
-    public Review removeReviewDislike(@PathVariable String id, @PathVariable String userId){
+    public boolean removeReviewDislike(@PathVariable String id, @PathVariable String userId){
         return service.addLike(Integer.parseInt(id), Integer.parseInt(userId));
     }
 

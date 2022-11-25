@@ -75,23 +75,23 @@ public class DBReviewStorage implements ReviewStorage {
     }
 
     @Override
-    public Review addLike(Integer reviewId, Integer userId) {
+    public boolean addLike(Integer reviewId, Integer userId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         String sqlQueryUseful = "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
 
         jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId, true), reviewId);
 
         jdbcTemplate.update(sqlQueryUseful, reviewId, userId, true);
-        return getReview(reviewId);
+        return true;
     }
 
     @Override
-    public Review removeLike(Integer reviewId, Integer userId) {
+    public boolean removeLike(Integer reviewId, Integer userId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,false), reviewId);
         String sqlQueryUseful = "delete from useful where ReviewID = ? and userid = ? and useful = ?";
         jdbcTemplate.update(sqlQueryUseful, reviewId, userId, true);
-        return getReview(reviewId);
+        return true;
     }
 
     private int changeUsefulValue(Integer reviewId, boolean increase){
@@ -120,22 +120,22 @@ public class DBReviewStorage implements ReviewStorage {
     }
 
     @Override
-    public Review addDislike(Integer reviewId, Integer userId) {
+    public boolean addDislike(Integer reviewId, Integer userId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         String sqlQueryUseful = "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
 
         jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId, false), reviewId);
         jdbcTemplate.update(sqlQueryUseful, reviewId, userId, false);
 
-        return getReview(reviewId);
+        return true;
     }
 
     @Override
-    public Review removeDislike(Integer reviewId, Integer userId) {
+    public boolean removeDislike(Integer reviewId, Integer userId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,true), reviewId);
         String sqlQueryUseful = "delete from useful where ReviewID = ? and userid = ? and useful = ?";
         jdbcTemplate.update(sqlQueryUseful, reviewId, userId, false);
-        return getReview(reviewId);
+        return true;
     }
 }
