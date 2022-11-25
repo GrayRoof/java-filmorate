@@ -17,6 +17,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.FilmSearchOptions;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
@@ -141,7 +142,6 @@ public class DBFilmStorage implements FilmStorage {
         return film;
     }
 
-
     @Override
     public boolean deleteFilm(int filmId) {
         String sqlQuery = "delete from FILM where FILMID = ?";
@@ -216,7 +216,7 @@ public class DBFilmStorage implements FilmStorage {
         SqlRowSet existLikes = jdbcTemplate.queryForRowSet(sql, userId);
         while (existLikes.next()) {
             int currentKey = existLikes.getInt("userId");
-            if (!likes.containsKey(currentKey)) { likes.put(currentKey, new BitSet()); }
+            likes.putIfAbsent(currentKey, new BitSet());
             likes.get(currentKey).set(existLikes.getInt("filmId"));
         }
         return likes;
@@ -235,10 +235,10 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getFilmsOfIdArray(String idString) {
+    public Collection<Film> getFilmsOfIdArray(List<Integer> ids) {
         String sql = "select * from FILM " +
                 "inner join MPA M on FILM.RATINGID = M.RATINGID " +
-                "where FILM.FILMID in (" + idString + ")";
+                "where FILM.FILMID in (" + ids.stream().map(Object::toString).collect(Collectors.joining(",")) + ")";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
 
@@ -259,6 +259,43 @@ public class DBFilmStorage implements FilmStorage {
                         "group by FILM.FILMID " +
                         "order by RATE desc;";
         return jdbcTemplate.query(sqlGetCommon, (rs, rowNum) -> makeFilm(rs), userId, otherUserId);
+    }
+
+    @Override
+    public Collection<Film> getSortedFilmFromSearch(String query, Set<String> by) {
+        String directorsJoin = "";
+        String whereString = "";
+        for (String param: by) {
+            switch (FilmSearchOptions.valueOf(param.toUpperCase())) {
+                case DIRECTOR:
+                    if(!whereString.equals("")) {
+                        whereString += "or ";
+                    } else {
+                        whereString += "where ";
+                    }
+                    whereString += "lower(ds.NAME) like lower('%" + query + "%') ";
+                    directorsJoin += "left outer join DIRECTORLINE d on f.FILMID = d.FILMID " +
+                            "left outer join DIRECTORS ds on d.DIRECTORID = ds.DIRECTORID ";
+                    break;
+                case TITLE:
+                    if(!whereString.equals("")) {
+                        whereString += "or ";
+                    } else {
+                        whereString += "where ";
+                    }
+                    whereString += "lower(f.NAME) like lower('%" + query + "%') ";
+                    break;
+            }
+        }
+        String sql = "select distinct f.FILMID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATE, " +
+                "r.RATINGID, r.NAME, r.DESCRIPTION " +
+                "from FILM f " +
+                "inner join MPA r on r.RATINGID = f.RATINGID " +
+                directorsJoin +
+                whereString +
+                "group by f.FILMID " +
+                "order by f.RATE desc";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
 
       private Film makeFilm(ResultSet rs) throws SQLException {
