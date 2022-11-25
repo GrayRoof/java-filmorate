@@ -4,11 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import ru.yandex.practicum.filmorate.exception.WrongIdException;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.WrongIdException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -19,30 +21,43 @@ public class FilmService {
     private static int increment = 0;
 
     private final Validator validator;
-
+    private final GenreStorage genreStorage;
     private final FilmStorage filmStorage;
     private final UserService userService;
+    private final DirectorStorage directorStorage;
 
     @Autowired
-    public FilmService(Validator validator, @Qualifier("DBFilmStorage") FilmStorage filmStorage,
-                       @Autowired(required = false) UserService userService) {
+    public FilmService(
+            UserService userService,
+            Validator validator,
+            @Qualifier(UsedStorageConsts.QUALIFIER) FilmStorage filmStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) GenreStorage genreStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) DirectorStorage directorStorage
+    ) {
+        this.userService = userService;
         this.validator = validator;
         this.filmStorage = filmStorage;
-        this.userService = userService;
+        this.genreStorage = genreStorage;
+        this.directorStorage = directorStorage;
     }
 
     /**
      * Возвращает коллекцию фильмов
-     * */
+     */
     public Collection<Film> getFilms() {
-        return filmStorage.getAllFilms();
+        final Collection<Film> films = filmStorage.getAllFilms();
+        if (!films.isEmpty()) {
+            addExtraFilmData(films);
+        }
+        return films;
     }
 
     /**
      * Добавляет фильм в коллекцию
      * Возвращает добавленный фильм
-     * @exception FilmValidationException в случае, если фильм содержит недопустимое содержание полей
-     * */
+     *
+     * @throws FilmValidationException в случае, если фильм содержит недопустимое содержание полей
+     */
     public Film add(Film film) {
         validate(film);
         return filmStorage.addFilm(film);
@@ -51,8 +66,9 @@ public class FilmService {
     /**
      * Обновляет фильм в коллекции
      * Возвращает обновленный фильм
-     * @exception FilmValidationException в случае, если фильм содержит недопустимое содержание полей
-     * */
+     *
+     * @throws FilmValidationException в случае, если фильм содержит недопустимое содержание полей
+     */
     public Film update(Film film) {
         validate(film);
         return filmStorage.updateFilm(film);
@@ -60,7 +76,7 @@ public class FilmService {
 
     /**
      * Добавляет лайк пользователя к фильму в коллекции
-     * */
+     */
     public void addLike(final String id, final String userId) {
         int storedFilmId = getStoredFilmId(id);
         int storedUserId = userService.getStoredUserId(userId);
@@ -69,7 +85,7 @@ public class FilmService {
 
     /**
      * Удаляет лайк пользователя к фильму в коллекции
-     * */
+     */
     public void deleteLike(final String id, final String userId) {
         int storedFilmId = getStoredFilmId(id);
         int storedUserId = userService.getStoredUserId(userId);
@@ -78,15 +94,17 @@ public class FilmService {
 
     /**
      * Возвращает коллекцию фильмов с наибольшим количеством лайков.
+     *
      * @param count задает ограничение количества фильмов,
-     * если параметр не задан, будут возвращены первые 10 фильмов
-     * */
+     *              если параметр не задан, будут возвращены первые 10 фильмов
+     */
     public Collection<Film> getMostPopularFilms(final String count) {
         Integer size = intFromString(count);
         if (size == Integer.MIN_VALUE) {
             size = 10;
         }
         Collection<Film> films = filmStorage.getMostPopularFilms(size);
+        addExtraFilmData(films);
         return films;
     }
 
@@ -98,25 +116,36 @@ public class FilmService {
     public Collection<Film> getCommonFilms(final String userId, final String otherUserId) {
         int storedUserId = userService.getStoredUserId(userId);
         int storedOtherUserId = userService.getStoredUserId(otherUserId);
-        return filmStorage.getCommonFilms(storedUserId, storedOtherUserId);
+        Collection<Film> films = filmStorage.getCommonFilms(storedUserId, storedOtherUserId);
+        addExtraFilmData(films);
+        return films;
     }
 
     /**
      * Возврашает фильм из коллекции по идентификатору
+     *
      * @param id - идентификатор фильма
-     * @exception WrongIdException в случае, если программе не удастся распознать идентификатор
-     * @exception NotFoundException в случае, если фильм по идентификатору отсутствует
-     * */
+     * @throws WrongIdException  в случае, если программе не удастся распознать идентификатор
+     * @throws NotFoundException в случае, если фильм по идентификатору отсутствует
+     */
     public Film getFilm(String id) {
         return getStoredFilm(id);
     }
 
+    public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
+        directorStorage.isExist(id);
+        Collection<Film> films = filmStorage.getSortedFilmWithDirector(id, sortBy);
+        addExtraFilmData(films);
+        return films;
+    }
+
     /**
      * Удаляет фильм из коллекции по идентификатору
+     *
      * @param id - идентификатор фильма
-     * @exception WrongIdException в случае, если программе не удастся распознать идентификатор
-     * @exception NotFoundException в случае, если фильм по идентификатору отсутствует
-     * */
+     * @throws WrongIdException  в случае, если программе не удастся распознать идентификатор
+     * @throws NotFoundException в случае, если фильм по идентификатору отсутствует
+     */
     public void deleteFilm(String id) {
         int storedFilmId = getStoredFilmId(id);
         filmStorage.deleteFilm(storedFilmId);
@@ -137,7 +166,7 @@ public class FilmService {
     }
 
     private static int getNextId() {
-       return ++increment;
+        return ++increment;
     }
 
     private Integer intFromString(final String supposedInt) {
@@ -168,6 +197,7 @@ public class FilmService {
         if (film == null) {
             onFilmNotFound(filmId);
         }
+        addExtraFilmData(film);
         return film;
     }
 
@@ -180,4 +210,12 @@ public class FilmService {
         return filmId;
     }
 
+    private void addExtraFilmData(Film film) {
+        addExtraFilmData(List.of(film));
+    }
+
+    private void addExtraFilmData(Collection<Film> films) {
+        genreStorage.load(films);
+        directorStorage.load(films);
+    }
 }
