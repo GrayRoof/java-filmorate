@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,6 +12,8 @@ import ru.yandex.practicum.filmorate.FilmorateApplication;
 import ru.yandex.practicum.filmorate.model.FeedEvent;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.*;
+
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_PREPARE_DB;
@@ -48,9 +51,18 @@ class DBFeedStorageTest {
         jdbcTemplate.update(SQL_PREPARE_DB);
     }
 
+    @Test
+
+    void shouldReturnOneFeed() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+        final int firstUserId = userStorageTestHelper.getNewUserId();
+        filmStorage.addLike(filmId, firstUserId);
+        Collection<FeedEvent> actual = feedStorage.getFeed(firstUserId);
+        assertEquals(1, actual.size());
+    }
 
     @Test
-    void shouldReturnFeed() {
+    void shouldReturnFeeds() {
         final int filmId = filmStorageTestHelper.getNewFilmId();
         final int firstUserId = userStorageTestHelper.getNewUserId();
         final int secondUserId = userStorageTestHelper.getNewUserId();
