@@ -28,7 +28,7 @@ class DBUserStorageTest {
     @Autowired
     public DBUserStorageTest(
             JdbcTemplate jdbcTemplate,
-            UserStorage userStorage,
+            DBUserStorage userStorage,
             FilmStorage filmStorage
     ) {
         this.jdbcTemplate = jdbcTemplate;
