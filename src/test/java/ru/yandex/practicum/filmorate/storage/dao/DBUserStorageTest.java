@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage.dao;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,9 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class DBUserStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
-
     private final UserStorage userStorage;
-
     private final FilmStorage filmStorage;
     private final UserStorageTestHelper userStorageTestHelper;
     private final FilmStorageTestHelper filmStorageTestHelper;
@@ -31,8 +28,8 @@ class DBUserStorageTest {
     @Autowired
     public DBUserStorageTest(
             JdbcTemplate jdbcTemplate,
-            @Qualifier(DBStorageConsts.QUALIFIER) UserStorage userStorage,
-            @Qualifier(DBStorageConsts.QUALIFIER) FilmStorage filmStorage
+            DBUserStorage userStorage,
+            FilmStorage filmStorage
     ) {
         this.jdbcTemplate = jdbcTemplate;
         this.userStorage = userStorage;
