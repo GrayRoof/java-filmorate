@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,8 +47,8 @@ class DBFeedStorageTest {
         this.filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
     }
 
-    @AfterEach
-    void tearDown() {
+    @BeforeEach
+    void setUp() {
         jdbcTemplate.update(SQL_PREPARE_DB);
     }
 
@@ -82,6 +83,8 @@ class DBFeedStorageTest {
         FeedEvent[] actualFirst = feedStorage.getFeed(firstUserId).toArray(FeedEvent[]::new);
         assertEquals(2, actualFirst.length,
                 "Количество объектов в ленте firstUser не совпадает с ожидаемым");
+        assertEquals(1, actualFirst[0].getEventId(),
+                "id первого события ленты firstUser не тот");
         assertEquals(filmId, actualFirst[0].getEntityId(),
                 "id сущности для первого события ленты firstUser не тот");
         assertEquals("LIKE", actualFirst[0].getEventType().toString(),
@@ -89,6 +92,8 @@ class DBFeedStorageTest {
         assertEquals("ADD", actualFirst[0].getOperation().toString(),
                 "Неверная операция первого события ленты firstUser");
 
+        assertEquals(3, actualFirst[1].getEventId(),
+                "id второго события ленты firstUser не тот");
         assertEquals(secondUserId, actualFirst[1].getEntityId(),
                 "id сущности для второго события ленты firstUser не тот");
         assertEquals("FRIEND", actualFirst[1].getEventType().toString(),
@@ -99,6 +104,8 @@ class DBFeedStorageTest {
         FeedEvent[] actualSecond = feedStorage.getFeed(secondUserId).toArray(FeedEvent[]::new);
         assertEquals(1, actualSecond.length,
                 "Количество объектов в ленте secondUserId не совпадает с ожидаемым");
+        assertEquals(4, actualSecond[0].getEventId(),
+                "id первого события ленты secondUserId не тот");
         assertEquals(reviewId, actualSecond[0].getEntityId(),
                 "id сущности для первого события ленты secondUserId не тот");
         assertEquals("REVIEW", actualSecond[0].getEventType().toString(),
@@ -109,13 +116,13 @@ class DBFeedStorageTest {
         FeedEvent[] actualThird = feedStorage.getFeed(thirdUserId).toArray(FeedEvent[]::new);
         assertEquals(1, actualThird.length,
                 "Количество объектов в ленте thirdUserId не совпадает с ожидаемым");
+        assertEquals(2, actualThird[0].getEventId(),
+                "id первого события ленты thirdUserId не тот");
         assertEquals(firstUserId, actualThird[0].getEntityId(),
                 "id сущности для первого события ленты thirdUserId не тот");
         assertEquals("FRIEND", actualThird[0].getEventType().toString(),
                 "Неверный тип первого события ленты thirdUserId");
         assertEquals("ADD", actualThird[0].getOperation().toString(),
                 "Неверная операция первого события ленты thirdUserId");
-
-
     }
 }
