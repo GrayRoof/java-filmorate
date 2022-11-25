@@ -77,11 +77,11 @@ public class DBReviewStorage implements ReviewStorage {
     @Override
     public Review addLike(Integer reviewId, Integer userId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
-        String sqlQuery2 = "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
+        String sqlQueryUseful = "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
 
         jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId, true), reviewId);
 
-        jdbcTemplate.update(sqlQuery2, reviewId, userId, true);
+        jdbcTemplate.update(sqlQueryUseful, reviewId, userId, true);
         return getReview(reviewId);
     }
 
@@ -89,8 +89,8 @@ public class DBReviewStorage implements ReviewStorage {
     public Review removeLike(Integer reviewId, Integer userId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,false), reviewId);
-        String sqlQuery2 = "delete from useful where ReviewID = ? and userid = ? and useful = ?";
-        jdbcTemplate.update(sqlQuery2, reviewId, userId, true);
+        String sqlQueryUseful = "delete from useful where ReviewID = ? and userid = ? and useful = ?";
+        jdbcTemplate.update(sqlQueryUseful, reviewId, userId, true);
         return getReview(reviewId);
     }
 
@@ -122,10 +122,10 @@ public class DBReviewStorage implements ReviewStorage {
     @Override
     public Review addDislike(Integer reviewId, Integer userId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
-        String sqlQuery2 = "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
+        String sqlQueryUseful = "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
 
         jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId, false), reviewId);
-        jdbcTemplate.update(sqlQuery2, reviewId, userId, false);
+        jdbcTemplate.update(sqlQueryUseful, reviewId, userId, false);
 
         return getReview(reviewId);
     }
@@ -134,8 +134,8 @@ public class DBReviewStorage implements ReviewStorage {
     public Review removeDislike(Integer reviewId, Integer userId) {
         String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
         jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,true), reviewId);
-        String sqlQuery2 = "delete from useful where ReviewID = ? and userid = ? and useful = ?";
-        jdbcTemplate.update(sqlQuery2, reviewId, userId, false);
+        String sqlQueryUseful = "delete from useful where ReviewID = ? and userid = ? and useful = ?";
+        jdbcTemplate.update(sqlQueryUseful, reviewId, userId, false);
         return getReview(reviewId);
     }
 }
