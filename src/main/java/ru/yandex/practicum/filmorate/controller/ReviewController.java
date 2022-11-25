@@ -56,17 +56,17 @@ public class ReviewController {
 
     @DeleteMapping("/{id}/like/{userId}")
     public Review removeReviewLike(@PathVariable String id, @PathVariable String userId){
-        return service.removeLike(id, userId);
+        return service.removeLike(Integer.parseInt(id), Integer.parseInt(userId));
     }
 
     @PutMapping("/{id}/dislike/{userId}")
     public Review addReviewDislike(@PathVariable String id, @PathVariable String userId){
-        return service.addDislike(id, userId);
+        return service.addDislike(Integer.parseInt(id), Integer.parseInt(userId));
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
     public Review removeReviewDislike(@PathVariable String id, @PathVariable String userId){
-        return service.addLike(id, userId);
+        return service.addLike(Integer.parseInt(id), Integer.parseInt(userId));
     }
 
 

@@ -51,41 +51,41 @@ public class ReviewService {
         return storage.getReview(Integer.parseInt(id));
     }
 
-    public Review addLike(String id, String userId) {
+    public Review addLike(int reviewId, int userId) {
         try {
-            validator.validateGoodReviewByUserAndId(Integer.valueOf(id), Integer.valueOf(userId));
-            validator.validateBadReviewByUserAndId(Integer.valueOf(id), Integer.valueOf(userId));
+            validator.validateGoodReviewByUserAndId(reviewId, userId);
+            validator.validateBadReviewByUserAndId(reviewId, userId);
         } catch (ReviewAlreadyLikedException e){
-            return storage.removeLike(Integer.valueOf(id), Integer.valueOf(userId));
+            return storage.removeLike(reviewId, userId);
         } catch (ReviewAlreadyDislikedException e){
-            storage.removeDislike(Integer.valueOf(id), Integer.valueOf(userId));
+            storage.removeDislike(reviewId, userId);
         }
-        return storage.addLike(Integer.valueOf(id), Integer.valueOf(userId));
+        return storage.addLike(reviewId, userId);
     }
 
-    public Review removeLike(String id, String userId) {
+    public Review removeLike(int reviewId, int userId) {
         try{
-            validator.validateGoodReviewByUserAndId(Integer.valueOf(id), Integer.valueOf(userId));
+            validator.validateGoodReviewByUserAndId(reviewId, userId);
         } catch (ReviewAlreadyLikedException e){
-            return null;
+            return storage.removeLike(reviewId, userId);
         }
-        return storage.removeLike(Integer.valueOf(id), Integer.valueOf(userId));
+        return null;
     }
 
     public Collection<Review> getAll(String filmId, String count) {
         return storage.getAll(filmId, Integer.parseInt(count));
     }
 
-    public Review addDislike(String id, String userId) {
+    public Review addDislike(int reviewId, int userId) {
         try {
-            validator.validateBadReviewByUserAndId(Integer.parseInt(id), Integer.parseInt(userId));
-            validator.validateGoodReviewByUserAndId(Integer.parseInt(id), Integer.parseInt(userId));
+            validator.validateBadReviewByUserAndId(reviewId, userId);
+            validator.validateGoodReviewByUserAndId(reviewId, userId);
         } catch (ReviewAlreadyDislikedException e){
             return null;
         } catch (ReviewAlreadyLikedException e){
-            storage.removeLike(Integer.parseInt(id), Integer.parseInt(userId));
-            return storage.addDislike(Integer.parseInt(id), Integer.parseInt(userId));
+            storage.removeLike(reviewId, userId);
+            return storage.addDislike(reviewId, userId);
         }
-        return storage.addDislike(Integer.parseInt(id), Integer.parseInt(userId));
+        return storage.addDislike(reviewId, userId);
     }
 }
