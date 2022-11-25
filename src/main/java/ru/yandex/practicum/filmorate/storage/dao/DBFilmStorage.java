@@ -298,8 +298,7 @@ public class DBFilmStorage implements FilmStorage {
 
     private Film makeFilm(ResultSet rs) throws SQLException {
         int filmId = rs.getInt("FilmID");
-        LinkedHashSet<Genre> genres = new LinkedHashSet<>();
-        genreStorage.getGenresByFilmId(filmId).forEach(genre -> genres.add(genre));
+
         Film film = new Film(
                 filmId,
                 rs.getString("Name"),
@@ -310,7 +309,7 @@ public class DBFilmStorage implements FilmStorage {
                 new Mpa(rs.getInt("MPA.RatingID"),
                         rs.getString("MPA.Name"),
                         rs.getString("MPA.Description")),
-                genres,
+                new LinkedHashSet<>(),
                 new LinkedHashSet<>(),
                 getFilmLikes(filmId));
         return film;

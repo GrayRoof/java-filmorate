@@ -26,7 +26,6 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserService userService;
     private final DirectorStorage directorStorage;
-
     private final GenreValidator genreValidator;
 
     @Autowired
@@ -215,15 +214,36 @@ public class FilmService {
     }
 
     public Collection<Film> getMostPopularFilms(String count, String genreId, String year) {
-        if (!genreId.equals("all") && !year.equals("all")) {
-            genreValidator.validateGenreById(Integer.parseInt(genreId));
-            return filmStorage.getSortedByGenreAndYear(Integer.parseInt(genreId),
-                    Integer.parseInt(year), Integer.parseInt(count));
+        Collection<Film> films;
+        int checkedGenreID = getRequestedNumber(genreId);
+        int checkedYear = getRequestedNumber(year);
+        if (checkedGenreID != 0 && checkedYear != 0) {
+            genreValidator.validateGenreById(checkedGenreID);
+            films = filmStorage.getSortedByGenreAndYear(checkedGenreID,
+                    checkedYear, Integer.parseInt(count));
+        } else if (checkedGenreID != 0 && checkedYear == 0) {
+            films = filmStorage.getMostPopularByGenre(Integer.parseInt(count), checkedGenreID);
+        } else if (checkedGenreID == 0 && checkedYear != 0) {
+            films = filmStorage.getMostPopularByYear(checkedYear, Integer.parseInt(count));
+        } else {
+            films = filmStorage.getMostPopularFilms(Integer.parseInt(count));
         }
-        if (!genreId.equals("all") && year.equals("all"))
-            return filmStorage.getMostPopularByGenre(Integer.parseInt(count), Integer.parseInt(genreId));
-        if (genreId.equals("all") && !year.equals("all"))
-            return filmStorage.getMostPopularByYear(Integer.parseInt(year), Integer.parseInt(count));
-        return filmStorage.getMostPopularFilms(Integer.parseInt(count));
+        if (films.size() > 0) {
+            addExtraFilmData(films);
+        }
+        return films;
+
+    }
+
+    private int getRequestedNumber(String reqNum) {
+        int result = 0;
+        if (!reqNum.toLowerCase().equals("all")){
+            try {
+                result = Integer.parseInt(reqNum);
+            } catch (NumberFormatException e){
+                throw new WrongIdException("Не распознано значение параметра запроса");
+            }
+        }
+        return result;
     }
 }
