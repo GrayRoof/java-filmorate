@@ -18,9 +18,9 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class ErrorHandler {
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(value = {FilmValidationException.class,
-            UserValidationException.class})
+    @ExceptionHandler(value = {FilmValidationException.class, UserValidationException.class, ConflictException.class})
     public ErrorMessage handleException(ConstraintViolationException exception, WebRequest request) {
         Map<String, String> errors = new HashMap<>();
         exception.getConstraintViolations().forEach(error -> {
@@ -67,7 +67,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
     public ErrorMessage handleValidationExceptions(MethodArgumentNotValidException exception,
-                                                          WebRequest request) {
+                                                   WebRequest request) {
         Map<String, String> errors = new HashMap<>();
         exception.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
