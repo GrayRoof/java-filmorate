@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_PREPARE_DB;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -24,6 +26,11 @@ class UserServiceTest {
     UserService service;
     @Autowired
     JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    void setUp() {
+        jdbcTemplate.update(SQL_PREPARE_DB);
+    }
 
     @AfterEach
     void tearDown() {

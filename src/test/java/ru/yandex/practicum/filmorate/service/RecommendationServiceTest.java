@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -12,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.*;
 import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_PREPARE_DB;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -36,6 +38,11 @@ public class RecommendationServiceTest {
 
         this.userStorageTestHelper = new UserStorageTestHelper(userStorage);
         this.filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
+    }
+
+    @BeforeEach
+    void setUp() {
+        jdbcTemplate.update(SQL_PREPARE_DB);
     }
 
     @AfterEach

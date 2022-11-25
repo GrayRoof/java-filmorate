@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -11,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.*;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_PREPARE_DB;
 
 
 @SpringBootTest
@@ -34,6 +36,11 @@ class DBReviewStorageTest {
 
         this.userStorageTestHelper = new UserStorageTestHelper(userStorage);
         this.filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
+    }
+
+    @BeforeEach
+    void setUp() {
+        jdbcTemplate.update(SQL_PREPARE_DB);
     }
 
     @AfterEach
