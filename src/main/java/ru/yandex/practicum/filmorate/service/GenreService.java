@@ -1,42 +1,45 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.dao.DBGenreStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.util.Collection;
 
 @Service
 public class GenreService {
 
-    private final DBGenreStorage dbGenreStorage;
+    private final GenreStorage genreStorage;
 
     @Autowired
-    public GenreService(DBGenreStorage dbGenreStorage) {
-        this.dbGenreStorage = dbGenreStorage;
+    public GenreService(
+            @Qualifier(UsedStorageConsts.QUALIFIER) GenreStorage genreStorage
+    ) {
+        this.genreStorage = genreStorage;
     }
 
     public Collection<Genre> getAllGenres() {
-        return dbGenreStorage.getAllGenres();
+        return genreStorage.getAllGenres();
     }
 
     public Collection<Genre> getFilmGenres(int filmId) {
-        return dbGenreStorage.getGenresByFilmId(filmId);
+        return genreStorage.getGenresByFilmId(filmId);
     }
 
     public Genre getGenre(String supposedId) {
         int genreId = intFromString(supposedId);
-        return dbGenreStorage.getGenreById(genreId);
+        return genreStorage.getGenreById(genreId);
     }
 
     public boolean deleteFilmGenres(int filmId) {
-       return dbGenreStorage.deleteFilmGenres(filmId);
+        return genreStorage.deleteFilmGenres(filmId);
     }
 
-    public boolean addFilmGenres(int filmId, Collection<Genre> genres) {
-        return dbGenreStorage.addFilmGenres(filmId, genres);
-    }
+/*    public boolean addFilmGenres(int filmId, Collection<Genre> genres) {
+        return genreStorage.addFilmGenres(filmId, genres);
+    }*/
 
     private Integer intFromString(final String supposedInt) {
         try {
