@@ -10,7 +10,10 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.*;
 
 
+import java.util.function.Supplier;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @SpringBootTest
@@ -21,6 +24,7 @@ class DBReviewStorageTest {
     private final ReviewStorage reviewStorage;
     private final UserStorageTestHelper userStorageTestHelper;
     private final FilmStorageTestHelper filmStorageTestHelper;
+    private final ReviewStorageTestHelper reviewStorageTestHelper;
 
     @Autowired
     public DBReviewStorageTest(
@@ -34,6 +38,7 @@ class DBReviewStorageTest {
 
         this.userStorageTestHelper = new UserStorageTestHelper(userStorage);
         this.filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
+        this.reviewStorageTestHelper = new ReviewStorageTestHelper(reviewStorage);
     }
 
     @AfterEach
@@ -126,49 +131,149 @@ class DBReviewStorageTest {
     }
 
     @Test
-    void shouldAddScoreUseful() {
-        final int userId = userStorageTestHelper.getNewUserId();
+    void shouldSetAbsentPositiveScore() {
         final int filmId = filmStorageTestHelper.getNewFilmId();
+        final int authorId = userStorageTestHelper.getNewUserId();
+        final int reviewId = reviewStorageTestHelper.getNewReviewId(filmId, authorId, true);
+        final int userId = userStorageTestHelper.getNewUserId();
 
-        Review review = Review.builder().
-                content("This movie was OSOM AS F").
-                userId(userId).
-                filmId(filmId).
-                isPositive(true).
-                build();
+        Supplier<Integer> reviewUsefulness =
+                () -> reviewStorage.getReview(reviewId).getUseful();
 
-        Review reviewFromDB = reviewStorage.addReview(review);
+        assertTrue(reviewStorage.getScoreFromUser(reviewId, userId).isEmpty());
 
-        final int reviewId = reviewFromDB.getReviewId();
-
+        int prevUsefulness = reviewUsefulness.get();
         reviewStorage.setScoreFromUser(reviewId, userId, true);
 
-        assertThat(reviewStorage.getReview(reviewId)).hasFieldOrPropertyWithValue("useful", 1);
-
+        assertTrue(reviewStorage.getScoreFromUser(reviewId, userId).get());
+        assertEquals(prevUsefulness + 1, reviewUsefulness.get());
     }
 
     @Test
-    void shouldUnsetScoreUseful() {
-        final int userId = userStorageTestHelper.getNewUserId();
+    void shouldNotSetExistentPositiveScore() {
         final int filmId = filmStorageTestHelper.getNewFilmId();
+        final int authorId = userStorageTestHelper.getNewUserId();
+        final int reviewId = reviewStorageTestHelper.getNewReviewId(filmId, authorId, true);
+        final int userId = userStorageTestHelper.getNewUserId();
 
-        Review review = Review.builder().
-                content("This movie was OSOM AS F").
-                userId(userId).
-                filmId(filmId).
-                isPositive(true).
-                build();
-
-        Review reviewFromDB = reviewStorage.addReview(review);
-
-        final int reviewId = reviewFromDB.getReviewId();
+        Supplier<Integer> reviewUsefulness =
+                () -> reviewStorage.getReview(reviewId).getUseful();
 
         reviewStorage.setScoreFromUser(reviewId, userId, true);
 
-        assertThat(reviewStorage.getReview(reviewId)).hasFieldOrPropertyWithValue("useful", 1);
+        int prevUsefulness = reviewUsefulness.get();
+        reviewStorage.setScoreFromUser(reviewId, userId, true);
 
-        reviewStorage.unsetScoreFromUser(reviewId, userId, true);
-        assertThat(reviewStorage.getReview(1)).hasFieldOrPropertyWithValue("useful", 0);
-
+        assertTrue(reviewStorage.getScoreFromUser(reviewId, userId).get());
+        assertEquals(prevUsefulness, reviewUsefulness.get());
     }
+
+    @Test
+    void shouldNotUnsetAbsentPositiveScore() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+        final int authorId = userStorageTestHelper.getNewUserId();
+        final int reviewId = reviewStorageTestHelper.getNewReviewId(filmId, authorId, true);
+        final int userId = userStorageTestHelper.getNewUserId();
+
+        Supplier<Integer> reviewUsefulness =
+                () -> reviewStorage.getReview(reviewId).getUseful();
+
+        int prevUsefulness = reviewUsefulness.get();
+        reviewStorage.unsetScoreFromUser(reviewId, userId, true);
+
+        assertEquals(prevUsefulness, reviewUsefulness.get());
+    }
+
+    @Test
+    void shouldUnsetPositiveScore() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+        final int authorId = userStorageTestHelper.getNewUserId();
+        final int reviewId = reviewStorageTestHelper.getNewReviewId(filmId, authorId, true);
+        final int userId = userStorageTestHelper.getNewUserId();
+
+        Supplier<Integer> reviewUsefulness =
+                () -> reviewStorage.getReview(reviewId).getUseful();
+
+        reviewStorage.setScoreFromUser(reviewId, userId, true);
+
+        int prevUsefulness = reviewUsefulness.get();
+        reviewStorage.unsetScoreFromUser(reviewId, userId, true);
+
+        assertTrue(reviewStorage.getScoreFromUser(reviewId, userId).isEmpty());
+        assertEquals(prevUsefulness - 1, reviewUsefulness.get());
+    }
+
+    @Test
+    void shouldSetAbsentNegativeScore() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+        final int authorId = userStorageTestHelper.getNewUserId();
+        final int reviewId = reviewStorageTestHelper.getNewReviewId(filmId, authorId, true);
+        final int userId = userStorageTestHelper.getNewUserId();
+
+        Supplier<Integer> reviewUsefulness =
+                () -> reviewStorage.getReview(reviewId).getUseful();
+
+        assertTrue(reviewStorage.getScoreFromUser(reviewId, userId).isEmpty());
+
+        int prevUsefulness = reviewUsefulness.get();
+        reviewStorage.setScoreFromUser(reviewId, userId, false);
+
+        assertFalse(reviewStorage.getScoreFromUser(reviewId, userId).get());
+        assertEquals(prevUsefulness - 1, reviewUsefulness.get());
+    }
+
+    @Test
+    void shouldNotSetExistentNegativeScore() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+        final int authorId = userStorageTestHelper.getNewUserId();
+        final int reviewId = reviewStorageTestHelper.getNewReviewId(filmId, authorId, true);
+        final int userId = userStorageTestHelper.getNewUserId();
+
+        Supplier<Integer> reviewUsefulness =
+                () -> reviewStorage.getReview(reviewId).getUseful();
+
+        reviewStorage.setScoreFromUser(reviewId, userId, false);
+
+        int prevUsefulness = reviewUsefulness.get();
+        reviewStorage.setScoreFromUser(reviewId, userId, false);
+
+        assertFalse(reviewStorage.getScoreFromUser(reviewId, userId).get());
+        assertEquals(prevUsefulness, reviewUsefulness.get());
+    }
+
+    @Test
+    void shouldNotUnsetAbsentNegativeScore() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+        final int authorId = userStorageTestHelper.getNewUserId();
+        final int reviewId = reviewStorageTestHelper.getNewReviewId(filmId, authorId, true);
+        final int userId = userStorageTestHelper.getNewUserId();
+
+        Supplier<Integer> reviewUsefulness =
+                () -> reviewStorage.getReview(reviewId).getUseful();
+
+        int prevUsefulness = reviewUsefulness.get();
+        reviewStorage.unsetScoreFromUser(reviewId, userId, false);
+
+        assertEquals(prevUsefulness, reviewUsefulness.get());
+    }
+
+    @Test
+    void shouldUnsetNegativeScore() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+        final int authorId = userStorageTestHelper.getNewUserId();
+        final int reviewId = reviewStorageTestHelper.getNewReviewId(filmId, authorId, true);
+        final int userId = userStorageTestHelper.getNewUserId();
+
+        Supplier<Integer> reviewUsefulness =
+                () -> reviewStorage.getReview(reviewId).getUseful();
+
+        reviewStorage.setScoreFromUser(reviewId, userId, false);
+
+        int prevUsefulness = reviewUsefulness.get();
+        reviewStorage.unsetScoreFromUser(reviewId, userId, false);
+
+        assertTrue(reviewStorage.getScoreFromUser(reviewId, userId).isEmpty());
+        assertEquals(prevUsefulness + 1, reviewUsefulness.get());
+    }
+
 }
