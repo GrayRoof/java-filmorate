@@ -201,7 +201,7 @@ public class FilmService {
         if (film == null) {
             onFilmNotFound(filmId);
         }
-        addExtraFilmData(film);
+        addExtraFilmData(List.of(film));
         return film;
     }
 
