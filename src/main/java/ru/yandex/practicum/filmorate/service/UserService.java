@@ -153,6 +153,12 @@ public class UserService {
         return userId;
     }
 
+    public void requireUser(int userId) {
+        if (!userStorage.containsUser(userId)) {
+            onUserNotFound(userId);
+        }
+    }
+
     private void validate(final User user) {
         if (user.getName() == null) {
             user.setName(user.getLogin());

@@ -2,11 +2,14 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.event.EventListener;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.event.OnDeleteUserEvent;
 import ru.yandex.practicum.filmorate.event.OnFeedEvent;
 import ru.yandex.practicum.filmorate.model.AllowedFeedEvents;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -15,6 +18,7 @@ import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import java.sql.*;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 @Qualifier(DBStorageConsts.QUALIFIER)
@@ -89,35 +93,6 @@ public class DBReviewStorage implements ReviewStorage {
     }
 
     @Override
-    public boolean addLike(Integer reviewId, Integer userId) {
-        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;" +
-                "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
-        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId, true), reviewId,
-                reviewId, userId, true);
-        return true;
-    }
-
-    @Override
-    public boolean removeLike(Integer reviewId, Integer userId) {
-        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;" +
-                "delete from useful where ReviewID = ? and userid = ? and useful = ?";
-        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,false), reviewId,
-                reviewId, userId, true);
-        return true;
-    }
-
-    private int changeUsefulValue(Integer reviewId, boolean increase){
-        int useful = getReview(reviewId).getUseful();
-
-        if (increase) {
-            useful++;
-        } else {
-            useful--;
-        }
-        return useful;
-    }
-
-    @Override
     public Collection<Review> getAll(String filmId, int count) {
         String sqlQuery = "select * from reviews order by useful desc limit ?;";
         Integer id = 0;
@@ -132,21 +107,95 @@ public class DBReviewStorage implements ReviewStorage {
     }
 
     @Override
-    public boolean addDislike(Integer reviewId, Integer userId) {
-        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;" +
-                "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
-
-        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId, false),
-                reviewId,reviewId, userId, false);
-        return true;
+    public boolean containsReview(int reviewId) {
+        return jdbcTemplate.queryForRowSet(
+                "select reviewid from reviews where reviewid = ?;",
+                reviewId
+        ).next();
     }
 
     @Override
-    public boolean removeDislike(Integer reviewId, Integer userId) {
-        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;" +
-                "delete from useful where ReviewID = ? and userid = ? and useful = ?";
-        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,true),
-                reviewId, reviewId, userId, false);
-        return true;
+    public Optional<Boolean> getScoreFromUser(int reviewId, int userId) {
+        try {
+            return Optional.ofNullable(
+                    jdbcTemplate.queryForObject(
+                            "select useful from useful where reviewid=? and userid=?;",
+                            Boolean.class,
+                            reviewId,
+                            userId
+                    )
+            );
+        } catch(EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    private void updateReviewUsefulness(int reviewId) {
+        jdbcTemplate.update(
+                "UPDATE reviews SET useful = ( " +
+                "   SELECT " +
+                "      COALESCE( " +
+                "         SUM( " +
+                "            CASE WHEN useful THEN " +
+                "               1 " +
+                "            ELSE " +
+                "               -1 " +
+                "            END " +
+                "         ), " +
+                "         0 " +
+                "      ) " +
+                "   FROM useful WHERE useful.reviewid = ? " +
+                ") " +
+                "WHERE reviewid = ?;",
+                reviewId,
+                reviewId
+        );
+    }
+
+    @Override
+    public void setScoreFromUser(int reviewId, int userId, boolean useful) {
+        jdbcTemplate.update(
+                "MERGE INTO useful (reviewid, userid, useful) KEY(reviewid, userid) VALUES (?, ?, ?);",
+                reviewId,
+                userId,
+                useful
+        );
+
+        updateReviewUsefulness(reviewId);
+    }
+
+    @Override
+    public void unsetScoreFromUser(int reviewId, int userId, boolean useful) {
+        boolean done = jdbcTemplate.update(
+                "DELETE FROM useful WHERE reviewid = ? AND userid = ? AND useful = ?;",
+                reviewId,
+                userId,
+                useful
+        ) > 0;
+
+        if (done) {
+            updateReviewUsefulness(reviewId);
+        }
+    }
+
+    @EventListener
+    public void handleOnDeleteUser(OnDeleteUserEvent event) {
+        jdbcTemplate.update(
+                "UPDATE reviews SET useful = ( " +
+                "   SELECT " +
+                "      COALESCE( " +
+                "         SUM( " +
+                "            CASE WHEN useful THEN " +
+                "               1 " +
+                "            ELSE " +
+                "               -1 " +
+                "            END " +
+                "         ), " +
+                "         0 " +
+                "      ) " +
+                "   FROM useful " +
+                "   WHERE useful.reviewid=reviews.reviewid " +
+                ");"
+        );
     }
 }

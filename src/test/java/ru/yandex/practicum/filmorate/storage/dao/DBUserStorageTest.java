@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -12,7 +13,9 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorageTestHelper;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorageTestHelper;
+import ru.yandex.practicum.filmorate.storage.*;
 
+import java.util.function.Consumer;
 import java.util.Collection;
 import java.util.function.Supplier;
 
@@ -26,21 +29,26 @@ class DBUserStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final ReviewStorage reviewStorage;
     private final UserStorageTestHelper userStorageTestHelper;
+    private final ReviewStorageTestHelper reviewStorageTestHelper;
     private final FilmStorageTestHelper filmStorageTestHelper;
 
     @Autowired
     public DBUserStorageTest(
             JdbcTemplate jdbcTemplate,
             DBUserStorage userStorage,
-            FilmStorage filmStorage
+            FilmStorage filmStorage,
+            ReviewStorage reviewStorage
     ) {
         this.jdbcTemplate = jdbcTemplate;
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.reviewStorage = reviewStorage;
 
         this.userStorageTestHelper = new UserStorageTestHelper(userStorage);
         this.filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
+        this.reviewStorageTestHelper = new ReviewStorageTestHelper(reviewStorage);
     }
 
     @BeforeEach
@@ -52,10 +60,13 @@ class DBUserStorageTest {
     void tearDown() {
         jdbcTemplate.update("DELETE FROM friendship;");
         jdbcTemplate.update("DELETE FROM likes;");
+        jdbcTemplate.update("DELETE FROM useful;");
+        jdbcTemplate.update("DELETE FROM reviews;");
         jdbcTemplate.update("DELETE FROM users;");
         jdbcTemplate.update("DELETE FROM film;");
         jdbcTemplate.update("ALTER TABLE users ALTER COLUMN userid RESTART WITH 1;");
         jdbcTemplate.update("ALTER TABLE film ALTER COLUMN filmid RESTART WITH 1;");
+        jdbcTemplate.update("ALTER TABLE reviews ALTER COLUMN reviewid RESTART WITH 1;");
     }
 
     @Test
@@ -72,6 +83,7 @@ class DBUserStorageTest {
     }
 
     @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
     void deleteUserDeletesActiveFriendship() {
         final int annId = userStorageTestHelper.getNewUserId();
         final int bobId = userStorageTestHelper.getNewUserId();
@@ -93,6 +105,7 @@ class DBUserStorageTest {
     }
 
     @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
     void deleteUserDeletesPassiveFriendship() {
         final int annId = userStorageTestHelper.getNewUserId();
         final int bobId = userStorageTestHelper.getNewUserId();
@@ -114,6 +127,7 @@ class DBUserStorageTest {
     }
 
     @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
     void deleteUserDeletesLikes() {
         final int amelieId = filmStorageTestHelper.getNewFilmId();
         final int batmanId = filmStorageTestHelper.getNewFilmId();
@@ -138,6 +152,7 @@ class DBUserStorageTest {
     }
 
     @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
     void deleteUserUpdatesFilmRate() {
         final int filmId = filmStorageTestHelper.getNewFilmId();
 
@@ -159,4 +174,64 @@ class DBUserStorageTest {
         assertEquals(2, filmRate.get());
     }
 
+    @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
+    void deleteUserDeletesReviews() {
+        final int amelieId = filmStorageTestHelper.getNewFilmId();
+        final int batmanId = filmStorageTestHelper.getNewFilmId();
+        final int carrieId = filmStorageTestHelper.getNewFilmId();
+        final int userId = userStorageTestHelper.getNewUserId();
+
+        reviewStorageTestHelper.addReview(amelieId, userId, true);
+        reviewStorageTestHelper.addReview(batmanId, userId, true);
+        reviewStorageTestHelper.addReview(carrieId, userId, true);
+
+        Supplier<Integer> userReviewsCount =
+                () -> jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM reviews WHERE userid=?;",
+                        Integer.class,
+                        userId
+                );
+        assertEquals(3, userReviewsCount.get());
+
+        userStorage.deleteUser(userId);
+
+        assertEquals(0, userReviewsCount.get());
+    }
+
+    @Test
+    void deleteUserDeletesReviewScores() {
+        final int amelieId = filmStorageTestHelper.getNewFilmId();
+        final int batmanId = filmStorageTestHelper.getNewFilmId();
+        final int carrieId = filmStorageTestHelper.getNewFilmId();
+        final int authorId = userStorageTestHelper.getNewUserId();
+
+        final int userId = userStorageTestHelper.getNewUserId();
+
+        final int amelieReviewId = reviewStorageTestHelper.getNewReviewId(amelieId, authorId, true);
+        final int batmanReviewId = reviewStorageTestHelper.getNewReviewId(batmanId, authorId, true);
+        final int carrieReviewId = reviewStorageTestHelper.getNewReviewId(carrieId, authorId, true);
+
+        reviewStorage.setScoreFromUser(amelieReviewId, userId, true);
+        reviewStorage.setScoreFromUser(batmanReviewId, userId, true);
+        reviewStorage.setScoreFromUser(carrieReviewId, userId, true);
+
+        Consumer<Boolean> checkUserRelatedData =
+                (noReviewScoreSet) -> {
+                    assertEquals(noReviewScoreSet, reviewStorage.getScoreFromUser(amelieReviewId, userId).isEmpty());
+                    assertEquals(noReviewScoreSet, reviewStorage.getScoreFromUser(batmanReviewId, userId).isEmpty());
+                    assertEquals(noReviewScoreSet, reviewStorage.getScoreFromUser(carrieReviewId, userId).isEmpty());
+
+                    int expectedReviewUseful = noReviewScoreSet ? 0 : 1;
+                    assertEquals(expectedReviewUseful, reviewStorage.getReview(amelieReviewId).getUseful());
+                    assertEquals(expectedReviewUseful, reviewStorage.getReview(batmanReviewId).getUseful());
+                    assertEquals(expectedReviewUseful, reviewStorage.getReview(carrieReviewId).getUseful());
+                };
+
+        checkUserRelatedData.accept(false);
+
+        userStorage.deleteUser(userId);
+
+        checkUserRelatedData.accept(true);
+    }
 }
