@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -128,6 +129,47 @@ class DBReviewStorageTest {
 
     @Test
     void removeReview() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+        final int annId = userStorageTestHelper.getNewUserId();
+        final int bobId = userStorageTestHelper.getNewUserId();
+        final int annReviewId = reviewStorageTestHelper.getNewReviewId(filmId, annId, true);
+        final int bobReviewId = reviewStorageTestHelper.getNewReviewId(filmId, bobId, true);
+
+        assertTrue(reviewStorage.containsReview(annReviewId));
+        assertTrue(reviewStorage.containsReview(bobReviewId));
+
+        reviewStorage.removeReview(bobReviewId + "" /*TODO: refactor removeReview, there must be int arg here!*/);
+
+        assertTrue(reviewStorage.containsReview(annReviewId));
+        assertFalse(reviewStorage.containsReview(bobReviewId));
+    }
+
+    @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
+    void removeReviewRemovesScores() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+        final int authorId = userStorageTestHelper.getNewUserId();
+        final int reviewId = reviewStorageTestHelper.getNewReviewId(filmId, authorId, true);
+
+        final int annId = userStorageTestHelper.getNewUserId();
+        final int bobId = userStorageTestHelper.getNewUserId();
+        final int camId = userStorageTestHelper.getNewUserId();
+
+        reviewStorage.setScoreFromUser(reviewId, annId, true);
+        reviewStorage.setScoreFromUser(reviewId, bobId, true);
+        reviewStorage.setScoreFromUser(reviewId, camId, true);
+
+        Supplier<Integer> reviewScoresCount =
+                () -> jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM useful WHERE reviewid=?;",
+                        Integer.class,
+                        reviewId
+                );
+        assertEquals(3, reviewScoresCount.get());
+
+        reviewStorage.removeReview(reviewId + "" /*TODO: refactor removeReview, there must be int arg here!*/);
+
+        assertEquals(0, reviewScoresCount.get());
     }
 
     @Test
