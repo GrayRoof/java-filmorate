@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import static java.util.function.UnaryOperator.identity;
 
 @Component
-@Qualifier(DBStorageConsts.QUALIFIER)
+@Qualifier(DBStorageConstants.QUALIFIER)
 public class DBDirectorStorage implements DirectorStorage {
     private final JdbcTemplate jdbcTemplate;
 
@@ -33,7 +33,7 @@ public class DBDirectorStorage implements DirectorStorage {
     }
 
     @Override
-    public Director getDirector(Integer id) {
+    public Director get(Integer id) {
         String sqlDirector = "select * from DIRECTORS where DIRECTORID = ?";
         Director director;
         try {
@@ -46,13 +46,13 @@ public class DBDirectorStorage implements DirectorStorage {
     }
 
     @Override
-    public Collection<Director> getAllDirectors() {
+    public Collection<Director> getAll() {
         String sqlAllDirectors = "select * from DIRECTORS";
         return jdbcTemplate.query(sqlAllDirectors, (rs, rowNum) -> makeDirector(rs));
     }
 
     @Override
-    public Director addDirector(Director director) {
+    public Director add(Director director) {
         String sqlQuery = "insert into DIRECTORS " +
                 "(NAME) " +
                 "values (?)";
@@ -68,19 +68,19 @@ public class DBDirectorStorage implements DirectorStorage {
     }
 
     @Override
-    public Director updateDirector(Director director) {
-        isExist(director.getId());
+    public Director update(Director director) {
+        contains(director.getId());
         String sqlDirector = "update DIRECTORS set " +
                 "NAME = ?" +
                 "where DIRECTORID = ?";
         jdbcTemplate.update(sqlDirector,
                 director.getName(), director.getId());
-        return getDirector(director.getId());
+        return get(director.getId());
     }
 
     @Override
-    public boolean deleteDirector(Integer id) {
-        isExist(id);
+    public boolean delete(Integer id) {
+        contains(id);
         String sqlDirector = "DELETE from DIRECTORS where DIRECTORID = ?";
         jdbcTemplate.update(sqlDirector, id);
         return true;
@@ -94,18 +94,11 @@ public class DBDirectorStorage implements DirectorStorage {
     }
 
     @Override
-    public boolean isExist(Integer id) {
-        if (getDirector(id) == null) {
+    public boolean contains(Integer id) {
+        if (get(id) == null) {
             throw new NotFoundException(String.format("Режиссер с id=%d не найден.", id));
         }
         return true;
-    }
-
-    private Director makeDirector(ResultSet rs) throws SQLException {
-        int directorId = rs.getInt("DirectorID");
-        return new Director(
-                directorId,
-                rs.getString("Name"));
     }
 
     @Override
@@ -119,5 +112,12 @@ public class DBDirectorStorage implements DirectorStorage {
             final Film film = filmById.get(rs.getInt("FILMID"));
             film.getDirectors().add(makeDirector(rs));
         }, films.stream().map(Film::getId).toArray());
+    }
+
+    private Director makeDirector(ResultSet rs) throws SQLException {
+        int directorId = rs.getInt("DirectorID");
+        return new Director(
+                directorId,
+                rs.getString("Name"));
     }
 }

@@ -36,7 +36,6 @@ public class Film {
     private LinkedHashSet<Director> directors = new LinkedHashSet<>();
     private List<Integer> likes = new ArrayList<>();
 
-
     public boolean addLike(Integer userId) {
         return likes.add(userId);
     }

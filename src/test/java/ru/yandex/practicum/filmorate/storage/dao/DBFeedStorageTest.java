@@ -53,7 +53,7 @@ class DBFeedStorageTest {
         final int filmId = filmStorageTestHelper.getNewFilmId();
         final int firstUserId = userStorageTestHelper.getNewUserId();
         filmStorage.addLike(filmId, firstUserId);
-        Collection<FeedEvent> actual = feedStorage.getFeed(firstUserId);
+        Collection<FeedEvent> actual = feedStorage.get(firstUserId);
         assertEquals(1, actual.size());
     }
 
@@ -74,9 +74,9 @@ class DBFeedStorageTest {
                 .filmId(filmId)
                 .build();
 
-        final int reviewId = reviewStorage.addReview(review).getReviewId();
+        final int reviewId = reviewStorage.add(review).getReviewId();
 
-        FeedEvent[] actualFirst = feedStorage.getFeed(firstUserId).toArray(FeedEvent[]::new);
+        FeedEvent[] actualFirst = feedStorage.get(firstUserId).toArray(FeedEvent[]::new);
         assertEquals(2, actualFirst.length,
                 "Количество объектов в ленте firstUser не совпадает с ожидаемым");
         assertEquals(1, actualFirst[0].getEventId(),
@@ -97,7 +97,7 @@ class DBFeedStorageTest {
         assertEquals("ADD", actualFirst[1].getOperation().toString(),
                 "Неверная операция второго события ленты firstUser");
 
-        FeedEvent[] actualSecond = feedStorage.getFeed(secondUserId).toArray(FeedEvent[]::new);
+        FeedEvent[] actualSecond = feedStorage.get(secondUserId).toArray(FeedEvent[]::new);
         assertEquals(1, actualSecond.length,
                 "Количество объектов в ленте secondUserId не совпадает с ожидаемым");
         assertEquals(4, actualSecond[0].getEventId(),
@@ -109,7 +109,7 @@ class DBFeedStorageTest {
         assertEquals("ADD", actualSecond[0].getOperation().toString(),
                 "Неверная операция первого события ленты secondUserId");
 
-        FeedEvent[] actualThird = feedStorage.getFeed(thirdUserId).toArray(FeedEvent[]::new);
+        FeedEvent[] actualThird = feedStorage.get(thirdUserId).toArray(FeedEvent[]::new);
         assertEquals(1, actualThird.length,
                 "Количество объектов в ленте thirdUserId не совпадает с ожидаемым");
         assertEquals(2, actualThird[0].getEventId(),

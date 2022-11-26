@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -16,13 +15,12 @@ import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
 @Component
-@Qualifier(DBStorageConsts.QUALIFIER)
+@Qualifier(DBStorageConstants.QUALIFIER)
 public class DBUserStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
@@ -37,13 +35,13 @@ public class DBUserStorage implements UserStorage {
     }
 
     @Override
-    public boolean containsUser(int userId) {
+    public boolean contains(int userId) {
         SqlRowSet result = jdbcTemplate.queryForRowSet("select USERID from USERS where USERID = ?;", userId);
         return result.next();
     }
 
     @Override
-    public User getUser(Integer id) {
+    public User get(Integer id) {
         String sqlUser = "select * from USERS where USERID = ?";
         User user;
         try {
@@ -56,13 +54,13 @@ public class DBUserStorage implements UserStorage {
     }
 
     @Override
-    public Collection<User> getAllUsers() {
+    public Collection<User> getAll() {
         String sqlAllUsers = "select * from USERS";
         return jdbcTemplate.query(sqlAllUsers, (rs, rowNum) -> makeUser(rs));
     }
 
     @Override
-    public User addUser(User user) {
+    public User add(User user) {
         String sqlQuery = "insert into USERS " +
                 "(EMAIL, LOGIN, NAME, BIRTHDAY) " +
                 "values (?, ?, ?, ?)";
@@ -89,18 +87,18 @@ public class DBUserStorage implements UserStorage {
     }
 
     @Override
-    public User updateUser(User user) {
+    public User update(User user) {
         String sqlUser = "update USERS set " +
                 "EMAIL = ?, LOGIN = ?, NAME = ?, BIRTHDAY = ? " +
                 "where USERID = ?";
         jdbcTemplate.update(sqlUser,
                 user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
 
-        return getUser(user.getId());
+        return get(user.getId());
     }
 
     @Override
-    public boolean deleteUser(int userId) {
+    public boolean delete(int userId) {
         String sqlQuery = "delete from USERS where USERID = ?";
         boolean result = jdbcTemplate.update(sqlQuery, userId) > 0;
         if (result) {
@@ -159,5 +157,4 @@ public class DBUserStorage implements UserStorage {
         String sqlGetFriends = "select FRIENDID from FRIENDSHIP where USERID = ?";
         return jdbcTemplate.queryForList(sqlGetFriends, Integer.class, userId);
     }
-
 }

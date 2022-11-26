@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_PREPARE_DB;
@@ -211,7 +210,7 @@ class FilmServiceTest {
         film2.setMpa(new Mpa(1, "mpa", "description"));
         film2.getDirectors().add(director);
         service.update(film2);
-        Film filmCheck = service.getFilm(String.valueOf(film.getId()));
+        Film filmCheck = service.get(String.valueOf(film.getId()));
         assertTrue(filmCheck.getDirectors().contains(director));
     }
 
@@ -236,7 +235,7 @@ class FilmServiceTest {
         film2.setRate(0);
         film2.setMpa(new Mpa(1, "mpa", "description"));
         service.update(film2);
-        assertFalse(service.getFilm(String.valueOf(1)).getDirectors().contains(director));
+        assertFalse(service.get(String.valueOf(1)).getDirectors().contains(director));
     }
 
     @Test
@@ -331,8 +330,8 @@ class FilmServiceTest {
 
     @Test
     void shouldReturnCollectionOfFilmsByGenreWithoutYear(){
-        Genre genre1 = genreStorage.getGenreById(1);
-        Genre genre2 = genreStorage.getGenreById(2);
+        Genre genre1 = genreStorage.getById(1);
+        Genre genre2 = genreStorage.getById(2);
         LinkedHashSet<Genre> genres1 = new LinkedHashSet<>();
         LinkedHashSet<Genre> genres2 = new LinkedHashSet<>();
 
@@ -361,7 +360,7 @@ class FilmServiceTest {
         service.add(film);
         service.add(film2);
 
-        Collection<Film> filmsWithGenres = service.getMostPopularFilms("10", "1", "all");
+        Collection<Film> filmsWithGenres = service.getMostPopular("10", "1", "all");
 
         assertEquals(2, filmsWithGenres.size());
 
@@ -371,8 +370,8 @@ class FilmServiceTest {
 
     @Test
     void shouldReturnCollectionOfFilmsByYearWithoutGenre(){
-        Genre genre1 = genreStorage.getGenreById(1);
-        Genre genre2 = genreStorage.getGenreById(2);
+        Genre genre1 = genreStorage.getById(1);
+        Genre genre2 = genreStorage.getById(2);
         LinkedHashSet<Genre> genres1 = new LinkedHashSet<>();
         LinkedHashSet<Genre> genres2 = new LinkedHashSet<>();
 
@@ -401,7 +400,7 @@ class FilmServiceTest {
         service.add(film);
         service.add(film2);
 
-        Collection<Film> filmsWithYear = service.getMostPopularFilms("10", "all", "1939");
+        Collection<Film> filmsWithYear = service.getMostPopular("10", "all", "1939");
 
         assertEquals(1, filmsWithYear.size());
 
@@ -410,8 +409,8 @@ class FilmServiceTest {
 
     @Test
     void shouldReturnCollectionOfFilmsByYearWithGenre(){
-        Genre genre1 = genreStorage.getGenreById(1);
-        Genre genre2 = genreStorage.getGenreById(2);
+        Genre genre1 = genreStorage.getById(1);
+        Genre genre2 = genreStorage.getById(2);
         LinkedHashSet<Genre> genres1 = new LinkedHashSet<>();
         LinkedHashSet<Genre> genres2 = new LinkedHashSet<>();
 
@@ -440,7 +439,7 @@ class FilmServiceTest {
         service.add(film);
         service.add(film2);
 
-        Collection<Film> filmsWithGenresAndYear = service.getMostPopularFilms("10", "1", "1939");
+        Collection<Film> filmsWithGenresAndYear = service.getMostPopular("10", "1", "1939");
 
         assertEquals(1, filmsWithGenresAndYear.size());
 

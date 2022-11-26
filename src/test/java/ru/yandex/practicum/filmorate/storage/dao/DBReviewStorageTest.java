@@ -74,7 +74,7 @@ class DBReviewStorageTest {
                 isPositive(true).
                 build();
 
-        Review review1 = reviewStorage.addReview(review);
+        Review review1 = reviewStorage.add(review);
 
         assertThat(review1).hasFieldOrPropertyWithValue("reviewId", 1);
         assertThat(review1).hasFieldOrPropertyWithValue("content", review.getContent());
@@ -96,9 +96,9 @@ class DBReviewStorageTest {
                 isPositive(true).
                 build();
 
-        reviewStorage.addReview(review);
+        reviewStorage.add(review);
 
-        Review review1 = reviewStorage.getReview(1);
+        Review review1 = reviewStorage.get(1);
 
         assertThat(review1).hasFieldOrPropertyWithValue("reviewId", 1);
     }
@@ -123,9 +123,9 @@ class DBReviewStorageTest {
                 isPositive(true).
                 build();
 
-        reviewStorage.addReview(review);
+        reviewStorage.add(review);
 
-        Review reviewEdited = reviewStorage.editReview(reviewNew);
+        Review reviewEdited = reviewStorage.update(reviewNew);
 
         assertThat(reviewEdited).hasFieldOrPropertyWithValue("content", reviewNew.getContent());
 
@@ -142,13 +142,13 @@ class DBReviewStorageTest {
         final int annReviewId = reviewStorageTestHelper.getNewReviewId(filmId, annId, true);
         final int bobReviewId = reviewStorageTestHelper.getNewReviewId(filmId, bobId, true);
 
-        assertTrue(reviewStorage.containsReview(annReviewId));
-        assertTrue(reviewStorage.containsReview(bobReviewId));
+        assertTrue(reviewStorage.contains(annReviewId));
+        assertTrue(reviewStorage.contains(bobReviewId));
 
-        reviewStorage.removeReview(bobReviewId + "" /*TODO: refactor removeReview, there must be int arg here!*/);
+        reviewStorage.delete(bobReviewId + "" /*TODO: refactor removeReview, there must be int arg here!*/);
 
-        assertTrue(reviewStorage.containsReview(annReviewId));
-        assertFalse(reviewStorage.containsReview(bobReviewId));
+        assertTrue(reviewStorage.contains(annReviewId));
+        assertFalse(reviewStorage.contains(bobReviewId));
     }
 
     @Test
@@ -174,7 +174,7 @@ class DBReviewStorageTest {
                 );
         assertEquals(3, reviewScoresCount.get());
 
-        reviewStorage.removeReview(reviewId + "" /*TODO: refactor removeReview, there must be int arg here!*/);
+        reviewStorage.delete(reviewId + "" /*TODO: refactor removeReview, there must be int arg here!*/);
 
         assertEquals(0, reviewScoresCount.get());
     }
@@ -187,7 +187,7 @@ class DBReviewStorageTest {
         final int userId = userStorageTestHelper.getNewUserId();
 
         Supplier<Integer> reviewUsefulness =
-                () -> reviewStorage.getReview(reviewId).getUseful();
+                () -> reviewStorage.get(reviewId).getUseful();
 
         assertTrue(reviewStorage.getScoreFromUser(reviewId, userId).isEmpty());
 
@@ -206,7 +206,7 @@ class DBReviewStorageTest {
         final int userId = userStorageTestHelper.getNewUserId();
 
         Supplier<Integer> reviewUsefulness =
-                () -> reviewStorage.getReview(reviewId).getUseful();
+                () -> reviewStorage.get(reviewId).getUseful();
 
         reviewStorage.setScoreFromUser(reviewId, userId, true);
 
@@ -225,7 +225,7 @@ class DBReviewStorageTest {
         final int userId = userStorageTestHelper.getNewUserId();
 
         Supplier<Integer> reviewUsefulness =
-                () -> reviewStorage.getReview(reviewId).getUseful();
+                () -> reviewStorage.get(reviewId).getUseful();
 
         int prevUsefulness = reviewUsefulness.get();
         reviewStorage.unsetScoreFromUser(reviewId, userId, true);
@@ -241,7 +241,7 @@ class DBReviewStorageTest {
         final int userId = userStorageTestHelper.getNewUserId();
 
         Supplier<Integer> reviewUsefulness =
-                () -> reviewStorage.getReview(reviewId).getUseful();
+                () -> reviewStorage.get(reviewId).getUseful();
 
         reviewStorage.setScoreFromUser(reviewId, userId, true);
 
@@ -260,7 +260,7 @@ class DBReviewStorageTest {
         final int userId = userStorageTestHelper.getNewUserId();
 
         Supplier<Integer> reviewUsefulness =
-                () -> reviewStorage.getReview(reviewId).getUseful();
+                () -> reviewStorage.get(reviewId).getUseful();
 
         assertTrue(reviewStorage.getScoreFromUser(reviewId, userId).isEmpty());
 
@@ -279,7 +279,7 @@ class DBReviewStorageTest {
         final int userId = userStorageTestHelper.getNewUserId();
 
         Supplier<Integer> reviewUsefulness =
-                () -> reviewStorage.getReview(reviewId).getUseful();
+                () -> reviewStorage.get(reviewId).getUseful();
 
         reviewStorage.setScoreFromUser(reviewId, userId, false);
 
@@ -298,7 +298,7 @@ class DBReviewStorageTest {
         final int userId = userStorageTestHelper.getNewUserId();
 
         Supplier<Integer> reviewUsefulness =
-                () -> reviewStorage.getReview(reviewId).getUseful();
+                () -> reviewStorage.get(reviewId).getUseful();
 
         int prevUsefulness = reviewUsefulness.get();
         reviewStorage.unsetScoreFromUser(reviewId, userId, false);
@@ -314,7 +314,7 @@ class DBReviewStorageTest {
         final int userId = userStorageTestHelper.getNewUserId();
 
         Supplier<Integer> reviewUsefulness =
-                () -> reviewStorage.getReview(reviewId).getUseful();
+                () -> reviewStorage.get(reviewId).getUseful();
 
         reviewStorage.setScoreFromUser(reviewId, userId, false);
 

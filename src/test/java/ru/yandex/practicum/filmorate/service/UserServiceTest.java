@@ -52,7 +52,7 @@ class UserServiceTest {
                 new ArrayList<>());
         User addedUser = service.add(user);
         assertNotEquals(0, addedUser.getId());
-        assertTrue(service.getAllUsers().contains(addedUser));
+        assertTrue(service.getAll().contains(addedUser));
     }
 
     @Test
@@ -66,7 +66,7 @@ class UserServiceTest {
         User addedUser = service.add(user);
         assertNotEquals(0, addedUser.getId());
         assertEquals(addedUser.getLogin(), addedUser.getName());
-        assertTrue(service.getAllUsers().contains(addedUser));
+        assertTrue(service.getAll().contains(addedUser));
     }
 
     @Test

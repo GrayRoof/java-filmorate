@@ -31,7 +31,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-@Qualifier(DBStorageConsts.QUALIFIER)
+@Qualifier(DBStorageConstants.QUALIFIER)
 public class DBFilmStorage implements FilmStorage {
 
     private final Logger log = LoggerFactory.getLogger(DBFilmStorage.class);
@@ -42,8 +42,8 @@ public class DBFilmStorage implements FilmStorage {
 
     public DBFilmStorage(
             JdbcTemplate jdbcTemplate,
-            @Qualifier(DBStorageConsts.QUALIFIER) GenreStorage genreStorage,
-            @Qualifier(DBStorageConsts.QUALIFIER) DirectorStorage directorStorage,
+            @Qualifier(DBStorageConstants.QUALIFIER) GenreStorage genreStorage,
+            @Qualifier(DBStorageConstants.QUALIFIER) DirectorStorage directorStorage,
             ApplicationEventPublisher eventPublisher) {
         this.jdbcTemplate = jdbcTemplate;
         this.genreStorage = genreStorage;
@@ -58,7 +58,7 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film getFilm(int filmId) {
+    public Film get(int filmId) {
         String sqlFilm = "select * from FILM " +
                 "INNER JOIN MPA R on FILM.RATINGID = R.RATINGID " +
                 "where FILMID = ?";
@@ -74,14 +74,14 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getAllFilms() {
+    public Collection<Film> getAll() {
         String sql = "select * from FILM " +
                 "INNER JOIN MPA R on FILM.RATINGID = R.RATINGID ";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
 
     @Override
-    public Film addFilm(Film film) {
+    public Film add(Film film) {
         String sqlQuery = "insert into FILM " +
                 "(NAME, DESCRIPTION, RELEASEDATE, DURATION, RATE, RATINGID) " +
                 "values (?, ?, ?, ?, ?, ?)";
@@ -101,10 +101,10 @@ public class DBFilmStorage implements FilmStorage {
         film.setId(id);
 
         if (!film.getGenres().isEmpty()) {
-            mergeFilmGenres(film);
+            setGenres(film);
         }
         if (!film.getDirectors().isEmpty()) {
-            mergeFilmDirectors(film);
+            setDirectors(film);
         }
         if (film.getLikes() != null) {
             for (Integer userId : film.getLikes()) {
@@ -112,13 +112,12 @@ public class DBFilmStorage implements FilmStorage {
             }
         }
         updateLikeRating(id);
-
         return film;
     }
 
     @Override
-    public Film updateFilm(Film film) {
-        isExist(film.getId());
+    public Film update(Film film) {
+        contains(film.getId());
         String sqlQuery = "update FILM " +
                 "set NAME = ?, DESCRIPTION = ?, RELEASEDATE = ?, DURATION = ?, RATE = ? ,RATINGID = ? " +
                 "where FILMID = ?";
@@ -132,11 +131,11 @@ public class DBFilmStorage implements FilmStorage {
                 film.getId());
         genreStorage.deleteFilmGenres(film.getId());
         if (!film.getGenres().isEmpty()) {
-            mergeFilmGenres(film);
+            setGenres(film);
         }
         directorStorage.deleteFilmDirector(film.getId());
         if (!film.getDirectors().isEmpty()) {
-            mergeFilmDirectors(film);
+            setDirectors(film);
         }
         if (film.getLikes() != null) {
             for (Integer userId : film.getLikes()) {
@@ -148,7 +147,7 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
-    public boolean deleteFilm(int filmId) {
+    public boolean delete(int filmId) {
         String sqlQuery = "delete from FILM where FILMID = ?";
         return jdbcTemplate.update(sqlQuery, filmId) > 0;
     }
@@ -183,7 +182,7 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getMostPopularFilms(int count) {
+    public Collection<Film> getMostPopular(int count) {
         String sqlCacheMostPopular = "select FILM.FILMID, FILM.NAME, FILM.DESCRIPTION, " +
                 "RELEASEDATE, DURATION, RATE, R.RATINGID, R.NAME, R.DESCRIPTION from FILM " +
                 "inner join MPA R on R.RATINGID = FILM.RATINGID " +
@@ -230,7 +229,7 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
+    public Collection<Film> getSortedWithDirector(Integer id, String sortBy) {
         String sort;
         switch (sortBy) {
             case "year":
@@ -282,7 +281,7 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getFilmsOfIdArray(List<Integer> ids) {
+    public Collection<Film> getByIds(List<Integer> ids) {
         String sql = "select * from FILM " +
                 "inner join MPA M on FILM.RATINGID = M.RATINGID " +
                 "where FILM.FILMID in (" + ids.stream().map(Object::toString).collect(Collectors.joining(",")) + ")";
@@ -290,7 +289,7 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getCommonFilms(int userId, int otherUserId) {
+    public Collection<Film> getCommon(int userId, int otherUserId) {
         String sqlGetCommon =
                 "with COMMON (COMMONID) as " +
                         "( " +
@@ -309,7 +308,7 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getSortedFilmFromSearch(String query, Set<FilmSearchOptions> params) {
+    public Collection<Film> getSortedFromSearch(String query, Set<FilmSearchOptions> params) {
         String directorsJoin = "";
         List<String> filterExpressions = new ArrayList<>();
         for (FilmSearchOptions param: params) {
@@ -333,7 +332,6 @@ public class DBFilmStorage implements FilmStorage {
                 "order by f.RATE desc";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
-
 
     @EventListener
     public void handleOnDeleteUser(OnDeleteUserEvent event) {
@@ -373,16 +371,17 @@ public class DBFilmStorage implements FilmStorage {
         return true;
     }
 
-    private boolean isExist(Integer id) {
-        if (getFilm(id) == null) {
-            throw new NotFoundException(String.format("Film with id=%d not found.", id));
+    private boolean contains(Integer id) {
+        if (get(id) == null) {
+            throw new NotFoundException(String.format("Фильм с идентификатором %d не зарегистрирован!", id));
         }
         return true;
     }
 
-    private void mergeFilmGenres(Film film) {
+    private void setGenres(Film film) {
         final List<Genre> genreList = new ArrayList<>(film.getGenres());
-        jdbcTemplate.batchUpdate("MERGE INTO GENRELINE (FILMID, GENREID) values (?, ?)", new BatchPreparedStatementSetter() {
+        jdbcTemplate.batchUpdate("MERGE INTO GENRELINE (FILMID, GENREID) values (?, ?)",
+                new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 ps.setLong(1, film.getId());
@@ -396,9 +395,10 @@ public class DBFilmStorage implements FilmStorage {
         });
     }
 
-    private void mergeFilmDirectors(Film film) {
+    private void setDirectors(Film film) {
         final List<Director> directorsList = new ArrayList<>(film.getDirectors());
-        jdbcTemplate.batchUpdate("MERGE INTO DIRECTORLINE (FILMID, DIRECTORID) values (?, ?)", new BatchPreparedStatementSetter() {
+        jdbcTemplate.batchUpdate("MERGE INTO DIRECTORLINE (FILMID, DIRECTORID) values (?, ?)",
+                new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 ps.setLong(1, film.getId());

@@ -24,6 +24,6 @@ public class FeedService {
      * */
     public Collection<FeedEvent> getUserFeed(final String supposedUserId) {
         final int userId = userService.getStoredUserId(supposedUserId);
-        return feedStorage.getFeed(userId);
+        return feedStorage.get(userId);
     }
 }

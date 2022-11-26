@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ReviewAlreadyDislikedException;
-import ru.yandex.practicum.filmorate.exception.ReviewAlreadyLikedException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.validator.ReviewValidator;
@@ -16,11 +14,8 @@ import java.util.Collection;
 public class ReviewService {
 
     private final ReviewStorage storage;
-
     private final ReviewValidator validator;
-
     private final FilmService filmService;
-
     private final UserService userService;
 
 
@@ -36,27 +31,27 @@ public class ReviewService {
         this.validator = validator;
         this.storage = storage;
     }
-    public Review addReview(Review review) {
+    public Review add(Review review) {
         userService.getStoredUserId(review.getUserId().toString());
         filmService.getStoredFilmId(review.getFilmId().toString());
-        return storage.addReview(review);
+        return storage.add(review);
     }
 
-    public Review editReview(Review review) {
-        return storage.editReview(review);
+    public Review update(Review review) {
+        return storage.update(review);
     }
 
-    public Integer removeReview(String id) {
-        return storage.removeReview(id);
+    public Integer delete(String id) {
+        return storage.delete(id);
     }
 
-    public Review getReview(String id) {
+    public Review get(String id) {
         validator.validateReviewById(Integer.parseInt(id));
-        return storage.getReview(Integer.parseInt(id));
+        return storage.get(Integer.parseInt(id));
     }
 
     public void requireReview(int reviewId) {
-        if (!storage.containsReview(reviewId)) {
+        if (!storage.contains(reviewId)) {
             throw new NotFoundException(
                     "Ревью с идентификатором " +
                     reviewId + " не зарегистрировано!"

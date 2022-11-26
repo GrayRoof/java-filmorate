@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 
 @Component
-@Qualifier(DBStorageConsts.QUALIFIER)
+@Qualifier(DBStorageConstants.QUALIFIER)
 public class DBFeedStorage implements FeedStorage {
     private final JdbcTemplate jdbcTemplate;
 
@@ -26,7 +26,7 @@ public class DBFeedStorage implements FeedStorage {
     }
 
     @Override
-    public Collection<FeedEvent> getFeed(int userId) {
+    public Collection<FeedEvent> get(int userId) {
         String sqlFeeds = "select EVENTID, EVENTTIMESTAMP, USERID, " +
                 "E.NAME TYPENAME, O.NAME OPNAME, ENTITYID from EVENTS " +
                 "INNER JOIN EVENTTYPES E on EVENTS.EVENTTYPE = E.TYPEID " +
@@ -34,18 +34,6 @@ public class DBFeedStorage implements FeedStorage {
                 "where USERID = ?";
 
         return jdbcTemplate.query(sqlFeeds, (rs, rowNum) -> makeFeed(rs), userId);
-    }
-
-    private FeedEvent makeFeed(ResultSet rs) throws SQLException {
-        FeedEvent feed = new FeedEvent(
-                rs.getInt("EventID"),
-                rs.getTimestamp("EventTimestamp").getTime(),
-                rs.getInt("UserID"),
-                EventType.valueOf(rs.getString("TypeName")),
-                Operation.valueOf(rs.getString("OpName")),
-                rs.getInt("EntityID")
-        );
-        return feed;
     }
 
     @EventListener
@@ -60,5 +48,17 @@ public class DBFeedStorage implements FeedStorage {
                 "insert into EVENTS (EVENTTIMESTAMP, USERID, EVENTTYPE, OPERATION, ENTITYID) " +
                         "values ( ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sqlFeedEvent, timestamp, userId, type, operation, entityId);
+    }
+
+    private FeedEvent makeFeed(ResultSet rs) throws SQLException {
+        FeedEvent feed = new FeedEvent(
+                rs.getInt("EventID"),
+                rs.getTimestamp("EventTimestamp").getTime(),
+                rs.getInt("UserID"),
+                EventType.valueOf(rs.getString("TypeName")),
+                Operation.valueOf(rs.getString("OpName")),
+                rs.getInt("EntityID")
+        );
+        return feed;
     }
 }

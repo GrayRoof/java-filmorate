@@ -43,7 +43,7 @@ public class RecommendationService {
         likesOfUserList.andNot(requestUserLikes);
         if (likesOfUserList.cardinality() == 0) { return List.of(); }
 
-        Collection<Film> films = filmStorage.getFilmsOfIdArray(
+        Collection<Film> films = filmStorage.getByIds(
                 likesOfUserList.stream().boxed().collect(Collectors.toList()));
         if(!films.isEmpty()) filmService.addExtraFilmData(films);
         return films;
@@ -63,5 +63,4 @@ public class RecommendationService {
         }
         return similarUsers;
     }
-
 }

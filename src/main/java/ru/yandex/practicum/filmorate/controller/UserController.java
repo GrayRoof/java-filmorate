@@ -32,7 +32,7 @@ public class UserController {
     @GetMapping
     public Collection<User> findAll() {
         log.info("Получен запрос GET к эндпоинту: /users");
-        return userService.getAllUsers();
+        return userService.getAll();
     }
 
     @GetMapping("/{id}/friends")
@@ -44,7 +44,7 @@ public class UserController {
     @GetMapping("/{id}")
     public User findUser(@PathVariable String id) {
         log.info("Получен запрос GET к эндпоинту: /users/{}/", id);
-        return userService.getUser(id);
+        return userService.get(id);
     }
 
     @GetMapping("/{id}/feed")
@@ -78,7 +78,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) {
         log.info("Получен запрос DELETE к эндпоинту: users/{}", id);
-        userService.deleteUser(id);
+        userService.delete(id);
         log.info("Удален объект {} с идентификатором {}",
                 User.class.getSimpleName(), id);
     }

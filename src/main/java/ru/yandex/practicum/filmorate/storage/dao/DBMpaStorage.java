@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 
 @Component
-@Qualifier(DBStorageConsts.QUALIFIER)
+@Qualifier(DBStorageConstants.QUALIFIER)
 public class DBMpaStorage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
 
@@ -22,13 +22,13 @@ public class DBMpaStorage implements MpaStorage {
     }
 
     @Override
-    public Collection<Mpa> getAllMpa() {
+    public Collection<Mpa> getAll() {
         String sqlMpa = "select * from MPA";
         return jdbcTemplate.query(sqlMpa, this::makeMpa);
     }
 
     @Override
-    public Mpa getMpaById(int mpaId) {
+    public Mpa getById(int mpaId) {
         String sqlMpa = "select * from MPA where RATINGID = ?";
         Mpa mpa;
         try {
@@ -46,5 +46,4 @@ public class DBMpaStorage implements MpaStorage {
                 rs.getString("Description"));
         return mpa;
     }
-
 }

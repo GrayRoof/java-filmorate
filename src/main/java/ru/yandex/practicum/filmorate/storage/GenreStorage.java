@@ -7,8 +7,8 @@ import java.util.Collection;
 
 public interface GenreStorage {
     boolean deleteFilmGenres(int filmId);
-    Collection<Genre> getGenresByFilmId(int filmId);
-    Collection<Genre> getAllGenres();
-    Genre getGenreById(int genreId);
+    Collection<Genre> getByFilmId(int filmId);
+    Collection<Genre> getAll();
+    Genre getById(int genreId);
     void load(Collection<Film> films);
 }

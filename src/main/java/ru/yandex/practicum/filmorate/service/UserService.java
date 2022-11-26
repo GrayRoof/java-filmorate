@@ -7,13 +7,11 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
-import ru.yandex.practicum.filmorate.model.FeedEvent;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,8 +36,8 @@ public class UserService {
     /**
      * Возвращает коллекцию пользователей
      */
-    public Collection<User> getAllUsers() {
-        return userStorage.getAllUsers();
+    public Collection<User> getAll() {
+        return userStorage.getAll();
     }
 
     /**
@@ -50,7 +48,7 @@ public class UserService {
      */
     public User add(final User user) {
         validate(user);
-        return userStorage.addUser(user);
+        return userStorage.add(user);
     }
 
     /**
@@ -61,7 +59,7 @@ public class UserService {
      */
     public User update(final User user) {
         validate(user);
-        return userStorage.updateUser(user);
+        return userStorage.update(user);
     }
 
     /**
@@ -97,7 +95,7 @@ public class UserService {
         User user = getStoredUser(supposedUserId);
         Collection<User> friends = new HashSet<>();
         for (Integer id : user.getFriends()) {
-            friends.add(userStorage.getUser(id));
+            friends.add(userStorage.get(id));
         }
         return friends;
     }
@@ -114,7 +112,7 @@ public class UserService {
         Collection<User> commonFriends = new HashSet<>();
         for (Integer id : user.getFriends()) {
             if (otherUser.getFriends().contains(id)) {
-                commonFriends.add(userStorage.getUser(id));
+                commonFriends.add(userStorage.get(id));
             }
         }
         return commonFriends;
@@ -125,7 +123,7 @@ public class UserService {
      *
      * @param supposedId - идентификатор пользователя
      */
-    public User getUser(final String supposedId) {
+    public User get(final String supposedId) {
         return getStoredUser(supposedId);
     }
 
@@ -134,9 +132,9 @@ public class UserService {
      *
      * @param supposedId - идентификатор фильма
      */
-    public void deleteUser(String supposedId) {
+    public void delete(String supposedId) {
         int storedUserId = getStoredUserId(supposedId);
-        userStorage.deleteUser(storedUserId);
+        userStorage.delete(storedUserId);
     }
 
     /**
@@ -147,14 +145,14 @@ public class UserService {
     public int getStoredUserId(final String supposedId) {
         final int userId = getIntUserId(supposedId);
 
-        if (!userStorage.containsUser(userId)) {
+        if (!userStorage.contains(userId)) {
             onUserNotFound(userId);
         }
         return userId;
     }
 
     public void requireUser(int userId) {
-        if (!userStorage.containsUser(userId)) {
+        if (!userStorage.contains(userId)) {
             onUserNotFound(userId);
         }
     }
@@ -205,7 +203,7 @@ public class UserService {
     protected User getStoredUser(final String supposedId) {
         final int userId = getIntUserId(supposedId);
 
-        User user = userStorage.getUser(userId);
+        User user = userStorage.get(userId);
         if (user == null) {
             onUserNotFound(userId);
         }

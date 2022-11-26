@@ -103,7 +103,7 @@ public class RecommendationServiceTest {
         Collection<Film> dbFilms = recommendationService.getRecommendations(String.valueOf(newUserId1));
         assertEquals(1, dbFilms.size());
         Film film = dbFilms.iterator().next();
-        Film testFilm2 = filmStorage.getFilm(filmId2);
+        Film testFilm2 = filmStorage.get(filmId2);
         assertEquals(film.getId(), testFilm2.getId());
         assertEquals(film.getName(), testFilm2.getName());
         assertEquals(film.getDescription(), testFilm2.getDescription());
@@ -129,7 +129,7 @@ public class RecommendationServiceTest {
         Collection<Film> dbFilms = recommendationService.getRecommendations(String.valueOf(newUserId2));
         assertEquals(1, dbFilms.size());
         Film film = dbFilms.iterator().next();
-        Film testFilm1 = filmStorage.getFilm(filmId1);
+        Film testFilm1 = filmStorage.get(filmId1);
         assertEquals(film.getId(), testFilm1.getId());
         assertEquals(film.getName(), testFilm1.getName());
         assertEquals(film.getDescription(), testFilm1.getDescription());

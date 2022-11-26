@@ -20,7 +20,7 @@ public class UserStorageTestHelper {
     public User addUser() {
         int idx = nextIdx++;
 
-        return storage.addUser(
+        return storage.add(
                 new User(-1,
                         String.format("email-%d@test.test", idx),
                         String.format("description-%d", idx),

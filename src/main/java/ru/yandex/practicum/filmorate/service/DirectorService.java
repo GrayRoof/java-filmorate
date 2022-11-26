@@ -22,11 +22,11 @@ public class DirectorService {
     }
 
     public Director getDirector(Integer id) {
-        return directorStorage.getDirector(id);
+        return directorStorage.get(id);
     }
 
     public Collection<Director> getAllDirectors() {
-        return directorStorage.getAllDirectors();
+        return directorStorage.getAll();
     }
 
     public Director addDirector(Director director) {
@@ -34,16 +34,16 @@ public class DirectorService {
             throw new ConflictException("Режиссер с именем " + director.getName() + " уже существует");
         }
         validateName(director);
-        return directorStorage.addDirector(director);
+        return directorStorage.add(director);
     }
 
     public Director updateDirector(Director director) {
         validateName(director);
-        return directorStorage.updateDirector(director);
+        return directorStorage.update(director);
     }
 
     public boolean deleteDirector(Integer id) {
-        return directorStorage.deleteDirector(id);
+        return directorStorage.delete(id);
     }
 
     private boolean validateName(Director director) {

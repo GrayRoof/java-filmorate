@@ -18,6 +18,6 @@ public class GenreValidator {
     public void validateGenreById(Integer genreId){
         String sqlQuery = "select count(*) from genre where genreid = ?;";
         Integer id = jdbcTemplate.queryForObject(sqlQuery, Integer.class, genreId);
-        if (id != 1) throw new NotFoundException("Жанра с ID "+ genreId +" не существует");
+        if (id == null || id != 1) throw new NotFoundException("Жанра с ID "+ genreId +" не существует");
     }
 }

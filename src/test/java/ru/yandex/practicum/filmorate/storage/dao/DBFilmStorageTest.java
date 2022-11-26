@@ -70,7 +70,7 @@ class DBFilmStorageTest {
     public void testGetFilmById() {
         final int filmId = filmStorageTestHelper.getNewFilmId();
 
-        Film dbFilm = filmStorage.getFilm(filmId);
+        Film dbFilm = filmStorage.get(filmId);
 
         assertThat(dbFilm).hasFieldOrPropertyWithValue("id", filmId);
     }
@@ -80,7 +80,7 @@ class DBFilmStorageTest {
         filmStorageTestHelper.getNewFilmId();
         filmStorageTestHelper.getNewFilmId();
 
-        Collection<Film> dbFilms = filmStorage.getAllFilms();
+        Collection<Film> dbFilms = filmStorage.getAll();
 
         assertEquals(2, dbFilms.size());
     }
@@ -90,9 +90,9 @@ class DBFilmStorageTest {
         Film film = filmStorageTestHelper.addFilm(1, List.of(1),List.of());
 
         film.setName("update");
-        filmStorage.updateFilm(film);
+        filmStorage.update(film);
 
-        Film dbFilm = filmStorage.getFilm(film.getId());
+        Film dbFilm = filmStorage.get(film.getId());
         assertThat(dbFilm).hasFieldOrPropertyWithValue("name", "update");
     }
 
@@ -103,7 +103,7 @@ class DBFilmStorageTest {
         assertTrue(filmStorage.containsFilm(amelieId));
         assertTrue(filmStorage.containsFilm(batmanId));
 
-        filmStorage.deleteFilm(amelieId);
+        filmStorage.delete(amelieId);
 
         assertFalse(filmStorage.containsFilm(amelieId));
         assertTrue(filmStorage.containsFilm(batmanId));
@@ -129,7 +129,7 @@ class DBFilmStorageTest {
                 );
         assertEquals(3, filmLikesCount.get());
 
-        filmStorage.deleteFilm(filmId);
+        filmStorage.delete(filmId);
 
         assertEquals(0, filmLikesCount.get());
     }
@@ -147,7 +147,7 @@ class DBFilmStorageTest {
                 );
         assertEquals(3, filmGenresCount.get());
 
-        filmStorage.deleteFilm(filmId);
+        filmStorage.delete(filmId);
 
         assertEquals(0, filmGenresCount.get());
     }
@@ -173,7 +173,7 @@ class DBFilmStorageTest {
                 );
         assertEquals(3, filmDirectorsCount.get());
 
-        filmStorage.deleteFilm(filmId);
+        filmStorage.delete(filmId);
 
         assertEquals(0, filmDirectorsCount.get());
     }
@@ -199,7 +199,7 @@ class DBFilmStorageTest {
                 );
         assertEquals(3, filmReviewsCount.get());
 
-        filmStorage.deleteFilm(filmId);
+        filmStorage.delete(filmId);
 
         assertEquals(0, filmReviewsCount.get());
     }
@@ -228,7 +228,7 @@ class DBFilmStorageTest {
 
         filmStorage.addLike(djangoId, bobId);
 
-        List<Film> result = new ArrayList<>(filmStorage.getCommonFilms(annId, bobId));
+        List<Film> result = new ArrayList<>(filmStorage.getCommon(annId, bobId));
 
         assertEquals(2, result.size());
         assertEquals(carrieId, result.get(0).getId());
