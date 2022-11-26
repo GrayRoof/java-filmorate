@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +26,6 @@ class DirectorServiceTest {
     @BeforeEach
     void setUp() {
         jdbcTemplate.update(SQL_PREPARE_DB);
-    }
-
-    @AfterEach
-    void tearDown() {
-        jdbcTemplate.update("DELETE FROM DIRECTORS");
-        jdbcTemplate.update("ALTER TABLE DIRECTORS ALTER COLUMN DIRECTORID RESTART WITH 1");
-
     }
 
     @Test

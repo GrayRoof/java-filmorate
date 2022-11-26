@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,16 +43,6 @@ public class RecommendationServiceTest {
     @BeforeEach
     void setUp() {
         jdbcTemplate.update(SQL_PREPARE_DB);
-    }
-
-    @AfterEach
-    void tearDown() {
-        jdbcTemplate.update("DELETE FROM likes;");
-        jdbcTemplate.update("DELETE FROM users;");
-        jdbcTemplate.update("DELETE FROM genreline;");
-        jdbcTemplate.update("DELETE FROM film;");
-        jdbcTemplate.update("ALTER TABLE users ALTER COLUMN userid RESTART WITH 1;");
-        jdbcTemplate.update("ALTER TABLE film ALTER COLUMN filmid RESTART WITH 1;");
     }
 
     @Test
@@ -139,5 +128,4 @@ public class RecommendationServiceTest {
         assertEquals(film.getMpa(), testFilm1.getMpa());
         assertEquals(film.getGenres(), testFilm1.getGenres());
     }
-
 }

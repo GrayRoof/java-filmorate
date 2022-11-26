@@ -47,7 +47,6 @@ public class SearchServiceTest {
         this.searchService = searchService;
     }
 
-
     @BeforeEach
     void setUp() {
         initializingTestData();
@@ -170,7 +169,6 @@ public class SearchServiceTest {
 
         LinkedHashSet directors = new LinkedHashSet();
 
-        //Фильм с двумя лайками и двумя режиссерами
         filmWith2Like2Director = filmStorage.get(filmId3);
         directors.add(director1);
         directors.add(director2);
@@ -180,7 +178,6 @@ public class SearchServiceTest {
         filmWith2Like2Director = filmStorage.get(filmId3);
         directorStorage.load(List.of(filmWith2Like2Director));
 
-        //Фильм с одним лайком и одним режиссером
         filmWith1Like1Director = filmStorage.get(filmId1);
         directors.clear();
         directors.add(director1);
@@ -190,7 +187,6 @@ public class SearchServiceTest {
         filmWith1Like1Director = filmStorage.get(filmId1);
         directorStorage.load(List.of(filmWith1Like1Director));
 
-        //Фильм без лайков и с одним режиссером
         filmWith0Like1Director = filmStorage.get(filmId2);
         directors.clear();
         directors.add(director2);
@@ -200,12 +196,10 @@ public class SearchServiceTest {
         filmWith0Like1Director = filmStorage.get(filmId2);
         directorStorage.load(List.of(filmWith0Like1Director));
 
-        //Фильм с двумя лайками и без режиссеров
         filmWith2Like0Director = filmStorage.get(filmId4);
         filmWith2Like0Director.setName("TEST name");
         filmStorage.update(filmWith2Like0Director);
         filmWith2Like0Director = filmStorage.get(filmId4);
         directorStorage.load(List.of(filmWith2Like0Director));
     }
-
 }

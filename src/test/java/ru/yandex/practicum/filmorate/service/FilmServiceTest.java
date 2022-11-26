@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,18 +41,8 @@ class FilmServiceTest {
     @Autowired
     GenreStorage genreStorage;
 
-    @AfterEach
-    void tearDown() {
-        jdbcTemplate.update("DELETE FROM USERS");
-        jdbcTemplate.update("DELETE FROM DIRECTORS");
-        jdbcTemplate.update("ALTER TABLE USERS ALTER COLUMN USERID RESTART WITH 1");
-        jdbcTemplate.update("ALTER TABLE DIRECTORS ALTER COLUMN DIRECTORID RESTART WITH 1");
-
-    }
-
     @Test
     void shouldAddWhenAddValidFilmData() {
-
         Film film = new Film();
         film.setName("Correct Name");
         film.setDescription("Correct description.");
@@ -64,7 +53,6 @@ class FilmServiceTest {
         Film addedFilm = service.add(film);
         assertNotEquals(0, addedFilm.getId());
     }
-
 
     @Test
     void shouldThrowExceptionWhenAddFailedFilmNameEmpty() {

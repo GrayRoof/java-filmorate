@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -51,19 +50,6 @@ class DBFilmStorageTest {
     @BeforeEach
     void setUp() {
         jdbcTemplate.update(SQL_PREPARE_DB);
-    }
-
-    @AfterEach
-    void tearDown() {
-        jdbcTemplate.update("DELETE FROM likes;");
-        jdbcTemplate.update("DELETE FROM users;");
-        jdbcTemplate.update("DELETE FROM genreline;");
-        jdbcTemplate.update("DELETE FROM directorline;");
-        jdbcTemplate.update("DELETE FROM directors;");
-        jdbcTemplate.update("DELETE FROM film;");
-        jdbcTemplate.update("ALTER TABLE users ALTER COLUMN userid RESTART WITH 1;");
-        jdbcTemplate.update("ALTER TABLE directors ALTER COLUMN directorid RESTART WITH 1;");
-        jdbcTemplate.update("ALTER TABLE film ALTER COLUMN filmid RESTART WITH 1;");
     }
 
     @Test
