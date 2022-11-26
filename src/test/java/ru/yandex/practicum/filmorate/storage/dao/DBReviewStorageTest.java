@@ -126,7 +126,7 @@ class DBReviewStorageTest {
     }
 
     @Test
-    void addLike() {
+    void shouldAddLike() {
         final int userId = userStorageTestHelper.getNewUserId();
         final int filmId = filmStorageTestHelper.getNewFilmId();
 
@@ -137,19 +137,37 @@ class DBReviewStorageTest {
                 isPositive(true).
                 build();
 
-        reviewStorage.addReview(review);
-        reviewStorage.addLike(1);
+        Review reviewFromDB = reviewStorage.addReview(review);
 
-        assertThat(reviewStorage.getReview(1)).hasFieldOrPropertyWithValue("useful", 1);
+        final int reviewId = reviewFromDB.getReviewId();
 
+        reviewStorage.addLike(reviewId, userId);
+
+        assertThat(reviewStorage.getReview(reviewId)).hasFieldOrPropertyWithValue("useful", 1);
 
     }
 
     @Test
     void shouldRemoveLike() {
-        addLike();
-        assertThat(reviewStorage.getReview(1)).hasFieldOrPropertyWithValue("useful", 1);
-        reviewStorage.removeLike(1);
+        final int userId = userStorageTestHelper.getNewUserId();
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+
+        Review review = Review.builder().
+                content("This movie was OSOM AS F").
+                userId(userId).
+                filmId(filmId).
+                isPositive(true).
+                build();
+
+        Review reviewFromDB = reviewStorage.addReview(review);
+
+        final int reviewId = reviewFromDB.getReviewId();
+
+        reviewStorage.addLike(reviewId, userId);
+
+        assertThat(reviewStorage.getReview(reviewId)).hasFieldOrPropertyWithValue("useful", 1);
+
+        reviewStorage.removeLike(reviewId, userId);
         assertThat(reviewStorage.getReview(1)).hasFieldOrPropertyWithValue("useful", 0);
 
     }
