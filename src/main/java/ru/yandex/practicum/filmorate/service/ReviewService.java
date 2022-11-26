@@ -3,9 +3,11 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.ReviewAlreadyDislikedException;
+import ru.yandex.practicum.filmorate.exception.ReviewAlreadyLikedException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
-import ru.yandex.practicum.filmorate.validator.ReviewValidator;
+import ru.yandex.practicum.filmorate.storage.validator.ReviewValidator;
 
 import java.util.Collection;
 
@@ -52,15 +54,42 @@ public class ReviewService {
         return storage.getReview(Integer.parseInt(id));
     }
 
-    public Review addLike(String id, String userId) {
-        return storage.addLike(Integer.parseInt(id));
+    public boolean addLike(int reviewId, int userId) {
+        try {
+            validator.validateGoodReviewByUserAndId(reviewId, userId);
+            validator.validateBadReviewByUserAndId(reviewId, userId);
+        } catch (ReviewAlreadyLikedException e){
+            return storage.removeLike(reviewId, userId);
+        } catch (ReviewAlreadyDislikedException e){
+            return storage.removeDislike(reviewId, userId);
+        }
+
+        return storage.addLike(reviewId, userId);
     }
 
-    public Review removeLike(String id, String userId) {
-        return storage.removeLike(Integer.parseInt(id));
+    public boolean removeLike(int reviewId, int userId) {
+        try{
+            validator.validateGoodReviewByUserAndId(reviewId, userId);
+        } catch (ReviewAlreadyLikedException e){
+            return storage.removeLike(reviewId, userId);
+        }
+        return false;
     }
 
-    public Collection<Review> getAll(String filmId, String count) {
+    public Collection<Review> getFilmReviews(String filmId, String count) {
         return storage.getAll(filmId, Integer.parseInt(count));
+    }
+
+    public boolean addDislike(int reviewId, int userId) {
+        try {
+            validator.validateBadReviewByUserAndId(reviewId, userId);
+            validator.validateGoodReviewByUserAndId(reviewId, userId);
+        } catch (ReviewAlreadyDislikedException e){
+            return false;
+        } catch (ReviewAlreadyLikedException e){
+            storage.removeLike(reviewId, userId);
+            return storage.addDislike(reviewId, userId);
+        }
+        return storage.addDislike(reviewId, userId);
     }
 }

@@ -75,18 +75,21 @@ public class DBReviewStorage implements ReviewStorage {
     }
 
     @Override
-    public Review addLike(Integer id) {
-        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
-        jdbcTemplate.update(sqlQuery, changeUsefulValue(id, true), id);
-        return getReview(id);
+    public boolean addLike(Integer reviewId, Integer userId) {
+        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;" +
+                "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
+        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId, true), reviewId,
+                reviewId, userId, true);
+        return true;
     }
 
-
     @Override
-    public Review removeLike(Integer reviewId) {
-        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;";
-        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,false), reviewId);
-        return getReview(reviewId);
+    public boolean removeLike(Integer reviewId, Integer userId) {
+        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;" +
+                "delete from useful where ReviewID = ? and userid = ? and useful = ?";
+        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,false), reviewId,
+                reviewId, userId, true);
+        return true;
     }
 
     private int changeUsefulValue(Integer reviewId, boolean increase){
@@ -112,5 +115,24 @@ public class DBReviewStorage implements ReviewStorage {
         }
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), filmId, count);
 
+    }
+
+    @Override
+    public boolean addDislike(Integer reviewId, Integer userId) {
+        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;" +
+                "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
+
+        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId, false),
+                reviewId,reviewId, userId, false);
+        return true;
+    }
+
+    @Override
+    public boolean removeDislike(Integer reviewId, Integer userId) {
+        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;" +
+                "delete from useful where ReviewID = ? and userid = ? and useful = ?";
+        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,true),
+                reviewId, reviewId, userId, false);
+        return true;
     }
 }

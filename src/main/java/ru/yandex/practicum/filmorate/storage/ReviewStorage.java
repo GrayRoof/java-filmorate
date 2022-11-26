@@ -9,7 +9,9 @@ public interface ReviewStorage {
     Review getReview(Integer id);
     Review editReview(Review review);
     Integer removeReview(String id);
-    Review addLike(Integer id);
-    Review removeLike(Integer reviewId);
+    boolean removeLike(Integer reviewId, Integer userId);
     Collection<Review> getAll(String filmId, int count);
+    boolean addLike(Integer reviewId, Integer userId);
+    boolean addDislike(Integer reviewId, Integer userId);
+    boolean removeDislike(Integer reviewId, Integer userId);
 }
