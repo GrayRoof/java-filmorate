@@ -152,14 +152,16 @@ public class DBReviewStorage implements ReviewStorage {
 
     @Override
     public void unsetScoreFromUser(int reviewId, int userId, boolean useful) {
-        jdbcTemplate.update(
+        boolean done = jdbcTemplate.update(
                 "DELETE FROM useful WHERE reviewid = ? AND userid = ? AND useful = ?;",
                 reviewId,
                 userId,
                 useful
-        );
+        ) > 0;
 
-        updateReviewUsefulness(reviewId);
+        if (done) {
+            updateReviewUsefulness(reviewId);
+        }
     }
 
     @EventListener
