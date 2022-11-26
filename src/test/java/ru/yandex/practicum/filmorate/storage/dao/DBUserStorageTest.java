@@ -9,7 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.storage.*;
 
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -48,10 +47,13 @@ class DBUserStorageTest {
     void tearDown() {
         jdbcTemplate.update("DELETE FROM friendship;");
         jdbcTemplate.update("DELETE FROM likes;");
+        jdbcTemplate.update("DELETE FROM useful;");
+        jdbcTemplate.update("DELETE FROM reviews;");
         jdbcTemplate.update("DELETE FROM users;");
         jdbcTemplate.update("DELETE FROM film;");
         jdbcTemplate.update("ALTER TABLE users ALTER COLUMN userid RESTART WITH 1;");
         jdbcTemplate.update("ALTER TABLE film ALTER COLUMN filmid RESTART WITH 1;");
+        jdbcTemplate.update("ALTER TABLE reviews ALTER COLUMN reviewid RESTART WITH 1;");
     }
 
     @Test
