@@ -363,7 +363,7 @@ class FilmServiceTest {
 
         Collection<Film> filmsWithGenres = service.getMostPopularFilms("10", "1", "all");
 
-        assertEquals(4, filmsWithGenres.size());
+        assertEquals(2, filmsWithGenres.size());
 
 
     }
@@ -403,7 +403,7 @@ class FilmServiceTest {
 
         Collection<Film> filmsWithYear = service.getMostPopularFilms("10", "all", "1939");
 
-        assertEquals(2, filmsWithYear.size());
+        assertEquals(1, filmsWithYear.size());
 
 
     }
