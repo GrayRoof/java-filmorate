@@ -293,8 +293,7 @@ public class DBFilmStorage implements FilmStorage {
                 "r.RATINGID, r.NAME, r.DESCRIPTION " +
                 "from FILM f " +
                 "inner join MPA r on r.RATINGID = f.RATINGID " +
-                directorsJoin + "where " + String.join(" or ", filterExpressions) +
-                //whereString +
+                directorsJoin + "where " + String.join(" or ", filterExpressions) + " " +
                 "group by f.FILMID " +
                 "order by f.RATE desc";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
