@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,8 +29,8 @@ public class RecommendationServiceTest {
     @Autowired
     public RecommendationServiceTest(
             JdbcTemplate jdbcTemplate,
-            UserStorage userStorage,
-            FilmStorage filmStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) UserStorage userStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) FilmStorage filmStorage,
             RecommendationService recommendationService
     ) {
         this.jdbcTemplate = jdbcTemplate;

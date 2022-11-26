@@ -214,7 +214,7 @@ public class FilmService {
         addExtraFilmData(List.of(film));
     }
 
-    private void addExtraFilmData(Collection<Film> films) {
+    protected void addExtraFilmData(Collection<Film> films) {
         genreStorage.load(films);
         directorStorage.load(films);
     }

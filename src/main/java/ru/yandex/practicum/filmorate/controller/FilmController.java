@@ -5,8 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.SearchService;
 
 import java.util.Collection;
+import java.util.Set;
 
 @RestController
 @Slf4j
@@ -15,10 +17,12 @@ public class FilmController {
 
 
     private final FilmService filmService;
+    private final SearchService searchService;
 
     @Autowired(required = false)
-    public FilmController(FilmService filmService) {
+    public FilmController(FilmService filmService, SearchService searchService) {
         this.filmService = filmService;
+        this.searchService = searchService;
     }
 
     @GetMapping
@@ -94,5 +98,12 @@ public class FilmController {
         log.info("Получен запрос GET к эндпоинту: /films/common, userId={}, friendId={}", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
     }
+
+    @GetMapping({"/search"})
+    public Collection<Film> filmSearch(@RequestParam String query, @RequestParam Set<String> by) {
+        log.info("Получен запрос GET к эндпоинту: /films/search?query={}&by={}", query, String.join(",", by));
+        return searchService.filmSearch(query, by);
+    }
+
 
 }
