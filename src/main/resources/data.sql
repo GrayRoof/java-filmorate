@@ -55,5 +55,3 @@ MERGE INTO OPERATIONS KEY (OPERATIONID)
     VALUES (1, 'REMOVE'),
            (2, 'ADD'),
            (3, 'UPDATE');
-
-

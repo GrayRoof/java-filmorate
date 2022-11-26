@@ -3,31 +3,25 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RecommendationService {
 
     private final UserService userService;
     private final FilmStorage filmStorage;
-    private final GenreStorage genreStorage;
-    private final DirectorStorage directorStorage;
+    private final FilmService filmService;
 
     public RecommendationService(
             UserService userService,
             @Qualifier(UsedStorageConsts.QUALIFIER) FilmStorage filmStorage,
-            @Qualifier(UsedStorageConsts.QUALIFIER) GenreStorage genreStorage,
-            @Qualifier(UsedStorageConsts.QUALIFIER) DirectorStorage directorStorage
-    ) {
+            FilmService filmService) {
         this.userService = userService;
         this.filmStorage = filmStorage;
-        this.genreStorage = genreStorage;
-        this.directorStorage = directorStorage;
+        this.filmService = filmService;
     }
 
     /**
@@ -36,8 +30,7 @@ public class RecommendationService {
      * @param supposedUserId - идентификатор пользователя
      * */
     public Collection<Film> getRecommendations(final String supposedUserId) {
-        User user = userService.getStoredUser(supposedUserId);
-        int userId = user.getId();
+        int userId = userService.getStoredUserId(supposedUserId);
 
         Map<Integer, BitSet> likes = filmStorage.getRelatedLikesByUserId(userId);
         if (likes.isEmpty() || likes.get(userId).isEmpty()) return List.of();
@@ -51,13 +44,8 @@ public class RecommendationService {
         if (likesOfUserList.cardinality() == 0) { return List.of(); }
 
         Collection<Film> films = filmStorage.getFilmsOfIdArray(
-                likesOfUserList
-                        .toString()
-                        .replace("{", "")
-                        .replace("}", "")
-        );
-        genreStorage.load(films);
-        directorStorage.load(films);
+                likesOfUserList.stream().boxed().collect(Collectors.toList()));
+        if(!films.isEmpty()) filmService.addExtraFilmData(films);
         return films;
     }
 

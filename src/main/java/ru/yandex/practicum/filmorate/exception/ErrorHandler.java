@@ -39,7 +39,7 @@ public class ErrorHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(value = {WrongIdException.class, WrongReviewException.class})
+    @ExceptionHandler(value = {WrongIdException.class, WrongReviewException.class, WrongSearchException.class})
     public ErrorMessage handleWrongIdException(Exception exception, WebRequest request) {
         ErrorMessage error = new ErrorMessage(
                 new Date(),
