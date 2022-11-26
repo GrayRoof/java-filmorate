@@ -51,11 +51,6 @@ public class FilmService {
         return films;
     }
 
-    private void addExtraFilmData(Collection<Film> films) {
-        genreStorage.load(films);
-        directorStorage.load(films);
-    }
-
     /**
      * Добавляет фильм в коллекцию
      * Возвращает добавленный фильм
@@ -235,6 +230,11 @@ public class FilmService {
 
     }
 
+    protected void addExtraFilmData(Collection<Film> films) {
+        genreStorage.load(films);
+        directorStorage.load(films);
+    }
+    
     private int getRequestedNumber(String reqNum) {
         int result = 0;
         if (!reqNum.toLowerCase().equals("all")){
