@@ -2,11 +2,13 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.event.EventListener;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.event.OnDeleteUserEvent;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
@@ -101,7 +103,7 @@ public class DBReviewStorage implements ReviewStorage {
     @Override
     public Optional<Boolean> getScoreFromUser(int reviewId, int userId) {
         try {
-            return Optional.of(
+            return Optional.ofNullable(
                     jdbcTemplate.queryForObject(
                             "select useful from useful where reviewid=? and userid=?;",
                             Boolean.class,
@@ -158,5 +160,26 @@ public class DBReviewStorage implements ReviewStorage {
         );
 
         updateReviewUsefulness(reviewId);
+    }
+
+    @EventListener
+    public void handleOnDeleteUser(OnDeleteUserEvent event) {
+        jdbcTemplate.update(
+                "UPDATE reviews SET useful = ( " +
+                "   SELECT " +
+                "      COALESCE( " +
+                "         SUM( " +
+                "            CASE WHEN useful THEN " +
+                "               1 " +
+                "            ELSE " +
+                "               -1 " +
+                "            END " +
+                "         ), " +
+                "         0 " +
+                "      ) " +
+                "   FROM useful " +
+                "   WHERE useful.reviewid=reviews.reviewid " +
+                ");"
+        );
     }
 }
