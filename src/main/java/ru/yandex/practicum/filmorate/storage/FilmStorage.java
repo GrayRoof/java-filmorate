@@ -25,8 +25,6 @@ public interface FilmStorage {
 
     Collection<Film> getSortedByGenreAndYear(int genreId, int year, int count);
 
-    Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy);
-
     Map<Integer, BitSet> getRelatedLikesByUserId(int userId);
 
     BitSet getLikesOfUserList(List<Integer> usersId);
