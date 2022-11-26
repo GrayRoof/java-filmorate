@@ -10,13 +10,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_PREPARE_DB;
@@ -38,6 +39,9 @@ class FilmServiceTest {
     void setUp() {
         jdbcTemplate.update(SQL_PREPARE_DB);
     }
+
+    @Autowired
+    GenreStorage genreStorage;
 
     @AfterEach
     void tearDown() {
@@ -324,5 +328,124 @@ class FilmServiceTest {
         service.addLike(String.valueOf(addedFilm2.getId()), String.valueOf(addedUser.getId()));
         assertThrows(NotFoundException.class, () -> service.getSortedFilmWithDirector(2, "likes"));
     }
+
+    @Test
+    void shouldReturnCollectionOfFilmsByGenreWithoutYear(){
+        Genre genre1 = genreStorage.getGenreById(1);
+        Genre genre2 = genreStorage.getGenreById(2);
+        LinkedHashSet<Genre> genres1 = new LinkedHashSet<>();
+        LinkedHashSet<Genre> genres2 = new LinkedHashSet<>();
+
+        genres1.add(genre1);
+        genres2.add(genre1);
+        genres2.add(genre2);
+
+        Film film = new Film();
+        film.setId(999);
+        film.setName("Correct Name");
+        film.setDescription("Correct description.");
+        film.setReleaseDate(LocalDate.of(1995, 5, 26));
+        film.setGenres(genres1);
+        film.setDuration(100L);
+        film.setMpa(new Mpa(1, "mpa", "description"));
+
+        Film film2 = new Film();
+        film2.setId(998);
+        film2.setName("Peekaboo");
+        film2.setDescription("Description.");
+        film2.setReleaseDate(LocalDate.of(1990, 5, 26));
+        film2.setDuration(100L);
+        film2.setGenres(genres2);
+        film2.setMpa(new Mpa(1, "mpa", "description"));
+
+        service.add(film);
+        service.add(film2);
+
+        Collection<Film> filmsWithGenres = service.getMostPopularFilms("10", "1", "all");
+
+        assertEquals(filmsWithGenres.size(), 4);
+
+
+    }
+
+
+    @Test
+    void shouldReturnCollectionOfFilmsByYearWithoutGenre(){
+        Genre genre1 = genreStorage.getGenreById(1);
+        Genre genre2 = genreStorage.getGenreById(2);
+        LinkedHashSet<Genre> genres1 = new LinkedHashSet<>();
+        LinkedHashSet<Genre> genres2 = new LinkedHashSet<>();
+
+        genres1.add(genre1);
+        genres2.add(genre1);
+        genres2.add(genre2);
+
+        Film film = new Film();
+        film.setId(999);
+        film.setName("Correct Name");
+        film.setDescription("Correct description.");
+        film.setReleaseDate(LocalDate.of(1939, 5, 26));
+        film.setGenres(genres1);
+        film.setDuration(100L);
+        film.setMpa(new Mpa(1, "mpa", "description"));
+
+        Film film2 = new Film();
+        film2.setId(998);
+        film2.setName("Peekaboo");
+        film2.setDescription("Description.");
+        film2.setReleaseDate(LocalDate.of(1990, 5, 26));
+        film2.setDuration(100L);
+        film2.setGenres(genres2);
+        film2.setMpa(new Mpa(1, "mpa", "description"));
+
+        service.add(film);
+        service.add(film2);
+
+        Collection<Film> filmsWithYear = service.getMostPopularFilms("10", "all", "1939");
+
+        assertEquals(filmsWithYear.size(), 2);
+
+
+    }
+
+    @Test
+    void shouldReturnCollectionOfFilmsByYearWithGenre(){
+        Genre genre1 = genreStorage.getGenreById(1);
+        Genre genre2 = genreStorage.getGenreById(2);
+        LinkedHashSet<Genre> genres1 = new LinkedHashSet<>();
+        LinkedHashSet<Genre> genres2 = new LinkedHashSet<>();
+
+        genres1.add(genre1);
+        genres2.add(genre1);
+        genres2.add(genre2);
+
+        Film film = new Film();
+        film.setId(999);
+        film.setName("Correct Name");
+        film.setDescription("Correct description.");
+        film.setReleaseDate(LocalDate.of(1939, 5, 26));
+        film.setGenres(genres1);
+        film.setDuration(100L);
+        film.setMpa(new Mpa(1, "mpa", "description"));
+
+        Film film2 = new Film();
+        film2.setId(998);
+        film2.setName("Peekaboo");
+        film2.setDescription("Description.");
+        film2.setReleaseDate(LocalDate.of(1990, 5, 26));
+        film2.setDuration(100L);
+        film2.setGenres(genres2);
+        film2.setMpa(new Mpa(1, "mpa", "description"));
+
+        service.add(film);
+        service.add(film2);
+
+        Collection<Film> filmsWithGenresAndYear = service.getMostPopularFilms("10", "1", "1939");
+
+        assertEquals(filmsWithGenresAndYear.size(), 1);
+
+    }
+
+
 
 }

@@ -8,9 +8,10 @@ import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.WrongIdException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.validator.GenreValidator;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -25,6 +26,7 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserService userService;
     private final DirectorStorage directorStorage;
+    private final GenreValidator genreValidator;
 
     @Autowired
     public FilmService(
@@ -32,13 +34,15 @@ public class FilmService {
             Validator validator,
             @Qualifier(UsedStorageConsts.QUALIFIER) FilmStorage filmStorage,
             @Qualifier(UsedStorageConsts.QUALIFIER) GenreStorage genreStorage,
-            @Qualifier(UsedStorageConsts.QUALIFIER) DirectorStorage directorStorage
+            @Qualifier(UsedStorageConsts.QUALIFIER) DirectorStorage directorStorage,
+            GenreValidator genreValidator
     ) {
         this.userService = userService;
         this.validator = validator;
         this.filmStorage = filmStorage;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
+        this.genreValidator = genreValidator;
     }
 
     /**
@@ -210,10 +214,39 @@ public class FilmService {
         return filmId;
     }
 
-    private void addExtraFilmData(Film film) {
-        addExtraFilmData(List.of(film));
+    public Collection<Film> getMostPopularFilms(String count, String genreId, String year) {
+        Collection<Film> films;
+        int checkedGenreID = getRequestedNumber(genreId);
+        int checkedYear = getRequestedNumber(year);
+        if (checkedGenreID != 0 && checkedYear != 0) {
+            genreValidator.validateGenreById(checkedGenreID);
+            films = filmStorage.getSortedByGenreAndYear(checkedGenreID,
+                    checkedYear, Integer.parseInt(count));
+        } else if (checkedGenreID != 0 && checkedYear == 0) {
+            films = filmStorage.getMostPopularByGenre(Integer.parseInt(count), checkedGenreID);
+        } else if (checkedGenreID == 0 && checkedYear != 0) {
+            films = filmStorage.getMostPopularByYear(checkedYear, Integer.parseInt(count));
+        } else {
+            films = filmStorage.getMostPopularFilms(Integer.parseInt(count));
+        }
+        if (films.size() > 0) {
+            addExtraFilmData(films);
+        }
+        return films;
+
     }
 
+    private int getRequestedNumber(String reqNum) {
+        int result = 0;
+        if (!reqNum.toLowerCase().equals("all")) {
+            try {
+                result = Integer.parseInt(reqNum);
+            } catch (NumberFormatException e) {
+                throw new WrongIdException("Не распознано значение параметра запроса");
+            }
+        }
+        return result;
+    }
     protected void addExtraFilmData(Collection<Film> films) {
         genreStorage.load(films);
         directorStorage.load(films);
