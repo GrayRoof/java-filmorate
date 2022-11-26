@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ReviewAlreadyDislikedException;
 import ru.yandex.practicum.filmorate.exception.ReviewAlreadyLikedException;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -54,42 +55,54 @@ public class ReviewService {
         return storage.getReview(Integer.parseInt(id));
     }
 
-    public boolean addLike(int reviewId, int userId) {
-        try {
-            validator.validateGoodReviewByUserAndId(reviewId, userId);
-            validator.validateBadReviewByUserAndId(reviewId, userId);
-        } catch (ReviewAlreadyLikedException e){
-            return storage.removeLike(reviewId, userId);
-        } catch (ReviewAlreadyDislikedException e){
-            return storage.removeDislike(reviewId, userId);
+    public void requireReview(int reviewId) {
+        if (!storage.containsReview(reviewId)) {
+            throw new NotFoundException(
+                    "Ревью с идентификатором " +
+                    reviewId + " не зарегистрировано!"
+            );
         }
-
-        return storage.addLike(reviewId, userId);
-    }
-
-    public boolean removeLike(int reviewId, int userId) {
-        try{
-            validator.validateGoodReviewByUserAndId(reviewId, userId);
-        } catch (ReviewAlreadyLikedException e){
-            return storage.removeLike(reviewId, userId);
-        }
-        return false;
     }
 
     public Collection<Review> getFilmReviews(String filmId, String count) {
         return storage.getAll(filmId, Integer.parseInt(count));
     }
 
+    public boolean addLike(int reviewId, int userId) {
+        return setScoreFromUser(reviewId, userId, true);
+    }
+
+    public boolean removeLike(int reviewId, int userId) {
+        return unsetScoreFromUser(reviewId, userId, true);
+    }
+
     public boolean addDislike(int reviewId, int userId) {
-        try {
-            validator.validateBadReviewByUserAndId(reviewId, userId);
-            validator.validateGoodReviewByUserAndId(reviewId, userId);
-        } catch (ReviewAlreadyDislikedException e){
+        return setScoreFromUser(reviewId, userId, false);
+    }
+
+    public boolean removeDislike(int reviewId, int userId) {
+        return unsetScoreFromUser(reviewId, userId, false);
+    }
+
+    private boolean setScoreFromUser(int reviewId, int userId, boolean useful) {
+        requireReview(reviewId);
+        userService.requireUser(reviewId);
+
+        if (storage.getScoreFromUser(reviewId, userId).orElse(!useful) == useful) {
             return false;
-        } catch (ReviewAlreadyLikedException e){
-            storage.removeLike(reviewId, userId);
-            return storage.addDislike(reviewId, userId);
         }
-        return storage.addDislike(reviewId, userId);
+        storage.setScoreFromUser(reviewId, userId, useful);
+        return true;
+    }
+
+    private boolean unsetScoreFromUser(int reviewId, int userId, boolean useful) {
+        requireReview(reviewId);
+        userService.requireUser(reviewId);
+
+        if (storage.getScoreFromUser(reviewId, userId).orElse(!useful) != useful) {
+            return false;
+        }
+        storage.unsetScoreFromUser(reviewId, userId, useful);
+        return true;
     }
 }
