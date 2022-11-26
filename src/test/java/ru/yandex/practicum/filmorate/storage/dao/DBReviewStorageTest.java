@@ -126,7 +126,7 @@ class DBReviewStorageTest {
     }
 
     @Test
-    void shouldAddLike() {
+    void shouldAddScoreUseful() {
         final int userId = userStorageTestHelper.getNewUserId();
         final int filmId = filmStorageTestHelper.getNewFilmId();
 
@@ -141,14 +141,14 @@ class DBReviewStorageTest {
 
         final int reviewId = reviewFromDB.getReviewId();
 
-        reviewStorage.addLike(reviewId, userId);
+        reviewStorage.setScoreFromUser(reviewId, userId, true);
 
         assertThat(reviewStorage.getReview(reviewId)).hasFieldOrPropertyWithValue("useful", 1);
 
     }
 
     @Test
-    void shouldRemoveLike() {
+    void shouldUnsetScoreUseful() {
         final int userId = userStorageTestHelper.getNewUserId();
         final int filmId = filmStorageTestHelper.getNewFilmId();
 
@@ -163,11 +163,11 @@ class DBReviewStorageTest {
 
         final int reviewId = reviewFromDB.getReviewId();
 
-        reviewStorage.addLike(reviewId, userId);
+        reviewStorage.setScoreFromUser(reviewId, userId, true);
 
         assertThat(reviewStorage.getReview(reviewId)).hasFieldOrPropertyWithValue("useful", 1);
 
-        reviewStorage.removeLike(reviewId, userId);
+        reviewStorage.unsetScoreFromUser(reviewId, userId, true);
         assertThat(reviewStorage.getReview(1)).hasFieldOrPropertyWithValue("useful", 0);
 
     }

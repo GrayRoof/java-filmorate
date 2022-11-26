@@ -75,35 +75,6 @@ public class DBReviewStorage implements ReviewStorage {
     }
 
     @Override
-    public boolean addLike(Integer reviewId, Integer userId) {
-        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;" +
-                "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
-        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId, true), reviewId,
-                reviewId, userId, true);
-        return true;
-    }
-
-    @Override
-    public boolean removeLike(Integer reviewId, Integer userId) {
-        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;" +
-                "delete from useful where ReviewID = ? and userid = ? and useful = ?";
-        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,false), reviewId,
-                reviewId, userId, true);
-        return true;
-    }
-
-    private int changeUsefulValue(Integer reviewId, boolean increase){
-        int useful = getReview(reviewId).getUseful();
-
-        if (increase) {
-            useful++;
-        } else {
-            useful--;
-        }
-        return useful;
-    }
-
-    @Override
     public Collection<Review> getAll(String filmId, int count) {
         String sqlQuery = "select * from reviews order by useful desc limit ?;";
         Integer id = 0;
@@ -118,21 +89,62 @@ public class DBReviewStorage implements ReviewStorage {
     }
 
     @Override
-    public boolean addDislike(Integer reviewId, Integer userId) {
-        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;" +
-                "insert into useful (reviewId, userId, useful) values (?, ?, ?)";
+    public boolean containsReview(int reviewId) {
+        return jdbcTemplate.queryForRowSet(
+                "select reviewid from reviews where reviewid = ?;",
+                reviewId
+        ).next();
+    }
 
-        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId, false),
-                reviewId,reviewId, userId, false);
-        return true;
+    private void updateReviewUsefulness(int reviewId) {
+        jdbcTemplate.update(
+                "UPDATE reviews SET useful = ( " +
+                "   SELECT " +
+                "      COALESCE( " +
+                "         SUM( " +
+                "            CASE WHEN useful THEN " +
+                "               1 " +
+                "            ELSE " +
+                "               -1 " +
+                "            END " +
+                "         ), " +
+                "         0 " +
+                "      ) " +
+                "   FROM useful WHERE useful.reviewid = ? " +
+                ") " +
+                "WHERE reviewid = ?;",
+                reviewId,
+                reviewId
+        );
     }
 
     @Override
-    public boolean removeDislike(Integer reviewId, Integer userId) {
-        String sqlQuery = "update reviews set useful = ? where ReviewID = ?;" +
-                "delete from useful where ReviewID = ? and userid = ? and useful = ?";
-        jdbcTemplate.update(sqlQuery, changeUsefulValue(reviewId,true),
-                reviewId, reviewId, userId, false);
-        return true;
+    public boolean setScoreFromUser(int reviewId, int userId, boolean useful) {
+        boolean result = jdbcTemplate.update(
+                "MERGE INTO useful (reviewid, userid, useful) KEY(reviewid, userid) VALUES (?, ?, ?);",
+                reviewId,
+                userId,
+                useful
+        ) > 0;
+
+        if (result) {
+            updateReviewUsefulness(reviewId);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean unsetScoreFromUser(int reviewId, int userId, boolean useful) {
+        boolean result = jdbcTemplate.update(
+                "DELETE FROM useful WHERE reviewid = ? AND userid = ? AND useful = ?;",
+                reviewId,
+                userId,
+                useful
+        ) > 0;
+
+        if (result) {
+            updateReviewUsefulness(reviewId);
+        }
+        return result;
     }
 }
