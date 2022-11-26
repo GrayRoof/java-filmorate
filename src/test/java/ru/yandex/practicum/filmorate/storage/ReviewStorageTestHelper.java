@@ -17,7 +17,7 @@ public class ReviewStorageTestHelper {
     public Review addReview(int filmId, int userId, boolean isPositive) {
         int idx = nextIdx++;
 
-        return storage.addReview(
+        return storage.add(
                 Review.builder()
                         .content("content" + idx)
                         .filmId(filmId)

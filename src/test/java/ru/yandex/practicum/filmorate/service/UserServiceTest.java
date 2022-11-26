@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_PREPARE_DB;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -25,14 +26,9 @@ class UserServiceTest {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    @AfterEach
-    void tearDown() {
-        jdbcTemplate.update("DELETE FROM friendship;");
-        jdbcTemplate.update("DELETE FROM likes;");
-        jdbcTemplate.update("DELETE FROM users;");
-        jdbcTemplate.update("DELETE FROM film;");
-        jdbcTemplate.update("ALTER TABLE users ALTER COLUMN userid RESTART WITH 1;");
-        jdbcTemplate.update("ALTER TABLE film ALTER COLUMN filmid RESTART WITH 1;");
+    @BeforeEach
+    void setUp() {
+        jdbcTemplate.update(SQL_PREPARE_DB);
     }
 
     @Test
@@ -45,7 +41,7 @@ class UserServiceTest {
                 new ArrayList<>());
         User addedUser = service.add(user);
         assertNotEquals(0, addedUser.getId());
-        assertTrue(service.getAllUsers().contains(addedUser));
+        assertTrue(service.getAll().contains(addedUser));
     }
 
     @Test
@@ -59,7 +55,7 @@ class UserServiceTest {
         User addedUser = service.add(user);
         assertNotEquals(0, addedUser.getId());
         assertEquals(addedUser.getLogin(), addedUser.getName());
-        assertTrue(service.getAllUsers().contains(addedUser));
+        assertTrue(service.getAll().contains(addedUser));
     }
 
     @Test

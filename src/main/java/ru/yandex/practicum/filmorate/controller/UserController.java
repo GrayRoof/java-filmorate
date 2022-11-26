@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FeedEvent;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FeedService;
 import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -17,17 +19,20 @@ public class UserController {
 
     private final UserService userService;
     private final RecommendationService recommendationService;
+    private final FeedService feedService;
 
     public UserController(@Autowired(required = false) UserService userService,
-                          RecommendationService recommendationService) {
+                          RecommendationService recommendationService,
+                          FeedService feedService) {
         this.userService = userService;
         this.recommendationService = recommendationService;
+        this.feedService = feedService;
     }
 
     @GetMapping
     public Collection<User> findAll() {
         log.info("Получен запрос GET к эндпоинту: /users");
-        return userService.getAllUsers();
+        return userService.getAll();
     }
 
     @GetMapping("/{id}/friends")
@@ -39,7 +44,13 @@ public class UserController {
     @GetMapping("/{id}")
     public User findUser(@PathVariable String id) {
         log.info("Получен запрос GET к эндпоинту: /users/{}/", id);
-        return userService.getUser(id);
+        return userService.get(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public Collection<FeedEvent> findUserFeed(@PathVariable String id){
+        log.info("Получен запрос GET к эндпоинту: /users/{}/feed", id);
+        return feedService.getUserFeed(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
@@ -67,7 +78,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) {
         log.info("Получен запрос DELETE к эндпоинту: users/{}", id);
-        userService.deleteUser(id);
+        userService.delete(id);
         log.info("Удален объект {} с идентификатором {}",
                 User.class.getSimpleName(), id);
     }

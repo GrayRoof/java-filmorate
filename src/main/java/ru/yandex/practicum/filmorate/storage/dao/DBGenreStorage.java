@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import static java.util.function.UnaryOperator.identity;
 
 @Component
-@Qualifier(DBStorageConsts.QUALIFIER)
+@Qualifier(DBStorageConstants.QUALIFIER)
 public class DBGenreStorage implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
 
@@ -35,7 +35,7 @@ public class DBGenreStorage implements GenreStorage {
     }
 
     @Override
-    public Collection<Genre> getGenresByFilmId(int filmId) {
+    public Collection<Genre> getByFilmId(int filmId) {
         String sqlGenre = "select GENRE.GENREID, NAME from GENRE " +
                 "INNER JOIN GENRELINE GL on GENRE.GENREID = GL.GENREID " +
                 "where FILMID = ?";
@@ -43,13 +43,13 @@ public class DBGenreStorage implements GenreStorage {
     }
 
     @Override
-    public Collection<Genre> getAllGenres() {
+    public Collection<Genre> getAll() {
         String sqlGenre = "select GENREID, NAME from GENRE ORDER BY GENREID";
         return jdbcTemplate.query(sqlGenre, this::makeGenre);
     }
 
     @Override
-    public Genre getGenreById(int genreId) {
+    public Genre getById(int genreId) {
         String sqlGenre = "select * from GENRE where GENREID = ?";
         Genre genre;
         try {
@@ -58,11 +58,6 @@ public class DBGenreStorage implements GenreStorage {
             throw new NotFoundException("Жанр с идентификатором " +
                     genreId + " не зарегистрирован!");
         }
-        return genre;
-    }
-
-    private Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {
-        Genre genre = new Genre(rs.getInt("GenreID"), rs.getString("Name"));
         return genre;
     }
 
@@ -77,5 +72,10 @@ public class DBGenreStorage implements GenreStorage {
             final Film film = filmById.get(rs.getInt("FILMID"));
             film.getGenres().add(makeGenre(rs, 0));
         }, films.stream().map(Film::getId).toArray());
+    }
+
+    private Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {
+        Genre genre = new Genre(rs.getInt("GenreID"), rs.getString("Name"));
+        return genre;
     }
 }

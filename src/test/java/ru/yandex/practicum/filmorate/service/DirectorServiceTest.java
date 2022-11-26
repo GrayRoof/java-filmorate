@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import javax.validation.ValidationException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_PREPARE_DB;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -22,11 +23,9 @@ class DirectorServiceTest {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    @AfterEach
-    void tearDown() {
-        jdbcTemplate.update("DELETE FROM DIRECTORS");
-        jdbcTemplate.update("ALTER TABLE DIRECTORS ALTER COLUMN DIRECTORID RESTART WITH 1");
-
+    @BeforeEach
+    void setUp() {
+        jdbcTemplate.update(SQL_PREPARE_DB);
     }
 
     @Test

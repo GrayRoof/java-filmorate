@@ -11,19 +11,17 @@ import java.util.Collection;
 public class MpaService {
     private final MpaStorage mpaStorage;
 
-    public MpaService(
-            @Qualifier(UsedStorageConsts.QUALIFIER) MpaStorage mpaStorage
-    ) {
+    public MpaService(@Qualifier(UsedStorageConsts.QUALIFIER) MpaStorage mpaStorage) {
         this.mpaStorage = mpaStorage;
     }
 
-    public Collection<Mpa> getAllMpa() {
-        return mpaStorage.getAllMpa();
+    public Collection<Mpa> getAll() {
+        return mpaStorage.getAll();
     }
 
-    public Mpa getMpa(String supposedId) {
+    public Mpa get(String supposedId) {
         int id = intFromString(supposedId);
-        return mpaStorage.getMpaById(id);
+        return mpaStorage.getById(id);
     }
 
     private Integer intFromString(final String supposedInt) {

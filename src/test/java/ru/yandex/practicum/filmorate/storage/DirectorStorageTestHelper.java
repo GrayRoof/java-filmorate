@@ -17,7 +17,7 @@ public class DirectorStorageTestHelper {
     public Director addDirector() {
         int idx = nextIdx++;
 
-        return storage.addDirector(
+        return storage.add(
                 new Director(-1,
                         String.format("name-%d", idx)
                 )

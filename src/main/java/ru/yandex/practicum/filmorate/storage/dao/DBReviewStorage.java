@@ -4,11 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.EventListener;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.event.OnDeleteUserEvent;
+import ru.yandex.practicum.filmorate.event.OnFeedEvent;
+import ru.yandex.practicum.filmorate.model.AllowedFeedEvents;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
@@ -18,18 +21,20 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Component
-@Qualifier(DBStorageConsts.QUALIFIER)
+@Qualifier(DBStorageConstants.QUALIFIER)
 public class DBReviewStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
-    public DBReviewStorage(JdbcTemplate jdbcTemplate){
+    public DBReviewStorage(JdbcTemplate jdbcTemplate, ApplicationEventPublisher eventPublisher){
         this.jdbcTemplate = jdbcTemplate;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
-    public Review addReview(Review review) {
+    public Review add(Review review) {
         String sqlQuery = "insert into reviews (content, isPositive, UserId, FilmID, Useful) values (?,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -43,57 +48,52 @@ public class DBReviewStorage implements ReviewStorage {
         }, keyHolder);
 
         int id = Objects.requireNonNull(keyHolder.getKey()).intValue();
-
-        return getReview(id);
+        eventPublisher.publishEvent(new OnFeedEvent(review.getUserId(), id, AllowedFeedEvents.ADD_REVIEW));
+        return get(id);
     }
 
     @Override
-    public Review getReview(Integer id) {
+    public Review get(Integer id) {
         String sqlQuery = "select * from reviews where ReviewID = ?;";
         return jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeReview(rs), id);
     }
 
-    private Review makeReview(ResultSet rs) throws SQLException {
-        return Review.builder()
-                .reviewId(rs.getInt("reviewId"))
-                .content(rs.getString("content"))
-                .isPositive(rs.getBoolean("isPositive"))
-                .userId(rs.getInt("userId"))
-                .filmId(rs.getInt("filmId"))
-                .useful(rs.getInt("useful"))
-                .build();
-    }
-
     @Override
-    public Review editReview(Review review) {
+    public Review update(Review review) {
         String sqlQuery = "update reviews set content = ?, isPositive = ? where ReviewID = ?;";
-        jdbcTemplate.update(sqlQuery, review.getContent(), review.getIsPositive(), review.getReviewId());
-        return getReview(review.getReviewId());
+        boolean result = jdbcTemplate.update(sqlQuery,
+                review.getContent(), review.getIsPositive(), review.getReviewId()) > 0;
+        Review updatedReview = get(review.getReviewId());
+        if (result) {
+            eventPublisher.publishEvent(new OnFeedEvent(updatedReview.getUserId(), updatedReview.getReviewId(), AllowedFeedEvents.UPDATE_REVIEW));
+        }
+        return updatedReview;
     }
 
     @Override
-    public Integer removeReview(String id) {
+    public Integer delete(String id) {
+        Review review = get(Integer.parseInt(id));
         String sqlQuery = "delete from reviews where ReviewID = ?;";
-        jdbcTemplate.update(sqlQuery, id);
+        boolean result = jdbcTemplate.update(sqlQuery, id) > 0;
+        if (result) {
+            eventPublisher.publishEvent(new OnFeedEvent(review.getUserId(), review.getReviewId(), AllowedFeedEvents.REMOVE_REVIEW));
+        }
         return Integer.parseInt(id);
     }
 
     @Override
     public Collection<Review> getAll(String filmId, int count) {
         String sqlQuery = "select * from reviews order by useful desc limit ?;";
-        Integer id = 0;
-
         if (filmId.equals("all")) {
             return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), count);
         } else {
             sqlQuery = "select * from reviews where FilmID = ? order by useful desc limit ?;";
         }
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeReview(rs), filmId, count);
-
     }
 
     @Override
-    public boolean containsReview(int reviewId) {
+    public boolean contains(int reviewId) {
         return jdbcTemplate.queryForRowSet(
                 "select reviewid from reviews where reviewid = ?;",
                 reviewId
@@ -116,28 +116,6 @@ public class DBReviewStorage implements ReviewStorage {
         }
     }
 
-    private void updateReviewUsefulness(int reviewId) {
-        jdbcTemplate.update(
-                "UPDATE reviews SET useful = ( " +
-                "   SELECT " +
-                "      COALESCE( " +
-                "         SUM( " +
-                "            CASE WHEN useful THEN " +
-                "               1 " +
-                "            ELSE " +
-                "               -1 " +
-                "            END " +
-                "         ), " +
-                "         0 " +
-                "      ) " +
-                "   FROM useful WHERE useful.reviewid = ? " +
-                ") " +
-                "WHERE reviewid = ?;",
-                reviewId,
-                reviewId
-        );
-    }
-
     @Override
     public void setScoreFromUser(int reviewId, int userId, boolean useful) {
         jdbcTemplate.update(
@@ -146,7 +124,6 @@ public class DBReviewStorage implements ReviewStorage {
                 userId,
                 useful
         );
-
         updateReviewUsefulness(reviewId);
     }
 
@@ -182,6 +159,39 @@ public class DBReviewStorage implements ReviewStorage {
                 "   FROM useful " +
                 "   WHERE useful.reviewid=reviews.reviewid " +
                 ");"
+        );
+    }
+
+    private Review makeReview(ResultSet rs) throws SQLException {
+        return Review.builder()
+                .reviewId(rs.getInt("reviewId"))
+                .content(rs.getString("content"))
+                .isPositive(rs.getBoolean("isPositive"))
+                .userId(rs.getInt("userId"))
+                .filmId(rs.getInt("filmId"))
+                .useful(rs.getInt("useful"))
+                .build();
+    }
+
+    private void updateReviewUsefulness(int reviewId) {
+        jdbcTemplate.update(
+                "UPDATE reviews SET useful = ( " +
+                        "   SELECT " +
+                        "      COALESCE( " +
+                        "         SUM( " +
+                        "            CASE WHEN useful THEN " +
+                        "               1 " +
+                        "            ELSE " +
+                        "               -1 " +
+                        "            END " +
+                        "         ), " +
+                        "         0 " +
+                        "      ) " +
+                        "   FROM useful WHERE useful.reviewid = ? " +
+                        ") " +
+                        "WHERE reviewid = ?;",
+                reviewId,
+                reviewId
         );
     }
 }

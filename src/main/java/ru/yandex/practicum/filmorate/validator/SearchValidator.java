@@ -28,5 +28,4 @@ public class SearchValidator {
         }
         return params;
     }
-
 }

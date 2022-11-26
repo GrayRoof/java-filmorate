@@ -25,12 +25,12 @@ public class GenreController {
     @GetMapping
     public Collection<Genre> findAll() {
         log.info("Получен запрос GET к эндпоинту: /genres");
-        return genreService.getAllGenres();
+        return genreService.getAll();
     }
 
     @GetMapping("/{id}")
     public Genre findGenre(@PathVariable String id) {
         log.info("Получен запрос GET к эндпоинту: /genres/{}", id);
-        return genreService.getGenre(id);
+        return genreService.get(id);
     }
 }

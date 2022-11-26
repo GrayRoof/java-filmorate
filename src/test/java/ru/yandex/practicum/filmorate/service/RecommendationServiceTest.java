@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.*;
 import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_PREPARE_DB;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -39,14 +40,9 @@ public class RecommendationServiceTest {
         this.filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
     }
 
-    @AfterEach
-    void tearDown() {
-        jdbcTemplate.update("DELETE FROM likes;");
-        jdbcTemplate.update("DELETE FROM users;");
-        jdbcTemplate.update("DELETE FROM genreline;");
-        jdbcTemplate.update("DELETE FROM film;");
-        jdbcTemplate.update("ALTER TABLE users ALTER COLUMN userid RESTART WITH 1;");
-        jdbcTemplate.update("ALTER TABLE film ALTER COLUMN filmid RESTART WITH 1;");
+    @BeforeEach
+    void setUp() {
+        jdbcTemplate.update(SQL_PREPARE_DB);
     }
 
     @Test
@@ -96,7 +92,7 @@ public class RecommendationServiceTest {
         Collection<Film> dbFilms = recommendationService.getRecommendations(String.valueOf(newUserId1));
         assertEquals(1, dbFilms.size());
         Film film = dbFilms.iterator().next();
-        Film testFilm2 = filmStorage.getFilm(filmId2);
+        Film testFilm2 = filmStorage.get(filmId2);
         assertEquals(film.getId(), testFilm2.getId());
         assertEquals(film.getName(), testFilm2.getName());
         assertEquals(film.getDescription(), testFilm2.getDescription());
@@ -122,7 +118,7 @@ public class RecommendationServiceTest {
         Collection<Film> dbFilms = recommendationService.getRecommendations(String.valueOf(newUserId2));
         assertEquals(1, dbFilms.size());
         Film film = dbFilms.iterator().next();
-        Film testFilm1 = filmStorage.getFilm(filmId1);
+        Film testFilm1 = filmStorage.get(filmId1);
         assertEquals(film.getId(), testFilm1.getId());
         assertEquals(film.getName(), testFilm1.getName());
         assertEquals(film.getDescription(), testFilm1.getDescription());
@@ -132,5 +128,4 @@ public class RecommendationServiceTest {
         assertEquals(film.getMpa(), testFilm1.getMpa());
         assertEquals(film.getGenres(), testFilm1.getGenres());
     }
-
 }

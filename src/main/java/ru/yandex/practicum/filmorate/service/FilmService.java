@@ -29,13 +29,18 @@ public class FilmService {
     private final GenreValidator genreValidator;
 
     @Autowired
-    public FilmService(Validator validator, GenreStorage genreStorage, @Qualifier("DBFilmStorage") FilmStorage filmStorage,
-                       @Autowired(required = false) UserService userService, DirectorStorage directorStorage,
-                       GenreValidator genreValidator) {
-        this.validator = validator;
-        this.genreStorage = genreStorage;
-        this.filmStorage = filmStorage;
+    public FilmService(
+            UserService userService,
+            Validator validator,
+            @Qualifier(UsedStorageConsts.QUALIFIER) FilmStorage filmStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) GenreStorage genreStorage,
+            @Qualifier(UsedStorageConsts.QUALIFIER) DirectorStorage directorStorage,
+            GenreValidator genreValidator
+    ) {
         this.userService = userService;
+        this.validator = validator;
+        this.filmStorage = filmStorage;
+        this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
         this.genreValidator = genreValidator;
     }
@@ -43,8 +48,8 @@ public class FilmService {
     /**
      * Возвращает коллекцию фильмов
      */
-    public Collection<Film> getFilms() {
-        final Collection<Film> films = filmStorage.getAllFilms();
+    public Collection<Film> getAll() {
+        final Collection<Film> films = filmStorage.getAll();
         if (!films.isEmpty()) {
             addExtraFilmData(films);
         }
@@ -59,7 +64,7 @@ public class FilmService {
      */
     public Film add(Film film) {
         validate(film);
-        return filmStorage.addFilm(film);
+        return filmStorage.add(film);
     }
 
     /**
@@ -70,7 +75,7 @@ public class FilmService {
      */
     public Film update(Film film) {
         validate(film);
-        return filmStorage.updateFilm(film);
+        return filmStorage.update(film);
     }
 
     /**
@@ -97,13 +102,34 @@ public class FilmService {
      * @param count задает ограничение количества фильмов,
      *              если параметр не задан, будут возвращены первые 10 фильмов
      */
-    public Collection<Film> getMostPopularFilms(final String count) {
+    public Collection<Film> getMostPopular(final String count) {
         Integer size = intFromString(count);
         if (size == Integer.MIN_VALUE) {
             size = 10;
         }
-        Collection<Film> films = filmStorage.getMostPopularFilms(size);
+        Collection<Film> films = filmStorage.getMostPopular(size);
         addExtraFilmData(films);
+        return films;
+    }
+
+    public Collection<Film> getMostPopular(String count, String genreId, String year) {
+        Collection<Film> films;
+        int checkedGenreID = getRequestedNumber(genreId);
+        int checkedYear = getRequestedNumber(year);
+        if (checkedGenreID != 0 && checkedYear != 0) {
+            genreValidator.validateGenreById(checkedGenreID);
+            films = filmStorage.getSortedByGenreAndYear(checkedGenreID,
+                    checkedYear, Integer.parseInt(count));
+        } else if (checkedGenreID != 0 && checkedYear == 0) {
+            films = filmStorage.getMostPopularByGenre(Integer.parseInt(count), checkedGenreID);
+        } else if (checkedGenreID == 0 && checkedYear != 0) {
+            films = filmStorage.getMostPopularByYear(checkedYear, Integer.parseInt(count));
+        } else {
+            films = filmStorage.getMostPopular(Integer.parseInt(count));
+        }
+        if (films.size() > 0) {
+            addExtraFilmData(films);
+        }
         return films;
     }
 
@@ -112,10 +138,12 @@ public class FilmService {
      * @param userId идентификатор первого пользователя
      * @param otherUserId идентификатор второго пользователя
      * */
-    public Collection<Film> getCommonFilms(final String userId, final String otherUserId) {
+    public Collection<Film> getCommon(final String userId, final String otherUserId) {
         int storedUserId = userService.getStoredUserId(userId);
         int storedOtherUserId = userService.getStoredUserId(otherUserId);
-        return filmStorage.getCommonFilms(storedUserId, storedOtherUserId);
+        Collection<Film> films = filmStorage.getCommon(storedUserId, storedOtherUserId);
+        addExtraFilmData(films);
+        return films;
     }
 
     /**
@@ -125,13 +153,13 @@ public class FilmService {
      * @throws WrongIdException  в случае, если программе не удастся распознать идентификатор
      * @throws NotFoundException в случае, если фильм по идентификатору отсутствует
      */
-    public Film getFilm(String id) {
+    public Film get(String id) {
         return getStoredFilm(id);
     }
 
     public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
-        directorStorage.isExist(id);
-        Collection<Film> films = filmStorage.getSortedFilmWithDirector(id, sortBy);
+        directorStorage.contains(id);
+        Collection<Film> films = filmStorage.getSortedWithDirector(id, sortBy);
         addExtraFilmData(films);
         return films;
     }
@@ -143,9 +171,45 @@ public class FilmService {
      * @throws WrongIdException  в случае, если программе не удастся распознать идентификатор
      * @throws NotFoundException в случае, если фильм по идентификатору отсутствует
      */
-    public void deleteFilm(String id) {
+
+    public void delete(String id) {
         int storedFilmId = getStoredFilmId(id);
-        filmStorage.deleteFilm(storedFilmId);
+        filmStorage.delete(storedFilmId);
+    }
+
+    public Film getStoredFilm(final String supposedId) {
+        final int filmId = getIntFilmId(supposedId);
+        Film film = filmStorage.get(filmId);
+        if (film == null) {
+            onFilmNotFound(filmId);
+        }
+        addExtraFilmData(List.of(film));
+        return film;
+    }
+
+    public int getStoredFilmId(final String supposedId) {
+        final int filmId = getIntFilmId(supposedId);
+        if (!filmStorage.containsFilm(filmId)) {
+            onFilmNotFound(filmId);
+        }
+        return filmId;
+    }
+
+    protected void addExtraFilmData(Collection<Film> films) {
+        genreStorage.load(films);
+        directorStorage.load(films);
+    }
+
+    private int getRequestedNumber(String reqNum) {
+        int result = 0;
+        if (!reqNum.equalsIgnoreCase("all")) {
+            try {
+                result = Integer.parseInt(reqNum);
+            } catch (NumberFormatException e) {
+                throw new WrongIdException("Не распознано значение параметра запроса");
+            }
+        }
+        return result;
     }
 
     private void validate(Film film) {
@@ -185,65 +249,5 @@ public class FilmService {
     private void onFilmNotFound(int filmId) {
         throw new NotFoundException("Фильм с идентификатором " +
                 filmId + " не зарегистрирован!");
-    }
-
-    public Film getStoredFilm(final String supposedId) {
-        final int filmId = getIntFilmId(supposedId);
-
-        Film film = filmStorage.getFilm(filmId);
-        if (film == null) {
-            onFilmNotFound(filmId);
-        }
-        addExtraFilmData(List.of(film));
-
-        return film;
-    }
-
-    public int getStoredFilmId(final String supposedId) {
-        final int filmId = getIntFilmId(supposedId);
-
-        if (!filmStorage.containsFilm(filmId)) {
-            onFilmNotFound(filmId);
-        }
-        return filmId;
-    }
-
-    public Collection<Film> getMostPopularFilms(String count, String genreId, String year) {
-        Collection<Film> films;
-        int checkedGenreID = getRequestedNumber(genreId);
-        int checkedYear = getRequestedNumber(year);
-        if (checkedGenreID != 0 && checkedYear != 0) {
-            genreValidator.validateGenreById(checkedGenreID);
-            films = filmStorage.getSortedByGenreAndYear(checkedGenreID,
-                    checkedYear, Integer.parseInt(count));
-        } else if (checkedGenreID != 0 && checkedYear == 0) {
-            films = filmStorage.getMostPopularByGenre(Integer.parseInt(count), checkedGenreID);
-        } else if (checkedGenreID == 0 && checkedYear != 0) {
-            films = filmStorage.getMostPopularByYear(checkedYear, Integer.parseInt(count));
-        } else {
-            films = filmStorage.getMostPopularFilms(Integer.parseInt(count));
-        }
-        if (films.size() > 0) {
-            addExtraFilmData(films);
-        }
-        return films;
-
-    }
-
-    protected void addExtraFilmData(Collection<Film> films) {
-        genreStorage.load(films);
-        directorStorage.load(films);
-    }
-    
-    private int getRequestedNumber(String reqNum) {
-        int result = 0;
-        if (!reqNum.toLowerCase().equals("all")){
-            try {
-                result = Integer.parseInt(reqNum);
-            } catch (NumberFormatException e){
-                throw new WrongIdException("Не распознано значение параметра запроса");
-            }
-        }
-        return result;
     }
 }

@@ -27,7 +27,7 @@ public class FilmStorageTestHelper {
     public Film addFilm(int mpaId, Collection<Integer> genreIds, Collection<Integer> directorsIds) {
         int idx = nextIdx++;
 
-        return storage.addFilm(
+        return storage.add(
                 new Film(-1,
                         "name-" + idx,
                         "description-" + idx,

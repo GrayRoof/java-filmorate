@@ -31,9 +31,8 @@ public class SearchService {
      * */
     public Collection<Film> filmSearch(String query, Set<String> by) {
         searchValidator.validateQuery(query);
-        Collection<Film> films = filmStorage.getSortedFilmFromSearch(query, searchValidator.validateBy(by));
+        Collection<Film> films = filmStorage.getSortedFromSearch(query, searchValidator.validateBy(by));
         if(!films.isEmpty()) filmService.addExtraFilmData(films);
         return films;
     }
-
 }

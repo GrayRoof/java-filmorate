@@ -47,7 +47,6 @@ public class SearchServiceTest {
         this.searchService = searchService;
     }
 
-
     @BeforeEach
     void setUp() {
         initializingTestData();
@@ -71,7 +70,7 @@ public class SearchServiceTest {
 
         assertEquals(3, dbFilms.size());
         Film film = dbFilms.iterator().next();
-        Film testFilm3 = filmStorage.getFilm(filmWith2Like2Director.getId());
+        Film testFilm3 = filmStorage.get(filmWith2Like2Director.getId());
         assertEquals(film.getId(), testFilm3.getId());
         assertEquals(film.getName(), testFilm3.getName());
         assertEquals(film.getDescription(), testFilm3.getDescription());
@@ -89,11 +88,11 @@ public class SearchServiceTest {
 
     @Test
     public void searchFilmsOnlyTitle() {
-        Collection<Film> dbFilms = searchService.filmSearch("one", new HashSet<>(Arrays.asList("title")));
+        Collection<Film> dbFilms = searchService.filmSearch("one", new HashSet<>(List.of("title")));
 
         assertEquals(2, dbFilms.size());
         Film film = dbFilms.iterator().next();
-        Film testFilm3 = filmStorage.getFilm(filmWith2Like2Director.getId());
+        Film testFilm3 = filmStorage.get(filmWith2Like2Director.getId());
         assertEquals(film.getId(), testFilm3.getId());
         assertEquals(film.getName(), testFilm3.getName());
         assertEquals(film.getDescription(), testFilm3.getDescription());
@@ -104,11 +103,11 @@ public class SearchServiceTest {
 
     @Test
     public void searchFilmsOnlyDirector() {
-        Collection<Film> dbFilms = searchService.filmSearch("r One", new HashSet<>(Arrays.asList("director")));
+        Collection<Film> dbFilms = searchService.filmSearch("r One", new HashSet<>(List.of("director")));
 
         assertEquals(2, dbFilms.size());
         Film film = dbFilms.iterator().next();
-        Film testFilm2 = filmStorage.getFilm(filmWith2Like2Director.getId());
+        Film testFilm2 = filmStorage.get(filmWith2Like2Director.getId());
         assertEquals(film.getId(), testFilm2.getId());
         assertEquals(film.getName(), testFilm2.getName());
         assertEquals(film.getDescription(), testFilm2.getDescription());
@@ -124,7 +123,7 @@ public class SearchServiceTest {
 
         assertEquals(1, dbFilms.size());
         Film film = dbFilms.iterator().next();
-        Film testFilm2 = filmStorage.getFilm(filmWith2Like0Director.getId());
+        Film testFilm2 = filmStorage.get(filmWith2Like0Director.getId());
         assertEquals(film.getId(), testFilm2.getId());
         assertEquals(film.getName(), testFilm2.getName());
         assertEquals(film.getDescription(), testFilm2.getDescription());
@@ -140,7 +139,7 @@ public class SearchServiceTest {
 
         assertEquals(1, dbFilms.size());
         Film film = dbFilms.iterator().next();
-        Film testFilm2 = filmStorage.getFilm(filmWith0Like1Director.getId());
+        Film testFilm2 = filmStorage.get(filmWith0Like1Director.getId());
         assertEquals(film.getId(), testFilm2.getId());
         assertEquals(film.getName(), testFilm2.getName());
         assertEquals(film.getDescription(), testFilm2.getDescription());
@@ -170,42 +169,37 @@ public class SearchServiceTest {
 
         LinkedHashSet directors = new LinkedHashSet();
 
-        //Фильм с двумя лайками и двумя режиссерами
-        filmWith2Like2Director = filmStorage.getFilm(filmId3);
+        filmWith2Like2Director = filmStorage.get(filmId3);
         directors.add(director1);
         directors.add(director2);
         filmWith2Like2Director.setDirectors(directors);
         filmWith2Like2Director.setName("Test One name");
-        filmStorage.updateFilm(filmWith2Like2Director);
-        filmWith2Like2Director = filmStorage.getFilm(filmId3);
+        filmStorage.update(filmWith2Like2Director);
+        filmWith2Like2Director = filmStorage.get(filmId3);
         directorStorage.load(List.of(filmWith2Like2Director));
 
-        //Фильм с одним лайком и одним режиссером
-        filmWith1Like1Director = filmStorage.getFilm(filmId1);
+        filmWith1Like1Director = filmStorage.get(filmId1);
         directors.clear();
         directors.add(director1);
         filmWith1Like1Director.setDirectors(directors);
         filmWith1Like1Director.setName("Test tWo name");
-        filmStorage.updateFilm(filmWith1Like1Director);
-        filmWith1Like1Director = filmStorage.getFilm(filmId1);
+        filmStorage.update(filmWith1Like1Director);
+        filmWith1Like1Director = filmStorage.get(filmId1);
         directorStorage.load(List.of(filmWith1Like1Director));
 
-        //Фильм без лайков и с одним режиссером
-        filmWith0Like1Director = filmStorage.getFilm(filmId2);
+        filmWith0Like1Director = filmStorage.get(filmId2);
         directors.clear();
         directors.add(director2);
         filmWith0Like1Director.setDirectors(directors);
         filmWith0Like1Director.setName("Test ONE tWo name");
-        filmStorage.updateFilm(filmWith0Like1Director);
-        filmWith0Like1Director = filmStorage.getFilm(filmId2);
+        filmStorage.update(filmWith0Like1Director);
+        filmWith0Like1Director = filmStorage.get(filmId2);
         directorStorage.load(List.of(filmWith0Like1Director));
 
-        //Фильм с двумя лайками и без режиссеров
-        filmWith2Like0Director = filmStorage.getFilm(filmId4);
+        filmWith2Like0Director = filmStorage.get(filmId4);
         filmWith2Like0Director.setName("TEST name");
-        filmStorage.updateFilm(filmWith2Like0Director);
-        filmWith2Like0Director = filmStorage.getFilm(filmId4);
+        filmStorage.update(filmWith2Like0Director);
+        filmWith2Like0Director = filmStorage.get(filmId4);
         directorStorage.load(List.of(filmWith2Like0Director));
     }
-
 }

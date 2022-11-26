@@ -28,13 +28,13 @@ public class FilmController {
     @GetMapping
     public Collection<Film> findAll() {
         log.info("Получен запрос GET к эндпоинту: /films");
-        return filmService.getFilms();
+        return filmService.getAll();
     }
 
     @GetMapping("/{id}")
     public Film findFilm(@PathVariable String id) {
         log.info("Получен запрос GET к эндпоинту: /films/{}", id);
-        return filmService.getFilm(id);
+        return filmService.get(id);
     }
 
     @GetMapping("/popular")
@@ -43,7 +43,7 @@ public class FilmController {
             @RequestParam(defaultValue = "all", required = false) String year,
             @RequestParam(defaultValue = "all", required = false) String genreId) {
         log.info("Получен запрос GET к эндпоинту: /films/popular?count={}", count);
-        return filmService.getMostPopularFilms(count, genreId, year);
+        return filmService.getMostPopular(count, genreId, year);
     }
 
     @PostMapping
@@ -65,7 +65,7 @@ public class FilmController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) {
         log.info("Получен запрос DELETE к эндпоинту: films/{}", id);
-        filmService.deleteFilm(id);
+        filmService.delete(id);
         log.info("Удален объект {} с идентификатором {}",
                 Film.class.getSimpleName(), id);
     }
@@ -99,7 +99,7 @@ public class FilmController {
             @RequestParam(name = "friendId") String friendId
     ) {
         log.info("Получен запрос GET к эндпоинту: /films/common, userId={}, friendId={}", userId, friendId);
-        return filmService.getCommonFilms(userId, friendId);
+        return filmService.getCommon(userId, friendId);
     }
 
     @GetMapping({"/search"})
