@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -12,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import java.sql.*;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 @Qualifier(DBStorageConsts.QUALIFIER)
@@ -96,6 +98,22 @@ public class DBReviewStorage implements ReviewStorage {
         ).next();
     }
 
+    @Override
+    public Optional<Boolean> getScoreFromUser(int reviewId, int userId) {
+        try {
+            return Optional.of(
+                    jdbcTemplate.queryForObject(
+                            "select useful from useful where reviewid=? and userid=?;",
+                            Boolean.class,
+                            reviewId,
+                            userId
+                    )
+            );
+        } catch(EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
     private void updateReviewUsefulness(int reviewId) {
         jdbcTemplate.update(
                 "UPDATE reviews SET useful = ( " +
@@ -119,32 +137,26 @@ public class DBReviewStorage implements ReviewStorage {
     }
 
     @Override
-    public boolean setScoreFromUser(int reviewId, int userId, boolean useful) {
-        boolean result = jdbcTemplate.update(
+    public void setScoreFromUser(int reviewId, int userId, boolean useful) {
+        jdbcTemplate.update(
                 "MERGE INTO useful (reviewid, userid, useful) KEY(reviewid, userid) VALUES (?, ?, ?);",
                 reviewId,
                 userId,
                 useful
-        ) > 0;
+        );
 
-        if (result) {
-            updateReviewUsefulness(reviewId);
-        }
-        return result;
+        updateReviewUsefulness(reviewId);
     }
 
     @Override
-    public boolean unsetScoreFromUser(int reviewId, int userId, boolean useful) {
-        boolean result = jdbcTemplate.update(
+    public void unsetScoreFromUser(int reviewId, int userId, boolean useful) {
+        jdbcTemplate.update(
                 "DELETE FROM useful WHERE reviewid = ? AND userid = ? AND useful = ?;",
                 reviewId,
                 userId,
                 useful
-        ) > 0;
+        );
 
-        if (result) {
-            updateReviewUsefulness(reviewId);
-        }
-        return result;
+        updateReviewUsefulness(reviewId);
     }
 }

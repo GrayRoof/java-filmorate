@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.Collection;
+import java.util.Optional;
 
 public interface ReviewStorage {
     Review addReview(Review review);
@@ -11,6 +12,7 @@ public interface ReviewStorage {
     Integer removeReview(String id);
     Collection<Review> getAll(String filmId, int count);
     boolean containsReview(int reviewId);
-    boolean setScoreFromUser(int reviewId, int userId, boolean useful);
-    boolean unsetScoreFromUser(int reviewId, int userId, boolean useful);
+    Optional<Boolean> getScoreFromUser(int reviewId, int userId);
+    void setScoreFromUser(int reviewId, int userId, boolean useful);
+    void unsetScoreFromUser(int reviewId, int userId, boolean useful);
 }

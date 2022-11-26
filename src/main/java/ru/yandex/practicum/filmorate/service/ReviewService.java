@@ -64,35 +64,45 @@ public class ReviewService {
         }
     }
 
-    public boolean addLike(int reviewId, int userId) {
-        requireReview(reviewId);
-        userService.requireUser(reviewId);
-
-        return storage.setScoreFromUser(reviewId, userId, true);
-    }
-
-    public boolean removeLike(int reviewId, int userId) {
-        requireReview(reviewId);
-        userService.requireUser(reviewId);
-
-        return storage.unsetScoreFromUser(reviewId, userId, true);
-    }
-
     public Collection<Review> getFilmReviews(String filmId, String count) {
         return storage.getAll(filmId, Integer.parseInt(count));
     }
 
-    public boolean addDislike(int reviewId, int userId) {
-        requireReview(reviewId);
-        userService.requireUser(reviewId);
+    public boolean addLike(int reviewId, int userId) {
+        return setScoreFromUser(reviewId, userId, true);
+    }
 
-        return storage.setScoreFromUser(reviewId, userId, false);
+    public boolean removeLike(int reviewId, int userId) {
+        return unsetScoreFromUser(reviewId, userId, true);
+    }
+
+    public boolean addDislike(int reviewId, int userId) {
+        return setScoreFromUser(reviewId, userId, false);
     }
 
     public boolean removeDislike(int reviewId, int userId) {
+        return unsetScoreFromUser(reviewId, userId, false);
+    }
+
+    private boolean setScoreFromUser(int reviewId, int userId, boolean useful) {
         requireReview(reviewId);
         userService.requireUser(reviewId);
 
-        return storage.unsetScoreFromUser(reviewId, userId, false);
+        if (storage.getScoreFromUser(reviewId, userId).orElse(!useful) == useful) {
+            return false;
+        }
+        storage.setScoreFromUser(reviewId, userId, useful);
+        return true;
+    }
+
+    private boolean unsetScoreFromUser(int reviewId, int userId, boolean useful) {
+        requireReview(reviewId);
+        userService.requireUser(reviewId);
+
+        if (storage.getScoreFromUser(reviewId, userId).orElse(!useful) != useful) {
+            return false;
+        }
+        storage.unsetScoreFromUser(reviewId, userId, useful);
+        return true;
     }
 }
