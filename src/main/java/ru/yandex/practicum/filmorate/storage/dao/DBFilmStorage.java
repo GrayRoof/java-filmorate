@@ -172,14 +172,49 @@ public class DBFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getMostPopularFilms(int count) {
-        String sqlCacheMostPopular = "select FILM.FILMID" +
-                ",FILM.NAME ,FILM.DESCRIPTION ,RELEASEDATE ,DURATION ,RATE " +
-                ",R.RATINGID, R.NAME, R.DESCRIPTION from FILM " +
+        String sqlCacheMostPopular = "select FILM.FILMID, FILM.NAME, FILM.DESCRIPTION, " +
+                "RELEASEDATE, DURATION, RATE, R.RATINGID, R.NAME, R.DESCRIPTION from FILM " +
                 "inner join MPA R on R.RATINGID = FILM.RATINGID " +
                 "group by FILM.FILMID " +
                 "ORDER BY RATE desc " +
                 "limit ?";
         return jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), count);
+    }
+
+    @Override
+    public Collection<Film> getMostPopularByGenre(int count, int genreId){
+        String sqlCacheMostPopular = "select * " +
+                "from FILM F " +
+                "inner join MPA R on R.RATINGID = F.RATINGID " +
+                "JOIN GENRELINE GL ON GL.FILMID=F.FILMID " +
+                "WHERE GL.GENREID = ? " +
+                "ORDER BY RATE desc " +
+                "limit ?";
+        return jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), genreId, count);
+    }
+
+    @Override
+    public Collection<Film> getMostPopularByYear(int year, int count){
+        String sqlQuery = "select * " +
+                "FROM FILM " +
+                "JOIN MPA R on FILM.RATINGID = R.RATINGID " +
+                "WHERE YEAR(RELEASEDATE) = ? " +
+                "ORDER BY RATE DESC " +
+                "LIMIT ?";
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), year, count);
+    }
+
+    @Override
+    public Collection<Film> getSortedByGenreAndYear(int genreId, int year, int count){
+        String sqlQuery = "select * " +
+                "FROM FILM " +
+                "JOIN MPA R on FILM.RATINGID = R.RATINGID " +
+                "JOIN GENRELINE gl ON gl.FILMID = FILM.FILMID " +
+                "WHERE gl.GENREID = ? AND YEAR(RELEASEDATE) = ? " +
+                "GROUP BY FILM.FILMID " +
+                "ORDER BY RATE DESC " +
+                "LIMIT ?";
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), genreId, year, count);
     }
 
     @Override
@@ -261,8 +296,9 @@ public class DBFilmStorage implements FilmStorage {
         return jdbcTemplate.query(sqlGetCommon, (rs, rowNum) -> makeFilm(rs), userId, otherUserId);
     }
 
-      private Film makeFilm(ResultSet rs) throws SQLException {
+    private Film makeFilm(ResultSet rs) throws SQLException {
         int filmId = rs.getInt("FilmID");
+
         Film film = new Film(
                 filmId,
                 rs.getString("Name"),
@@ -337,4 +373,6 @@ public class DBFilmStorage implements FilmStorage {
                 "update FILM set RATE = ( select count(USERID) from LIKES where LIKES.FILMID = FILM.FILMID );";
         jdbcTemplate.update(sqlUpdateAllRates);
     }
+
+
 }
