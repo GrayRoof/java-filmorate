@@ -236,6 +236,11 @@ public class FilmService {
 
     }
 
+    protected void addExtraFilmData(Collection<Film> films) {
+        genreStorage.load(films);
+        directorStorage.load(films);
+    }
+
     private int getRequestedNumber(String reqNum) {
         int result = 0;
         if (!reqNum.toLowerCase().equals("all")) {
@@ -246,9 +251,5 @@ public class FilmService {
             }
         }
         return result;
-    }
-    protected void addExtraFilmData(Collection<Film> films) {
-        genreStorage.load(films);
-        directorStorage.load(films);
     }
 }
