@@ -1,115 +1,223 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.*;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_PREPARE_DB;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class DBFilmStorageTest {
 
-    private final DBFilmStorage filmStorage;
+    private final JdbcTemplate jdbcTemplate;
+    private final FilmStorage filmStorage;
+    private final UserStorageTestHelper userStorageTestHelper;
+    private final DirectorStorageTestHelper directorStorageTestHelper;
+    private final ReviewStorageTestHelper reviewStorageTestHelper;
+    private final FilmStorageTestHelper filmStorageTestHelper;
+
+    @Autowired
+    public DBFilmStorageTest(
+            JdbcTemplate jdbcTemplate,
+            UserStorage userStorage,
+            DirectorStorage directorStorage,
+            ReviewStorage reviewStorage,
+            DBFilmStorage filmStorage
+    ) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.filmStorage = filmStorage;
+
+        this.userStorageTestHelper = new UserStorageTestHelper(userStorage);
+        this.directorStorageTestHelper = new DirectorStorageTestHelper(directorStorage);
+        this.reviewStorageTestHelper = new ReviewStorageTestHelper(reviewStorage);
+        this.filmStorageTestHelper = new FilmStorageTestHelper(filmStorage);
+    }
+
+    @BeforeEach
+    void setUp() {
+        jdbcTemplate.update(SQL_PREPARE_DB);
+    }
 
     @Test
     public void testGetFilmById() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
 
-        Film createFilm = new Film();
-        createFilm.setMpa(new Mpa(1,"mpa", "desc"));
-        createFilm.setName("new film");
-        createFilm.setDescription("desc");
-        createFilm.setReleaseDate(LocalDate.now().minusYears(10));
-        createFilm.setDuration(60);
-        createFilm.setRate(5);
-        filmStorage.addFilm(createFilm);
+        Film dbFilm = filmStorage.get(filmId);
 
-        Film dbFilm = filmStorage.getFilm(1);
-        assertThat(dbFilm).hasFieldOrPropertyWithValue("id", 1);
+        assertThat(dbFilm).hasFieldOrPropertyWithValue("id", filmId);
     }
 
     @Test
     void getAllFilms() {
-        Film first = new Film(0,
-                "first",
-                "first description",
-                LocalDate.now().minusYears(8),
-                90L,
-                3,
-                new Mpa(1,"o","o"),
-                new ArrayList<>(),
-                new ArrayList<>());
-        Film second = new Film(0,
-                "second",
-                "second description",
-                LocalDate.now().minusYears(15),
-                100L,
-                2,
-                new Mpa(3,"o","o"),
-                new ArrayList<>(),
-                new ArrayList<>());
-        filmStorage.addFilm(first);
-        filmStorage.addFilm(second);
+        filmStorageTestHelper.getNewFilmId();
+        filmStorageTestHelper.getNewFilmId();
 
-        Collection<Film> dbFilms = filmStorage.getAllFilms();
+        Collection<Film> dbFilms = filmStorage.getAll();
+
         assertEquals(2, dbFilms.size());
     }
 
     @Test
     void updateFilm() {
-        Film first = new Film(0,
-                "first",
-                "first description",
-                LocalDate.now().minusYears(8),
-                90L,
-                3,
-                new Mpa(1,"o","o"),
-                new ArrayList<>(),
-                new ArrayList<>());
-        Film added = filmStorage.addFilm(first);
-        added.setName("update");
-        filmStorage.updateFilm(added);
-        Film dbFilm = filmStorage.getFilm(added.getId());
+        Film film = filmStorageTestHelper.addFilm(1, List.of(1),List.of());
+
+        film.setName("update");
+        filmStorage.update(film);
+
+        Film dbFilm = filmStorage.get(film.getId());
         assertThat(dbFilm).hasFieldOrPropertyWithValue("name", "update");
     }
 
     @Test
     void deleteFilm() {
-        Film first = new Film(0,
-                "first",
-                "first description",
-                LocalDate.now().minusYears(8),
-                90L,
-                3,
-                new Mpa(1,"o","o"),
-                new ArrayList<>(),
-                new ArrayList<>());
-        Film second = new Film(0,
-                "second",
-                "second description",
-                LocalDate.now().minusYears(15),
-                100L,
-                2,
-                new Mpa(3,"o","o"),
-                new ArrayList<>(),
-                new ArrayList<>());
-        Film addedFirst = filmStorage.addFilm(first);
-        Film addedSecond = filmStorage.addFilm(second);
+        final int amelieId = filmStorageTestHelper.getNewFilmId();
+        final int batmanId = filmStorageTestHelper.getNewFilmId();
+        assertTrue(filmStorage.containsFilm(amelieId));
+        assertTrue(filmStorage.containsFilm(batmanId));
 
-        Collection<Film> beforeDelete = filmStorage.getAllFilms();
-        filmStorage.deleteFilm(addedFirst);
-        Collection<Film> afterDelete = filmStorage.getAllFilms();
-        assertEquals(beforeDelete.size() - 1, afterDelete.size());
+        filmStorage.delete(amelieId);
+
+        assertFalse(filmStorage.containsFilm(amelieId));
+        assertTrue(filmStorage.containsFilm(batmanId));
+    }
+
+    @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
+    void deleteFilmDeletesLikes() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+
+        final int annId = userStorageTestHelper.getNewUserId();
+        final int bobId = userStorageTestHelper.getNewUserId();
+        final int camId = userStorageTestHelper.getNewUserId();
+        filmStorage.addLike(filmId, annId);
+        filmStorage.addLike(filmId, bobId);
+        filmStorage.addLike(filmId, camId);
+
+        Supplier<Integer> filmLikesCount =
+                () -> jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM likes WHERE filmid=?;",
+                        Integer.class,
+                        filmId
+                );
+        assertEquals(3, filmLikesCount.get());
+
+        filmStorage.delete(filmId);
+
+        assertEquals(0, filmLikesCount.get());
+    }
+
+    @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
+    void deleteFilmDeletesFilmGenres() {
+        final int filmId = filmStorageTestHelper.addFilm(1, List.of(1, 2, 3),List.of()).getId();
+
+        Supplier<Integer> filmGenresCount =
+                () -> jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM genreline WHERE filmid=?;",
+                        Integer.class,
+                        filmId
+                );
+        assertEquals(3, filmGenresCount.get());
+
+        filmStorage.delete(filmId);
+
+        assertEquals(0, filmGenresCount.get());
+    }
+
+    @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
+    void deleteFilmDeletesFilmDirectors() {
+        final int allenId = directorStorageTestHelper.getNewDirectorId();
+        final int brassId = directorStorageTestHelper.getNewDirectorId();
+        final int cohenId = directorStorageTestHelper.getNewDirectorId();
+
+        final int filmId = filmStorageTestHelper.addFilm(
+                1,
+                List.of(),
+                List.of(allenId, brassId, cohenId)
+        ).getId();
+
+        Supplier<Integer> filmDirectorsCount =
+                () -> jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM directorline WHERE filmid=?;",
+                        Integer.class,
+                        filmId
+                );
+        assertEquals(3, filmDirectorsCount.get());
+
+        filmStorage.delete(filmId);
+
+        assertEquals(0, filmDirectorsCount.get());
+    }
+
+    @Test
+    @Tag(DBTestTags.DB_LOW_LEVEL)
+    void deleteFilmDeletesReviews() {
+        final int filmId = filmStorageTestHelper.getNewFilmId();
+
+        final int annId = userStorageTestHelper.getNewUserId();
+        final int bobId = userStorageTestHelper.getNewUserId();
+        final int camId = userStorageTestHelper.getNewUserId();
+
+        reviewStorageTestHelper.addReview(filmId, annId, true);
+        reviewStorageTestHelper.addReview(filmId, bobId, true);
+        reviewStorageTestHelper.addReview(filmId, camId, true);
+
+        Supplier<Integer> filmReviewsCount =
+                () -> jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM reviews WHERE filmid=?;",
+                        Integer.class,
+                        filmId
+                );
+        assertEquals(3, filmReviewsCount.get());
+
+        filmStorage.delete(filmId);
+
+        assertEquals(0, filmReviewsCount.get());
+    }
+
+    @Test
+    void getCommonFilms() {
+        final int annId = userStorageTestHelper.getNewUserId();
+        final int bobId = userStorageTestHelper.getNewUserId();
+        final int camId = userStorageTestHelper.getNewUserId();
+
+        final int amelieId = filmStorageTestHelper.getNewFilmId();
+        final int batmanId = filmStorageTestHelper.getNewFilmId();
+        final int carrieId = filmStorageTestHelper.getNewFilmId();
+        final int djangoId = filmStorageTestHelper.getNewFilmId();
+
+        filmStorage.addLike(amelieId, annId);
+
+        //common
+        filmStorage.addLike(batmanId, annId);
+        filmStorage.addLike(batmanId, bobId);
+
+        //common, top-rated
+        filmStorage.addLike(carrieId, annId);
+        filmStorage.addLike(carrieId, bobId);
+        filmStorage.addLike(carrieId, camId);
+
+        filmStorage.addLike(djangoId, bobId);
+
+        List<Film> result = new ArrayList<>(filmStorage.getCommon(annId, bobId));
+
+        assertEquals(2, result.size());
+        assertEquals(carrieId, result.get(0).getId());
+        assertEquals(batmanId, result.get(1).getId());
     }
 }

@@ -1,26 +1,27 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.dao.DBMpaStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.util.Collection;
 
 @Service
 public class MpaService {
-    private final DBMpaStorage dbMpaStorage;
+    private final MpaStorage mpaStorage;
 
-    public MpaService(DBMpaStorage dbMpaStorage) {
-        this.dbMpaStorage = dbMpaStorage;
+    public MpaService(@Qualifier(UsedStorageConsts.QUALIFIER) MpaStorage mpaStorage) {
+        this.mpaStorage = mpaStorage;
     }
 
-    public Collection<Mpa> getAllMpa() {
-       return dbMpaStorage.getAllMpa();
+    public Collection<Mpa> getAll() {
+        return mpaStorage.getAll();
     }
 
-    public Mpa getMpa(String supposedId) {
+    public Mpa get(String supposedId) {
         int id = intFromString(supposedId);
-        return dbMpaStorage.getMpaById(id);
+        return mpaStorage.getById(id);
     }
 
     private Integer intFromString(final String supposedInt) {

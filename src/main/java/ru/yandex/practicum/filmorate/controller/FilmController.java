@@ -5,8 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.SearchService;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Set;
 
 @RestController
 @Slf4j
@@ -15,28 +17,33 @@ public class FilmController {
 
 
     private final FilmService filmService;
+    private final SearchService searchService;
 
     @Autowired(required = false)
-    public FilmController(FilmService filmService) {
+    public FilmController(FilmService filmService, SearchService searchService) {
         this.filmService = filmService;
+        this.searchService = searchService;
     }
 
     @GetMapping
     public Collection<Film> findAll() {
         log.info("Получен запрос GET к эндпоинту: /films");
-        return filmService.getFilms();
+        return filmService.getAll();
     }
 
     @GetMapping("/{id}")
     public Film findFilm(@PathVariable String id) {
         log.info("Получен запрос GET к эндпоинту: /films/{}", id);
-        return filmService.getFilm(id);
+        return filmService.get(id);
     }
 
-    @GetMapping({"/popular?count={count}", "/popular"})
-    public Collection<Film> findMostPopular(@RequestParam(defaultValue = "10") String count) {
+    @GetMapping("/popular")
+    public Collection<Film> findMostPopular(
+            @RequestParam(defaultValue = "10", required = false) String count,
+            @RequestParam(defaultValue = "all", required = false) String year,
+            @RequestParam(defaultValue = "all", required = false) String genreId) {
         log.info("Получен запрос GET к эндпоинту: /films/popular?count={}", count);
-        return filmService.getMostPopularFilms(count);
+        return filmService.getMostPopular(count, genreId, year);
     }
 
     @PostMapping
@@ -55,6 +62,14 @@ public class FilmController {
         return validFilm;
     }
 
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable String id) {
+        log.info("Получен запрос DELETE к эндпоинту: films/{}", id);
+        filmService.delete(id);
+        log.info("Удален объект {} с идентификатором {}",
+                Film.class.getSimpleName(), id);
+    }
+
     @PutMapping("/{id}/like/{userId}")
     public void putLike(@PathVariable String id, @PathVariable String userId) {
         log.info("Получен запрос PUT к эндпоинту: /films/{}/like/{}", id, userId);
@@ -70,5 +85,26 @@ public class FilmController {
         log.info("Обновлен объект {} с идентификатором {}, удален лайк от пользователя {}",
                 Film.class.getSimpleName(), id, userId);
 
+    }
+
+    @GetMapping("/director/{id}")
+    public Collection<Film> getSortedFilmWithDirector(@PathVariable Integer id, @RequestParam String sortBy) {
+        log.info("Получен запрос GET к эндпоинту: /films/director/" + id + "?sortBy=" + sortBy);
+        return filmService.getSortedFilmWithDirector(id, sortBy);
+    }
+
+    @GetMapping("/common")
+    public Collection<Film> getCommon(
+            @RequestParam(name = "userId") String userId,
+            @RequestParam(name = "friendId") String friendId
+    ) {
+        log.info("Получен запрос GET к эндпоинту: /films/common, userId={}, friendId={}", userId, friendId);
+        return filmService.getCommon(userId, friendId);
+    }
+
+    @GetMapping({"/search"})
+    public Collection<Film> filmSearch(@RequestParam String query, @RequestParam Set<String> by) {
+        log.info("Получен запрос GET к эндпоинту: /films/search?query={}&by={}", query, String.join(",", by));
+        return searchService.filmSearch(query, by);
     }
 }

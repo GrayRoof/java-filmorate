@@ -25,85 +25,94 @@ public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(Validator validator,@Qualifier("DBUserStorage") UserStorage userStorage) {
+    public UserService(
+            Validator validator,
+            @Qualifier(UsedStorageConsts.QUALIFIER) UserStorage userStorage
+    ) {
         this.validator = validator;
         this.userStorage = userStorage;
     }
 
     /**
      * Возвращает коллекцию пользователей
-     * */
-    public Collection<User> getAllUsers() {
-        return userStorage.getAllUsers();
+     */
+    public Collection<User> getAll() {
+        return userStorage.getAll();
     }
 
     /**
      * Добавляет пользователя в коллекцию
      * Возвращает добавленного пользователя
-     * @exception UserValidationException в случае, если пользователь содержит недопустимое содержание полей
-     * */
+     *
+     * @throws UserValidationException в случае, если пользователь содержит недопустимое содержание полей
+     */
     public User add(final User user) {
         validate(user);
-        return userStorage.addUser(user);
+        return userStorage.add(user);
     }
 
     /**
      * Обновляет пользователя в коллекции
      * Возвращает обновленного пользователя
-     * @exception UserValidationException в случае, если пользователь содержит недопустимое содержание полей
-     * */
+     *
+     * @throws UserValidationException в случае, если пользователь содержит недопустимое содержание полей
+     */
     public User update(final User user) {
         validate(user);
-        return userStorage.updateUser(user);
+        return userStorage.update(user);
     }
 
     /**
      * Добавляет пользователя в друзья другому пользователю
-     * @param supposedUserId - идентификатор пользователя
+     *
+     * @param supposedUserId   - идентификатор пользователя
      * @param supposedFriendId - идентификатор друга
-     * */
+     */
     public void addFriend(final String supposedUserId, final String supposedFriendId) {
-        User user = getStoredUser(supposedUserId);
-        User friend = getStoredUser(supposedFriendId);
-        userStorage.addFriend(user.getId(), friend.getId());
+        int storedUserId = getStoredUserId(supposedUserId);
+        int storedFriendId = getStoredUserId(supposedFriendId);
+        userStorage.addFriend(storedUserId, storedFriendId);
     }
 
     /**
      * Удаляет пользователя из друзей другого пользователя
-     * @param supposedUserId - идентификатор пользователя
+     *
+     * @param supposedUserId   - идентификатор пользователя
      * @param supposedFriendId - идентификатор друга
-     * */
-    public void deleteFriend(final String supposedUserId, final  String supposedFriendId) {
-        User user = getStoredUser(supposedUserId);
-        User friend = getStoredUser(supposedFriendId);
-        userStorage.deleteFriend(user.getId(), friend.getId());
+     */
+    public void deleteFriend(final String supposedUserId, final String supposedFriendId) {
+        int storedUserId = getStoredUserId(supposedUserId);
+        int storedFriendId = getStoredUserId(supposedFriendId);
+        userStorage.deleteFriend(storedUserId, storedFriendId);
     }
 
     /**
      * Возвращает коллекцию пользователей, которые являются друзьями для заданного пользователя
+     *
      * @param supposedUserId - идентификатор пользователя
-     * */
+     */
     public Collection<User> getFriends(final String supposedUserId) {
         User user = getStoredUser(supposedUserId);
         Collection<User> friends = new HashSet<>();
         for (Integer id : user.getFriends()) {
-            friends.add(userStorage.getUser(id));
+            friends.add(userStorage.get(id));
         }
         return friends;
     }
 
     /**
      * Возвращает коллекцию пользователей, которые являются общими друзьями двух заданных пользователей
-     * @param supposedUserId - идентификатор пользователя
+     *
+     * @param supposedUserId  - идентификатор пользователя
      * @param supposedOtherId - идентификатор другого пользователя
-     * */
+     */
     public Collection<User> getCommonFriends(final String supposedUserId, final String supposedOtherId) {
         User user = getStoredUser(supposedUserId);
         User otherUser = getStoredUser(supposedOtherId);
         Collection<User> commonFriends = new HashSet<>();
         for (Integer id : user.getFriends()) {
             if (otherUser.getFriends().contains(id)) {
-                commonFriends.add(userStorage.getUser(id));
+                commonFriends.add(userStorage.get(id));
             }
         }
         return commonFriends;
@@ -111,17 +120,48 @@ public class UserService {
 
     /**
      * Возвращает пользователя по идентификатора
+     *
      * @param supposedId - идентификатор пользователя
-     * */
-    public User getUser(final String supposedId) {
+     */
+    public User get(final String supposedId) {
         return getStoredUser(supposedId);
     }
 
+    /**
+     * Удаляет пользователя по идентификатору
+     *
+     * @param supposedId - идентификатор фильма
+     */
+    public void delete(String supposedId) {
+        int storedUserId = getStoredUserId(supposedId);
+        userStorage.delete(storedUserId);
+    }
+
+    /**
+     * Возвращает идентификатор существующего пользователя по строковому идентификатору
+     *
+     * @param supposedId - идентификатор пользователя
+     */
+    public int getStoredUserId(final String supposedId) {
+        final int userId = getIntUserId(supposedId);
+
+        if (!userStorage.contains(userId)) {
+            onUserNotFound(userId);
+        }
+        return userId;
+    }
+
+    public void requireUser(int userId) {
+        if (!userStorage.contains(userId)) {
+            onUserNotFound(userId);
+        }
+    }
+
     private void validate(final User user) {
-        if(user.getName() == null) {
+        if (user.getName() == null) {
             user.setName(user.getLogin());
             log.info("UserService: Поле name не задано. Установлено значение {} из поля login", user.getLogin());
-        }else if (user.getName().isEmpty() || user.getName().isBlank()) {
+        } else if (user.getName().isEmpty() || user.getName().isBlank()) {
             user.setName(user.getLogin());
             log.info("UserService: Поле name не содержит буквенных символов. " +
                     "Установлено значение {} из поля login", user.getLogin());
@@ -147,16 +187,25 @@ public class UserService {
         }
     }
 
-    private User getStoredUser(final String supposedId) {
-        final int userId = idFromString(supposedId);
-        if (userId == Integer.MIN_VALUE) {
-            throw new WrongIdException("Не удалось распознать идентификатор пользователя: " +
-                    "значение " + supposedId);
+    private int getIntUserId(final String supposedId) {
+        int id = idFromString(supposedId);
+        if (id == Integer.MIN_VALUE) {
+            throw new WrongIdException("Не удалось распознать идентификатор пользователя: значение " + supposedId);
         }
-        User user = userStorage.getUser(userId);
+        return id;
+    }
+
+    private void onUserNotFound(int userId) {
+        throw new NotFoundException("Пользователь с идентификатором " +
+                userId + " не зарегистрирован!");
+    }
+
+    protected User getStoredUser(final String supposedId) {
+        final int userId = getIntUserId(supposedId);
+
+        User user = userStorage.get(userId);
         if (user == null) {
-            throw new NotFoundException("Пользователь с идентификатором " +
-                    userId + " не зарегистрирован!");
+            onUserNotFound(userId);
         }
         return user;
     }

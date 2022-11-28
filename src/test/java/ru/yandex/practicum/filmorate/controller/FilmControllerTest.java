@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -36,7 +35,7 @@ class FilmControllerTest {
         Film film = new Film();
         film.setName("Correct Name");
         film.setDescription("Correct description");
-        film.setReleaseDate(LocalDate.of(1995,5,26));
+        film.setReleaseDate(LocalDate.of(1995, 5, 26));
         film.setDuration(100L);
 
         Mockito.when(filmController.findAll()).thenReturn(Collections.singletonList(film));
@@ -50,12 +49,12 @@ class FilmControllerTest {
         Film film = new Film();
         film.setName("Correct Name");
         film.setDescription("Correct description");
-        film.setReleaseDate(LocalDate.of(1995,5,26));
+        film.setReleaseDate(LocalDate.of(1995, 5, 26));
         film.setDuration(100L);
         Mockito.when(filmController.create(Mockito.any())).thenReturn(film);
         mockMvc.perform(post("/films")
-                        .content(objectMapper.writeValueAsString(film))
-                        .contentType(MediaType.APPLICATION_JSON))
+                .content(objectMapper.writeValueAsString(film))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(film)));
     }

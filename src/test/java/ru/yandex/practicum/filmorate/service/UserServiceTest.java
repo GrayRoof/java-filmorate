@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
@@ -12,8 +14,8 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_PREPARE_DB;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -21,6 +23,13 @@ class UserServiceTest {
 
     @Autowired
     UserService service;
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    void setUp() {
+        jdbcTemplate.update(SQL_PREPARE_DB);
+    }
 
     @Test
     void shouldAddUserWhenValidUserData() {
@@ -32,7 +41,7 @@ class UserServiceTest {
                 new ArrayList<>());
         User addedUser = service.add(user);
         assertNotEquals(0, addedUser.getId());
-        assertTrue(service.getAllUsers().contains(addedUser));
+        assertTrue(service.getAll().contains(addedUser));
     }
 
     @Test
@@ -46,7 +55,7 @@ class UserServiceTest {
         User addedUser = service.add(user);
         assertNotEquals(0, addedUser.getId());
         assertEquals(addedUser.getLogin(), addedUser.getName());
-        assertTrue(service.getAllUsers().contains(addedUser));
+        assertTrue(service.getAll().contains(addedUser));
     }
 
     @Test
