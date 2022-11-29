@@ -291,7 +291,8 @@ public class DBFilmStorage implements FilmStorage {
     public BitSet getLikesOfUserList(List<Integer> usersId) {
         BitSet likes = new BitSet();
         String sql = "select distinct FILMID from LIKES where USERID in (" +
-                usersId.stream().map(String::valueOf).collect(Collectors.joining(",")) + ")";
+                usersId.stream().map(String::valueOf).collect(Collectors.joining(",")) + ") " +
+                "and MARK > 5";
         SqlRowSet existLikes = jdbcTemplate.queryForRowSet(sql);
         while (existLikes.next()) {
             likes.set(existLikes.getInt("filmId"));
