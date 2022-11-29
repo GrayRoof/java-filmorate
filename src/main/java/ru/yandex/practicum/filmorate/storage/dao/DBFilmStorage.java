@@ -170,6 +170,25 @@ public class DBFilmStorage implements FilmStorage {
         return rs.next();
     }
 
+    public boolean addLike(int filmId, int userId, int mark) {
+        boolean result = false;
+        String sql = "select * from LIKES where USERID = ? and FILMID = ?";
+        SqlRowSet existLike = jdbcTemplate.queryForRowSet(sql, userId, filmId);
+        if (!existLike.next()) {
+            String setLike = "insert into LIKES (USERID, FILMID, MARK) values (?, ?, ?) ";
+            result = jdbcTemplate.update(setLike, userId, filmId, mark) > 0;
+        } else {
+            String updateMark = "update LIKES set MARK = ? where USERID = ? and FILMID = ?";
+            result = jdbcTemplate.update(updateMark, mark, userId, filmId) > 0;
+        }
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, userId, filmId);
+        updateLikeRating(filmId);
+        if (result) {
+            eventPublisher.publishEvent(new OnFeedEvent(userId, filmId, AllowedFeedEvents.ADD_LIKE));
+        }
+        return rs.next();
+    }
+
     @Override
     public boolean deleteLike(int filmId, int userId) {
         String deleteLike = "delete from LIKES where FILMID = ? and USERID = ?";
@@ -365,7 +384,8 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     private boolean updateLikeRating(int filmId) {
-        String sqlUpdateRate = "update FILM set RATE = ( select count(USERID) from LIKES where FILMID = ?) where FILMID = ?";
+        String sqlUpdateRate = "update FILM " +
+                "set RATE = ( select AVG(MARK) from LIKES where FILMID = ?) where FILMID = ?";
         int response = jdbcTemplate.update(sqlUpdateRate, filmId, filmId);
         log.info(String.valueOf(response));
         return true;
