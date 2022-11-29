@@ -29,7 +29,7 @@ public class Film {
     private LocalDate releaseDate;
     @Positive(message = "Продолжительность фильма не может быть отрицательной. ")
     private long duration;
-    private int rate;
+    private double rate;
     @NotNull
     private Mpa mpa;
     private LinkedHashSet<Genre> genres = new LinkedHashSet<>();

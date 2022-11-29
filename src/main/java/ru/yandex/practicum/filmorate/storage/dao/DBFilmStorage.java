@@ -92,7 +92,7 @@ public class DBFilmStorage implements FilmStorage {
             ps.setString(2, film.getDescription());
             ps.setDate(3, Date.valueOf(film.getReleaseDate()));
             ps.setLong(4, film.getDuration());
-            ps.setInt(5, film.getRate());
+            ps.setDouble(5, film.getRate());
             ps.setInt(6, Math.toIntExact(film.getMpa().getId()));
             return ps;
         }, keyHolder);
@@ -163,6 +163,25 @@ public class DBFilmStorage implements FilmStorage {
         }
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, userId, filmId);
         log.info(String.valueOf(rs.next()));
+        updateLikeRating(filmId);
+        if (result) {
+            eventPublisher.publishEvent(new OnFeedEvent(userId, filmId, AllowedFeedEvents.ADD_LIKE));
+        }
+        return rs.next();
+    }
+
+    public boolean addLike(int filmId, int userId, int mark) {
+        boolean result = false;
+        String sql = "select * from LIKES where USERID = ? and FILMID = ?";
+        SqlRowSet existLike = jdbcTemplate.queryForRowSet(sql, userId, filmId);
+        if (!existLike.next()) {
+            String setLike = "insert into LIKES (USERID, FILMID, MARK) values (?, ?, ?) ";
+            result = jdbcTemplate.update(setLike, userId, filmId, mark) > 0;
+        } else {
+            String updateMark = "update LIKES set MARK = ? where USERID = ? and FILMID = ?";
+            result = jdbcTemplate.update(updateMark, mark, userId, filmId) > 0;
+        }
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, userId, filmId);
         updateLikeRating(filmId);
         if (result) {
             eventPublisher.publishEvent(new OnFeedEvent(userId, filmId, AllowedFeedEvents.ADD_LIKE));
@@ -272,7 +291,8 @@ public class DBFilmStorage implements FilmStorage {
     public BitSet getLikesOfUserList(List<Integer> usersId) {
         BitSet likes = new BitSet();
         String sql = "select distinct FILMID from LIKES where USERID in (" +
-                usersId.stream().map(String::valueOf).collect(Collectors.joining(",")) + ")";
+                usersId.stream().map(String::valueOf).collect(Collectors.joining(",")) + ") " +
+                "and MARK > 5";
         SqlRowSet existLikes = jdbcTemplate.queryForRowSet(sql);
         while (existLikes.next()) {
             likes.set(existLikes.getInt("filmId"));
@@ -365,7 +385,8 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     private boolean updateLikeRating(int filmId) {
-        String sqlUpdateRate = "update FILM set RATE = ( select count(USERID) from LIKES where FILMID = ?) where FILMID = ?";
+        String sqlUpdateRate = "update FILM " +
+                "set RATE = ( select AVG(MARK) from LIKES where FILMID = ?) where FILMID = ?";
         int response = jdbcTemplate.update(sqlUpdateRate, filmId, filmId);
         log.info(String.valueOf(response));
         return true;
