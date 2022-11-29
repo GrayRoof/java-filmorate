@@ -26,10 +26,28 @@ public class RecommendationService {
 
     /**
      * Возвращает коллекцию фильмов, рекомендованных заданному пользователю другими
-     * пользователем(пользователями) с наибольшим пересечением с ним по лайкам к фильмам
+     * пользователем(пользователями) с наибольшим пересечением с ним по оценкам к фильмам
      * @param supposedUserId - идентификатор пользователя
      * */
     public Collection<Film> getRecommendations(final String supposedUserId) {
+        int userId = userService.getStoredUserId(supposedUserId);
+
+        Map<Integer, Integer> scores = filmStorage.getScoresOfRelatedLikesByUserId(userId);
+        if (scores.isEmpty()) { return List.of(); }
+
+        List<Integer> similarUsers = getSimilarUsers(scores);
+        if (similarUsers.isEmpty()) { return List.of(); }
+
+        List<Integer> filmIds = filmStorage.getFilmIdsOfUserList(userId, similarUsers);
+        if (filmIds.isEmpty()) { return List.of(); }
+
+        Collection<Film> films = filmStorage.getByIds(filmIds);
+        if(!films.isEmpty()) filmService.addExtraFilmData(films);
+        return films;
+    }
+
+    //Предыдущий код
+    /*public Collection<Film> getRecommendations(final String supposedUserId) {
         int userId = userService.getStoredUserId(supposedUserId);
 
         Map<Integer, BitSet> likes = filmStorage.getRelatedLikesByUserId(userId);
@@ -47,6 +65,20 @@ public class RecommendationService {
                 likesOfUserList.stream().boxed().collect(Collectors.toList()));
         if(!films.isEmpty()) filmService.addExtraFilmData(films);
         return films;
+    }*/
+
+    private List<Integer> getSimilarUsers(Map<Integer, Integer> scores) {
+        List<Integer> similarUsers = new ArrayList<>();
+        int maximumScore = 0;
+        for (Integer key: scores.keySet()) {
+            int currentScore = scores.get(key);
+            if (currentScore >= maximumScore) {
+                if (currentScore > maximumScore) { similarUsers.clear(); }
+                similarUsers.add(key);
+                maximumScore = currentScore;
+            }
+        }
+        return similarUsers;
     }
 
     private List<Integer> getSimilarUsers(BitSet requestUserLikes, Map<Integer, BitSet> likes) {

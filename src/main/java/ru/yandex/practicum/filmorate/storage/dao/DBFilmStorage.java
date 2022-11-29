@@ -39,6 +39,8 @@ public class DBFilmStorage implements FilmStorage {
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
     private final ApplicationEventPublisher eventPublisher;
+    private static final int MARK_MAXIMUM = 10;
+    private static final int MARK_MINIMUM = 1;
 
     public DBFilmStorage(
             JdbcTemplate jdbcTemplate,
@@ -285,6 +287,34 @@ public class DBFilmStorage implements FilmStorage {
             likes.get(currentKey).set(existLikes.getInt("filmId"));
         }
         return likes;
+    }
+
+    @Override
+    public Map<Integer, Integer> getScoresOfRelatedLikesByUserId(int userId) {
+        Map<Integer, Integer> scores = new HashMap<>();
+        String sql = "select L2.USERID , sum(? - ? - abs(L2.MARK - L.MARK)) as SCORES from LIKES L " +
+                "inner join LIKES L2 on L.FILMID = L2.FILMID AND l2.USERID != ?" +
+                "where L.USERID = ? group by L2.USERID";
+        SqlRowSet existLikes = jdbcTemplate.queryForRowSet(sql, MARK_MAXIMUM, MARK_MINIMUM, userId, userId);
+        while (existLikes.next()) {
+            scores.putIfAbsent(existLikes.getInt("userId"), existLikes.getInt("scores"));
+        }
+        return scores;
+    }
+
+    @Override
+    public List<Integer> getFilmIdsOfUserList(int requestUserId, List<Integer> usersId) {
+        List<Integer> filmIds = new ArrayList<>();
+        String sql = "select distinct L.FILMID from LIKES L " +
+                "left outer join LIKES L2 ON L.FILMID = L2.FILMID AND L2.USERID = ? " +
+                "where L.USERID in (" +
+                usersId.stream().map(String::valueOf).collect(Collectors.joining(",")) + ") " +
+                "and L2.USERID is null and L.MARK > 5";
+        SqlRowSet existFilmIds = jdbcTemplate.queryForRowSet(sql, requestUserId);
+        while (existFilmIds.next()) {
+            filmIds.add(existFilmIds.getInt("filmId"));
+        }
+        return filmIds;
     }
 
     @Override
