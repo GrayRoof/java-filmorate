@@ -92,7 +92,7 @@ public class DBFilmStorage implements FilmStorage {
             ps.setString(2, film.getDescription());
             ps.setDate(3, Date.valueOf(film.getReleaseDate()));
             ps.setLong(4, film.getDuration());
-            ps.setInt(5, film.getRate());
+            ps.setDouble(5, film.getRate());
             ps.setInt(6, Math.toIntExact(film.getMpa().getId()));
             return ps;
         }, keyHolder);
