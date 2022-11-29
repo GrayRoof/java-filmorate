@@ -40,7 +40,7 @@ public class DBFilmStorage implements FilmStorage {
     private final DirectorStorage directorStorage;
     private final ApplicationEventPublisher eventPublisher;
     private static final int MARK_MAXIMUM = 10;
-    private static final int MARK_MINIMUM = 1;
+    private static final int MARK_MINIMUM = 0;
 
     public DBFilmStorage(
             JdbcTemplate jdbcTemplate,
@@ -351,8 +351,9 @@ public class DBFilmStorage implements FilmStorage {
                         "R.RATINGID, R.NAME, R.DESCRIPTION " +
                         "from FILM " +
                         "inner join MPA R on R.RATINGID = FILM.RATINGID " +
-                        "where FILMID in (select COMMONID from COMMON) " +
-                        "group by FILM.FILMID " +
+                        "inner join COMMON on FILMID = COMMONID " +
+                        //"where FILMID in (select COMMONID from COMMON) " +
+                        "group by FILM.FILMID, RATE " +
                         "order by RATE desc;";
         return jdbcTemplate.query(sqlGetCommon, (rs, rowNum) -> makeFilm(rs), userId, otherUserId);
     }

@@ -88,6 +88,16 @@ public class FilmService {
     }
 
     /**
+     * Добавляет оценку пользователя к фильму в коллекции
+     */
+    public void addMark(final String id, final String userId, final String supposedMark) {
+        int storedFilmId = getStoredFilmId(id);
+        int storedUserId = userService.getStoredUserId(userId);
+        int mark = intFromString(supposedMark);
+        filmStorage.addLike(storedFilmId, storedUserId, mark);
+    }
+
+    /**
      * Удаляет лайк пользователя к фильму в коллекции
      */
     public void deleteLike(final String id, final String userId) {
