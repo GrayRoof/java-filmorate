@@ -35,10 +35,16 @@ public class RecommendationService {
         Map<Integer, Integer> scores = filmStorage.getScoresOfRelatedLikesByUserId(userId);
         if (scores.isEmpty()) { return List.of(); }
 
-        List<Integer> similarUsers = getSimilarUsers(scores);
+        Map<Integer, List<Integer>> similarUsers = getSimilarUsers(scores);
         if (similarUsers.isEmpty()) { return List.of(); }
 
-        List<Integer> filmIds = filmStorage.getFilmIdsOfUserList(userId, similarUsers);
+        List<Integer> filmIds = new ArrayList<>();
+        Iterator<Map.Entry<Integer, List<Integer>>> itr = similarUsers.entrySet().iterator();
+        while(itr.hasNext()) {
+            Map.Entry<Integer, List<Integer>> entry = itr.next();
+            filmIds = filmStorage.getFilmIdsOfUserList(userId, entry.getValue());
+            if (!filmIds.isEmpty()) { break; }
+        }
         if (filmIds.isEmpty()) { return List.of(); }
 
         Collection<Film> films = filmStorage.getByIds(filmIds);
@@ -67,7 +73,18 @@ public class RecommendationService {
         return films;
     }*/
 
-    private List<Integer> getSimilarUsers(Map<Integer, Integer> scores) {
+    private Map<Integer, List<Integer>> getSimilarUsers(Map<Integer, Integer> scores) {
+        Map<Integer, List<Integer>> rankedUserLists = new TreeMap<>(Collections.reverseOrder());
+        for (Integer key: scores.keySet()) {
+            int value = scores.get(key);
+            rankedUserLists.putIfAbsent(value, new ArrayList<>());
+            rankedUserLists.get(value).add(key);
+        }
+        return rankedUserLists;
+    }
+
+    //код с оценками, но без анализа, имеются ли рекомендованные фильмы
+    /*private List<Integer> getSimilarUsers(Map<Integer, Integer> scores) {
         List<Integer> similarUsers = new ArrayList<>();
         int maximumScore = 0;
         for (Integer key: scores.keySet()) {
@@ -79,7 +96,7 @@ public class RecommendationService {
             }
         }
         return similarUsers;
-    }
+    }*/
 
     private List<Integer> getSimilarUsers(BitSet requestUserLikes, Map<Integer, BitSet> likes) {
         List<Integer> similarUsers = new ArrayList<>();

@@ -40,7 +40,7 @@ public class DBFilmStorage implements FilmStorage {
     private final DirectorStorage directorStorage;
     private final ApplicationEventPublisher eventPublisher;
     private static final int MARK_MAXIMUM = 10;
-    private static final int MARK_MINIMUM = 0;
+    private static final int MARK_MINIMUM = 1;
 
     public DBFilmStorage(
             JdbcTemplate jdbcTemplate,
