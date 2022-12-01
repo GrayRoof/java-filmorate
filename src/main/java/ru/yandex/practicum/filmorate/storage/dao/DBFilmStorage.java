@@ -257,7 +257,7 @@ public class DBFilmStorage implements FilmStorage {
                 sort = "f.RELEASEDATE";
                 break;
             case "likes":
-                sort = "count(DISTINCT L.USERID) DESC";
+                sort = "f.RATE";
                 break;
             default:
                 sort = "f.FILMID";
@@ -267,7 +267,6 @@ public class DBFilmStorage implements FilmStorage {
                 " FROM film as f" +
                 " INNER JOIN MPA R on R.RATINGID = f.RATINGID" +
                 " LEFT OUTER JOIN DIRECTORLINE D on f.FILMID = D.FILMID" +
-                " LEFT OUTER JOIN LIKES L on f.FILMID = L.FILMID" +
                 " WHERE DIRECTORID = ?" +
                 " group by f.FILMID" +
                 " ORDER BY " + sort;
