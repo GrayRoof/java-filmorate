@@ -39,6 +39,8 @@ public class DBFilmStorage implements FilmStorage {
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
     private final ApplicationEventPublisher eventPublisher;
+    private static final int MARK_MAXIMUM = 10;
+    private static final int MARK_MINIMUM = 1;
 
     public DBFilmStorage(
             JdbcTemplate jdbcTemplate,
@@ -92,7 +94,7 @@ public class DBFilmStorage implements FilmStorage {
             ps.setString(2, film.getDescription());
             ps.setDate(3, Date.valueOf(film.getReleaseDate()));
             ps.setLong(4, film.getDuration());
-            ps.setInt(5, film.getRate());
+            ps.setDouble(5, film.getRate());
             ps.setInt(6, Math.toIntExact(film.getMpa().getId()));
             return ps;
         }, keyHolder);
@@ -163,6 +165,25 @@ public class DBFilmStorage implements FilmStorage {
         }
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, userId, filmId);
         log.info(String.valueOf(rs.next()));
+        updateLikeRating(filmId);
+        if (result) {
+            eventPublisher.publishEvent(new OnFeedEvent(userId, filmId, AllowedFeedEvents.ADD_LIKE));
+        }
+        return rs.next();
+    }
+
+    public boolean addLike(int filmId, int userId, int mark) {
+        boolean result = false;
+        String sql = "select * from LIKES where USERID = ? and FILMID = ?";
+        SqlRowSet existLike = jdbcTemplate.queryForRowSet(sql, userId, filmId);
+        if (!existLike.next()) {
+            String setLike = "insert into LIKES (USERID, FILMID, MARK) values (?, ?, ?) ";
+            result = jdbcTemplate.update(setLike, userId, filmId, mark) > 0;
+        } else {
+            String updateMark = "update LIKES set MARK = ? where USERID = ? and FILMID = ?";
+            result = jdbcTemplate.update(updateMark, mark, userId, filmId) > 0;
+        }
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, userId, filmId);
         updateLikeRating(filmId);
         if (result) {
             eventPublisher.publishEvent(new OnFeedEvent(userId, filmId, AllowedFeedEvents.ADD_LIKE));
@@ -269,10 +290,39 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Map<Integer, Integer> getScoresOfRelatedLikesByUserId(int userId) {
+        Map<Integer, Integer> scores = new HashMap<>();
+        String sql = "select L2.USERID , sum(? - ? - abs(L2.MARK - L.MARK)) as SCORES from LIKES L " +
+                "inner join LIKES L2 on L.FILMID = L2.FILMID AND l2.USERID != ?" +
+                "where L.USERID = ? group by L2.USERID";
+        SqlRowSet existLikes = jdbcTemplate.queryForRowSet(sql, MARK_MAXIMUM, MARK_MINIMUM, userId, userId);
+        while (existLikes.next()) {
+            scores.putIfAbsent(existLikes.getInt("userId"), existLikes.getInt("scores"));
+        }
+        return scores;
+    }
+
+    @Override
+    public List<Integer> getFilmIdsOfUserList(int requestUserId, List<Integer> usersId) {
+        List<Integer> filmIds = new ArrayList<>();
+        String sql = "select distinct L.FILMID from LIKES L " +
+                "left outer join LIKES L2 ON L.FILMID = L2.FILMID AND L2.USERID = ? " +
+                "where L.USERID in (" +
+                usersId.stream().map(String::valueOf).collect(Collectors.joining(",")) + ") " +
+                "and L2.USERID is null and L.MARK > 5";
+        SqlRowSet existFilmIds = jdbcTemplate.queryForRowSet(sql, requestUserId);
+        while (existFilmIds.next()) {
+            filmIds.add(existFilmIds.getInt("filmId"));
+        }
+        return filmIds;
+    }
+
+    @Override
     public BitSet getLikesOfUserList(List<Integer> usersId) {
         BitSet likes = new BitSet();
         String sql = "select distinct FILMID from LIKES where USERID in (" +
-                usersId.stream().map(String::valueOf).collect(Collectors.joining(",")) + ")";
+                usersId.stream().map(String::valueOf).collect(Collectors.joining(",")) + ") " +
+                "and MARK > 5";
         SqlRowSet existLikes = jdbcTemplate.queryForRowSet(sql);
         while (existLikes.next()) {
             likes.set(existLikes.getInt("filmId"));
@@ -301,8 +351,9 @@ public class DBFilmStorage implements FilmStorage {
                         "R.RATINGID, R.NAME, R.DESCRIPTION " +
                         "from FILM " +
                         "inner join MPA R on R.RATINGID = FILM.RATINGID " +
-                        "where FILMID in (select COMMONID from COMMON) " +
-                        "group by FILM.FILMID " +
+                        "inner join COMMON on FILMID = COMMONID " +
+                        //"where FILMID in (select COMMONID from COMMON) " +
+                        "group by FILM.FILMID, RATE " +
                         "order by RATE desc;";
         return jdbcTemplate.query(sqlGetCommon, (rs, rowNum) -> makeFilm(rs), userId, otherUserId);
     }
@@ -365,7 +416,8 @@ public class DBFilmStorage implements FilmStorage {
     }
 
     private boolean updateLikeRating(int filmId) {
-        String sqlUpdateRate = "update FILM set RATE = ( select count(USERID) from LIKES where FILMID = ?) where FILMID = ?";
+        String sqlUpdateRate = "update FILM " +
+                "set RATE = ( select AVG(MARK) from LIKES where FILMID = ?) where FILMID = ?";
         int response = jdbcTemplate.update(sqlUpdateRate, filmId, filmId);
         log.info(String.valueOf(response));
         return true;

@@ -69,13 +69,22 @@ public class FilmController {
         log.info("Удален объект {} с идентификатором {}",
                 Film.class.getSimpleName(), id);
     }
-
+/*
     @PutMapping("/{id}/like/{userId}")
     public void putLike(@PathVariable String id, @PathVariable String userId) {
         log.info("Получен запрос PUT к эндпоинту: /films/{}/like/{}", id, userId);
         filmService.addLike(id, userId);
         log.info("Обновлен объект {} с идентификатором {}, добавлен лайк от пользователя {}",
                 Film.class.getSimpleName(), id, userId);
+    }
+*/
+    @PutMapping("/{id}/like/{userId}")
+    public void putMark(@PathVariable String id, @PathVariable String userId,
+                        @RequestParam(required = false) String mark) {
+        log.info("Получен запрос PUT к эндпоинту: /films/{}/like/{}?mark={}", id, userId, mark);
+        filmService.addMark(id, userId, mark);
+        log.info("Обновлен объект {} с идентификатором {}, добавлена оценка {} от пользователя {}",
+                Film.class.getSimpleName(), id, mark, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")

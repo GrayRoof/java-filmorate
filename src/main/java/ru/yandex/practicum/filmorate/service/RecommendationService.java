@@ -26,10 +26,34 @@ public class RecommendationService {
 
     /**
      * Возвращает коллекцию фильмов, рекомендованных заданному пользователю другими
-     * пользователем(пользователями) с наибольшим пересечением с ним по лайкам к фильмам
+     * пользователем(пользователями) с наибольшим пересечением с ним по оценкам к фильмам
      * @param supposedUserId - идентификатор пользователя
      * */
     public Collection<Film> getRecommendations(final String supposedUserId) {
+        int userId = userService.getStoredUserId(supposedUserId);
+
+        Map<Integer, Integer> scores = filmStorage.getScoresOfRelatedLikesByUserId(userId);
+        if (scores.isEmpty()) { return List.of(); }
+
+        Map<Integer, List<Integer>> similarUsers = getSimilarUsers(scores);
+        if (similarUsers.isEmpty()) { return List.of(); }
+
+        List<Integer> filmIds = new ArrayList<>();
+        Iterator<Map.Entry<Integer, List<Integer>>> itr = similarUsers.entrySet().iterator();
+        while(itr.hasNext()) {
+            Map.Entry<Integer, List<Integer>> entry = itr.next();
+            filmIds = filmStorage.getFilmIdsOfUserList(userId, entry.getValue());
+            if (!filmIds.isEmpty()) { break; }
+        }
+        if (filmIds.isEmpty()) { return List.of(); }
+
+        Collection<Film> films = filmStorage.getByIds(filmIds);
+        if(!films.isEmpty()) filmService.addExtraFilmData(films);
+        return films;
+    }
+
+    //Предыдущий код
+    /*public Collection<Film> getRecommendations(final String supposedUserId) {
         int userId = userService.getStoredUserId(supposedUserId);
 
         Map<Integer, BitSet> likes = filmStorage.getRelatedLikesByUserId(userId);
@@ -47,7 +71,32 @@ public class RecommendationService {
                 likesOfUserList.stream().boxed().collect(Collectors.toList()));
         if(!films.isEmpty()) filmService.addExtraFilmData(films);
         return films;
+    }*/
+
+    private Map<Integer, List<Integer>> getSimilarUsers(Map<Integer, Integer> scores) {
+        Map<Integer, List<Integer>> rankedUserLists = new TreeMap<>(Collections.reverseOrder());
+        for (Integer key: scores.keySet()) {
+            int value = scores.get(key);
+            rankedUserLists.putIfAbsent(value, new ArrayList<>());
+            rankedUserLists.get(value).add(key);
+        }
+        return rankedUserLists;
     }
+
+    //код с оценками, но без анализа, имеются ли рекомендованные фильмы
+    /*private List<Integer> getSimilarUsers(Map<Integer, Integer> scores) {
+        List<Integer> similarUsers = new ArrayList<>();
+        int maximumScore = 0;
+        for (Integer key: scores.keySet()) {
+            int currentScore = scores.get(key);
+            if (currentScore >= maximumScore) {
+                if (currentScore > maximumScore) { similarUsers.clear(); }
+                similarUsers.add(key);
+                maximumScore = currentScore;
+            }
+        }
+        return similarUsers;
+    }*/
 
     private List<Integer> getSimilarUsers(BitSet requestUserLikes, Map<Integer, BitSet> likes) {
         List<Integer> similarUsers = new ArrayList<>();

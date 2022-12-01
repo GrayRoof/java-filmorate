@@ -103,15 +103,17 @@ public class DBDirectorStorage implements DirectorStorage {
 
     @Override
     public void load(Collection<Film> films) {
-        String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
-        final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, identity()));
-        final String sqlQuery = "select * from DIRECTORS d, DIRECTORLINE dl " +
-                "where dl.DIRECTORID = d.DIRECTORID AND dl.FILMID IN (" + inSql + ")";
+        if (!films.isEmpty()) {
+            String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
+            final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, identity()));
+            final String sqlQuery = "select * from DIRECTORS d, DIRECTORLINE dl " +
+                    "where dl.DIRECTORID = d.DIRECTORID AND dl.FILMID IN (" + inSql + ")";
 
-        jdbcTemplate.query(sqlQuery, (rs) -> {
-            final Film film = filmById.get(rs.getInt("FILMID"));
-            film.getDirectors().add(makeDirector(rs));
-        }, films.stream().map(Film::getId).toArray());
+            jdbcTemplate.query(sqlQuery, (rs) -> {
+                final Film film = filmById.get(rs.getInt("FILMID"));
+                film.getDirectors().add(makeDirector(rs));
+            }, films.stream().map(Film::getId).toArray());
+        }
     }
 
     private Director makeDirector(ResultSet rs) throws SQLException {
