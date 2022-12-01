@@ -386,7 +386,7 @@ public class DBFilmStorage implements FilmStorage {
     @EventListener
     public void handleOnDeleteUser(OnDeleteUserEvent event) {
         String sqlUpdateAllRates =
-                "update FILM set RATE = ( select count(USERID) from LIKES where LIKES.FILMID = FILM.FILMID );";
+                "update FILM set RATE = ( select AVG(MARK) from LIKES where LIKES.FILMID = FILM.FILMID );";
         jdbcTemplate.update(sqlUpdateAllRates);
     }
 
@@ -398,7 +398,7 @@ public class DBFilmStorage implements FilmStorage {
                 rs.getString("Description"),
                 Objects.requireNonNull(rs.getDate("ReleaseDate")).toLocalDate(),
                 rs.getLong("Duration"),
-                rs.getInt("Rate"),
+                rs.getDouble("Rate"),
                 new Mpa(rs.getInt("MPA.RatingID"),
                         rs.getString("MPA.Name"),
                         rs.getString("MPA.Description")),
