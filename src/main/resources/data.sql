@@ -56,7 +56,7 @@ MERGE INTO OPERATIONS KEY (OPERATIONID)
            (2, 'ADD'),
            (3, 'UPDATE');
 
-/*INSERT INTO users (email, login, name, birthday)
+/* INSERT INTO users (email, login, name, birthday)
 VALUES ('1@1.com', 'user1', 'name1', '2001-01-01'),
        ('2@2.com', 'user2', 'name2', '2002-02-02'),
        ('3@3.com', 'user3', 'name3', '2003-03-03'),
@@ -110,8 +110,8 @@ VALUES (1, 6, 6),
        (7, 4, 5),
        (7, 5, 1);
 
-       /*(2, 2, 3),
-       (6, 3, 8);*/
+       (2, 2, 3),
+       (6, 3, 8);
 
 
 INSERT INTO directorline (filmId, directorId)
@@ -121,4 +121,4 @@ VALUES (1, 1),
        (3, 4),
        (4, 2),
        (4, 3),
-       (5, 2);*/
+       (5, 2); */
