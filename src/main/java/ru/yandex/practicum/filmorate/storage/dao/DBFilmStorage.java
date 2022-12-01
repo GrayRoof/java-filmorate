@@ -257,7 +257,7 @@ public class DBFilmStorage implements FilmStorage {
                 sort = "f.RELEASEDATE";
                 break;
             case "likes":
-                sort = "f.RATE";
+                sort = "f.RATE desc";
                 break;
             default:
                 sort = "f.FILMID";
