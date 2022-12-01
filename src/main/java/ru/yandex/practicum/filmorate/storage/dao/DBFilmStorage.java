@@ -257,7 +257,7 @@ public class DBFilmStorage implements FilmStorage {
                 sort = "f.RELEASEDATE";
                 break;
             case "likes":
-                sort = "count(DISTINCT L.USERID) DESC";
+                sort = "f.RATE desc";
                 break;
             default:
                 sort = "f.FILMID";
@@ -267,7 +267,6 @@ public class DBFilmStorage implements FilmStorage {
                 " FROM film as f" +
                 " INNER JOIN MPA R on R.RATINGID = f.RATINGID" +
                 " LEFT OUTER JOIN DIRECTORLINE D on f.FILMID = D.FILMID" +
-                " LEFT OUTER JOIN LIKES L on f.FILMID = L.FILMID" +
                 " WHERE DIRECTORID = ?" +
                 " group by f.FILMID" +
                 " ORDER BY " + sort;
@@ -387,7 +386,7 @@ public class DBFilmStorage implements FilmStorage {
     @EventListener
     public void handleOnDeleteUser(OnDeleteUserEvent event) {
         String sqlUpdateAllRates =
-                "update FILM set RATE = ( select count(USERID) from LIKES where LIKES.FILMID = FILM.FILMID );";
+                "update FILM set RATE = ( select AVG(MARK) from LIKES where LIKES.FILMID = FILM.FILMID );";
         jdbcTemplate.update(sqlUpdateAllRates);
     }
 
@@ -399,7 +398,7 @@ public class DBFilmStorage implements FilmStorage {
                 rs.getString("Description"),
                 Objects.requireNonNull(rs.getDate("ReleaseDate")).toLocalDate(),
                 rs.getLong("Duration"),
-                rs.getInt("Rate"),
+                rs.getDouble("Rate"),
                 new Mpa(rs.getInt("MPA.RatingID"),
                         rs.getString("MPA.Name"),
                         rs.getString("MPA.Description")),

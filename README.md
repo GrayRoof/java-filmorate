@@ -32,5 +32,6 @@ ER-диаграмма базы данных для приложения:
 * add-reviews
 * add-remove-endpoint
 * add-director
+* add-marks
 
 
