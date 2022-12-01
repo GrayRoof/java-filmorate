@@ -63,15 +63,17 @@ public class DBGenreStorage implements GenreStorage {
 
     @Override
     public void load(Collection<Film> films) {
-        String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
-        final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, identity()));
-        final String sqlQuery = "select * from GENRE g, GENRELINE gl " +
-                "where gl.GENREID = g.GENREID AND gl.FILMID IN (" + inSql + ")";
+        if (films.size() > 0) {
+            String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
+            final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, identity()));
+            final String sqlQuery = "select * from GENRE g, GENRELINE gl " +
+                    "where gl.GENREID = g.GENREID AND gl.FILMID IN (" + inSql + ")";
 
-        jdbcTemplate.query(sqlQuery, (rs) -> {
-            final Film film = filmById.get(rs.getInt("FILMID"));
-            film.getGenres().add(makeGenre(rs, 0));
-        }, films.stream().map(Film::getId).toArray());
+            jdbcTemplate.query(sqlQuery, (rs) -> {
+                final Film film = filmById.get(rs.getInt("FILMID"));
+                film.getGenres().add(makeGenre(rs, 0));
+            }, films.stream().map(Film::getId).toArray());
+        }
     }
 
     private Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {

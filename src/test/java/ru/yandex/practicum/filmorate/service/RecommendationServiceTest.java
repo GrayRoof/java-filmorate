@@ -11,8 +11,10 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.Collection;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_FILL_DB;
 import static ru.yandex.practicum.filmorate.storage.dao.DBTestQueryConstants.SQL_PREPARE_DB;
 
 @SpringBootTest
@@ -127,5 +129,51 @@ public class RecommendationServiceTest {
         assertEquals(film.getRate(), testFilm1.getRate());
         assertEquals(film.getMpa(), testFilm1.getMpa());
         assertEquals(film.getGenres(), testFilm1.getGenres());
+    }
+
+    @Test
+    public void shouldReturn3FilmsToUser3() {
+        jdbcTemplate.update(SQL_FILL_DB);
+        Collection<Film> actual = recommendationService.getRecommendations("3");
+        assertEquals(3, actual.size());
+        assertTrue(actual.contains(filmStorage.get(1)));
+        assertTrue(actual.contains(filmStorage.get(5)));
+        assertTrue(actual.contains(filmStorage.get(7)));
+    }
+
+    @Test
+    public void shouldReturn1FilmToUser10() {
+        jdbcTemplate.update(SQL_FILL_DB);
+        Collection<Film> actual = recommendationService.getRecommendations("10");
+        assertEquals(1, actual.size());
+        assertTrue(actual.contains(filmStorage.get(1)));
+    }
+
+    @Test
+    public void shouldReturn1FilmToUser10afterExtraMark() {
+        jdbcTemplate.update(SQL_FILL_DB);
+        filmStorage.addLike(1, 10, 8);
+        Collection<Film> actual = recommendationService.getRecommendations("10");
+        assertEquals(1, actual.size());
+        assertTrue(actual.contains(filmStorage.get(4)));
+    }
+
+    @Test
+    public void shouldSortWithDirectorByRate() {
+        jdbcTemplate.update(SQL_FILL_DB);
+        Collection<Film> films = filmStorage.getSortedWithDirector(2, "likes");
+        assertEquals(3, films.size());
+        List<Film> actual = (List<Film>) films;
+        assertEquals(filmStorage.get(5) ,actual.get(0));
+        assertEquals(filmStorage.get(4) ,actual.get(1));
+        assertEquals(filmStorage.get(1) ,actual.get(2));
+    }
+
+    @Test
+    public void shouldReturnRate() {
+        jdbcTemplate.update(SQL_FILL_DB);
+        assertEquals(4.5, filmStorage.get(1).getRate());
+        filmStorage.addLike(1, 10, 8);
+        assertEquals(5.0, filmStorage.get(1).getRate());
     }
 }

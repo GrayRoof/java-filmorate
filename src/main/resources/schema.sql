@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS FILM
     Description varchar(200) NOT NULL,
     ReleaseDate date         NOT NULL,
     Duration    int          NOT NULL,
-    Rate        int,
+    Rate        double,
     RatingID    int          NOT NULL,
     CONSTRAINT pk_Film PRIMARY KEY (FilmID)
 );
@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS LIKES
 (
     UserID int NOT NULL,
     FilmID int NOT NULL,
+    Mark int NOT NULL,
     CONSTRAINT pk_Like PRIMARY KEY (
                                     UserID, FilmID
         )

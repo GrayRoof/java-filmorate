@@ -13,6 +13,7 @@ public interface FilmStorage {
     Film update(Film film);
     boolean delete(int film);
     boolean addLike(int filmId, int userId);
+    boolean addLike(int filmId, int userId, int mark);
     boolean deleteLike(int filmId, int userId);
     Collection<Film> getMostPopular(int count);
     Collection<Film> getMostPopularByGenre(int count, int genreId);
@@ -20,7 +21,9 @@ public interface FilmStorage {
     Collection<Film> getSortedByGenreAndYear(int genreId, int year, int count);
     Collection<Film> getSortedWithDirector(Integer id, String sortBy);
     Map<Integer, BitSet> getRelatedLikesByUserId(int userId);
+    Map<Integer, Integer> getScoresOfRelatedLikesByUserId(int userId);
     BitSet getLikesOfUserList(List<Integer> usersId);
+    List<Integer> getFilmIdsOfUserList(int requestUserId, List<Integer> usersId);
     Collection<Film> getByIds(List<Integer> ids);
     Collection<Film> getCommon(int userId, int otherUserId);
     Collection<Film> getSortedFromSearch(String query, Set<FilmSearchOptions> params);
