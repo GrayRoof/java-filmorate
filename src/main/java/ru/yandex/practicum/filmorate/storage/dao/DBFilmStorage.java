@@ -19,11 +19,11 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.service.FilmSearchOptions;
 import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.sql.Date;
 import java.sql.*;
@@ -36,20 +36,20 @@ public class DBFilmStorage implements FilmStorage {
 
     private final Logger log = LoggerFactory.getLogger(DBFilmStorage.class);
     private final JdbcTemplate jdbcTemplate;
-    private final GenreStorage genreStorage;
-    private final DirectorStorage directorStorage;
+    private final GenreService genreService;
+    private final DirectorService directorService;
     private final ApplicationEventPublisher eventPublisher;
     private static final int MARK_MAXIMUM = 10;
     private static final int MARK_MINIMUM = 1;
 
     public DBFilmStorage(
             JdbcTemplate jdbcTemplate,
-            @Qualifier(DBStorageConstants.QUALIFIER) GenreStorage genreStorage,
-            @Qualifier(DBStorageConstants.QUALIFIER) DirectorStorage directorStorage,
+            GenreService genreService,
+            DirectorService directorService,
             ApplicationEventPublisher eventPublisher) {
         this.jdbcTemplate = jdbcTemplate;
-        this.genreStorage = genreStorage;
-        this.directorStorage = directorStorage;
+        this.genreService = genreService;
+        this.directorService = directorService;
         this.eventPublisher = eventPublisher;
     }
 
@@ -72,6 +72,7 @@ public class DBFilmStorage implements FilmStorage {
                     filmId + " не зарегистрирован!");
         }
         log.info("Найден фильм: {} {}", film.getId(), film.getName());
+        addExtraFilmData(film);
         return film;
     }
 
@@ -79,7 +80,9 @@ public class DBFilmStorage implements FilmStorage {
     public Collection<Film> getAll() {
         String sql = "select * from FILM " +
                 "INNER JOIN MPA R on FILM.RATINGID = R.RATINGID ";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
+        Collection<Film> result = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
+        addExtraFilmData(result);
+        return result;
     }
 
     @Override
@@ -103,10 +106,10 @@ public class DBFilmStorage implements FilmStorage {
         film.setId(id);
 
         if (!film.getGenres().isEmpty()) {
-            setGenres(film);
+            insertGenres(film);
         }
         if (!film.getDirectors().isEmpty()) {
-            setDirectors(film);
+            insertDirectors(film);
         }
         if (film.getLikes() != null) {
             for (Integer userId : film.getLikes()) {
@@ -131,13 +134,13 @@ public class DBFilmStorage implements FilmStorage {
                 film.getRate(),
                 film.getMpa().getId(),
                 film.getId());
-        genreStorage.deleteFilmGenres(film.getId());
+        genreService.deleteFilmGenres(film.getId());
         if (!film.getGenres().isEmpty()) {
-            setGenres(film);
+            insertGenres(film);
         }
-        directorStorage.deleteFilmDirector(film.getId());
+        directorService.deleteFilmDirector(film.getId());
         if (!film.getDirectors().isEmpty()) {
-            setDirectors(film);
+            insertDirectors(film);
         }
         if (film.getLikes() != null) {
             for (Integer userId : film.getLikes()) {
@@ -194,9 +197,9 @@ public class DBFilmStorage implements FilmStorage {
     @Override
     public boolean deleteLike(int filmId, int userId) {
         String deleteLike = "delete from LIKES where FILMID = ? and USERID = ?";
-        boolean result = jdbcTemplate.update(deleteLike, filmId, userId) > 0;
+        boolean isDeleted = jdbcTemplate.update(deleteLike, filmId, userId) > 0;
         updateLikeRating(filmId);
-        if (result) {
+        if (isDeleted) {
             eventPublisher.publishEvent(new OnFeedEvent(userId, filmId, AllowedFeedEvents.REMOVE_LIKE));
         }
         return true;
@@ -210,7 +213,9 @@ public class DBFilmStorage implements FilmStorage {
                 "group by FILM.FILMID " +
                 "ORDER BY RATE desc " +
                 "limit ?";
-        return jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), count);
+        Collection<Film> result = jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), count);
+        addExtraFilmData(result);
+        return result;
     }
 
     @Override
@@ -222,7 +227,9 @@ public class DBFilmStorage implements FilmStorage {
                 "WHERE GL.GENREID = ? " +
                 "ORDER BY RATE desc " +
                 "limit ?";
-        return jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), genreId, count);
+        Collection<Film> result = jdbcTemplate.query(sqlCacheMostPopular, (rs, rowNum) -> makeFilm(rs), genreId, count);
+        addExtraFilmData(result);
+        return result;
     }
 
     @Override
@@ -233,7 +240,9 @@ public class DBFilmStorage implements FilmStorage {
                 "WHERE YEAR(RELEASEDATE) = ? " +
                 "ORDER BY RATE DESC " +
                 "LIMIT ?";
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), year, count);
+        Collection<Film> result = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), year, count);
+        addExtraFilmData(result);
+        return result;
     }
 
     @Override
@@ -246,7 +255,9 @@ public class DBFilmStorage implements FilmStorage {
                 "GROUP BY FILM.FILMID " +
                 "ORDER BY RATE DESC " +
                 "LIMIT ?";
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), genreId, year, count);
+        Collection<Film> result = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), genreId, year, count);
+        addExtraFilmData(result);
+        return result;
     }
 
     @Override
@@ -270,7 +281,9 @@ public class DBFilmStorage implements FilmStorage {
                 " WHERE DIRECTORID = ?" +
                 " group by f.FILMID" +
                 " ORDER BY " + sort;
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), id);
+        Collection<Film> result = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), id);
+        addExtraFilmData(result);
+        return result;
     }
 
     @Override
@@ -334,7 +347,9 @@ public class DBFilmStorage implements FilmStorage {
         String sql = "select * from FILM " +
                 "inner join MPA M on FILM.RATINGID = M.RATINGID " +
                 "where FILM.FILMID in (" + ids.stream().map(Object::toString).collect(Collectors.joining(",")) + ")";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
+        Collection<Film> result = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
+        addExtraFilmData(result);
+        return result;
     }
 
     @Override
@@ -351,10 +366,11 @@ public class DBFilmStorage implements FilmStorage {
                         "from FILM " +
                         "inner join MPA R on R.RATINGID = FILM.RATINGID " +
                         "inner join COMMON on FILMID = COMMONID " +
-                        //"where FILMID in (select COMMONID from COMMON) " +
                         "group by FILM.FILMID, RATE " +
                         "order by RATE desc;";
-        return jdbcTemplate.query(sqlGetCommon, (rs, rowNum) -> makeFilm(rs), userId, otherUserId);
+        Collection<Film> result = jdbcTemplate.query(sqlGetCommon, (rs, rowNum) -> makeFilm(rs), userId, otherUserId);
+        addExtraFilmData(result);
+        return result;
     }
 
     @Override
@@ -380,7 +396,9 @@ public class DBFilmStorage implements FilmStorage {
                 directorsJoin + "where " + String.join(" or ", filterExpressions) + " " +
                 "group by f.FILMID " +
                 "order by f.RATE desc";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
+        Collection<Film> result = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
+        addExtraFilmData(result);
+        return result;
     }
 
     @EventListener
@@ -429,7 +447,7 @@ public class DBFilmStorage implements FilmStorage {
         return true;
     }
 
-    private void setGenres(Film film) {
+    private void insertGenres(Film film) {
         final List<Genre> genreList = new ArrayList<>(film.getGenres());
         jdbcTemplate.batchUpdate("MERGE INTO GENRELINE (FILMID, GENREID) values (?, ?)",
                 new BatchPreparedStatementSetter() {
@@ -446,7 +464,7 @@ public class DBFilmStorage implements FilmStorage {
         });
     }
 
-    private void setDirectors(Film film) {
+    private void insertDirectors(Film film) {
         final List<Director> directorsList = new ArrayList<>(film.getDirectors());
         jdbcTemplate.batchUpdate("MERGE INTO DIRECTORLINE (FILMID, DIRECTORID) values (?, ?)",
                 new BatchPreparedStatementSetter() {
@@ -461,5 +479,16 @@ public class DBFilmStorage implements FilmStorage {
                 return film.getDirectors().size();
             }
         });
+    }
+
+    private void addExtraFilmData(Collection<Film> films) {
+        if (!films.isEmpty()) {
+            genreService.load(films);
+            directorService.load(films);
+        }
+    }
+
+    private void addExtraFilmData(Film film) {
+        addExtraFilmData(List.of(film));
     }
 }

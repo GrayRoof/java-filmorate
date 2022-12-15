@@ -50,9 +50,6 @@ public class FilmService {
      */
     public Collection<Film> getAll() {
         final Collection<Film> films = filmStorage.getAll();
-        if (!films.isEmpty()) {
-            addExtraFilmData(films);
-        }
         return films;
     }
 
@@ -118,7 +115,6 @@ public class FilmService {
             size = 10;
         }
         Collection<Film> films = filmStorage.getMostPopular(size);
-        addExtraFilmData(films);
         return films;
     }
 
@@ -137,9 +133,6 @@ public class FilmService {
         } else {
             films = filmStorage.getMostPopular(Integer.parseInt(count));
         }
-        if (films.size() > 0) {
-            addExtraFilmData(films);
-        }
         return films;
     }
 
@@ -152,7 +145,6 @@ public class FilmService {
         int storedUserId = userService.getStoredUserId(userId);
         int storedOtherUserId = userService.getStoredUserId(otherUserId);
         Collection<Film> films = filmStorage.getCommon(storedUserId, storedOtherUserId);
-        addExtraFilmData(films);
         return films;
     }
 
@@ -170,7 +162,6 @@ public class FilmService {
     public Collection<Film> getSortedFilmWithDirector(Integer id, String sortBy) {
         directorStorage.contains(id);
         Collection<Film> films = filmStorage.getSortedWithDirector(id, sortBy);
-        addExtraFilmData(films);
         return films;
     }
 
@@ -193,7 +184,6 @@ public class FilmService {
         if (film == null) {
             onFilmNotFound(filmId);
         }
-        addExtraFilmData(List.of(film));
         return film;
     }
 
@@ -203,11 +193,6 @@ public class FilmService {
             onFilmNotFound(filmId);
         }
         return filmId;
-    }
-
-    protected void addExtraFilmData(Collection<Film> films) {
-        genreStorage.load(films);
-        directorStorage.load(films);
     }
 
     private int getRequestedNumber(String reqNum) {

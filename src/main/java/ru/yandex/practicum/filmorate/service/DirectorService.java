@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConflictException;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
 import javax.validation.ValidationException;
@@ -46,10 +47,20 @@ public class DirectorService {
         return directorStorage.delete(id);
     }
 
+    public void load(Collection<Film> films) {
+        directorStorage.load(films);
+    }
+
+    public boolean deleteFilmDirector(int filmId) {
+        return directorStorage.deleteFilmDirector(filmId);
+    }
+
     private boolean validateName(Director director) {
         if (director.getName() == null || director.getName().isBlank()) {
             throw new ValidationException("Имя режиссера не может быть пустым");
         }
         return true;
     }
+
+
 }
